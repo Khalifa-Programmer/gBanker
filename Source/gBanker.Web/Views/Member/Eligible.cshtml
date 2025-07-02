@@ -1,0 +1,285 @@
+﻿@{
+    ViewBag.Title = "Member Approval List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var SrNo = 1;
+        $('#grid').jtable({
+          //title: 'Member List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            selectingCheckboxes: true,
+            actions: {
+                //listAction: '/Member/GetMemberInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                //listAction: '/Member/GetMemberInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Member/GetEligibleMemberInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+            },
+            fields: {
+                SrNo: {
+                    title: 'SL',
+                    width: '5%',
+                    list: true
+                },
+                MemberID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberImg: {
+                    title: 'Image',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        //return "<div class='text-center'><img src='/images/blank-headshot.jpg' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                        return "<div class='text-center'><img src='/Member/RetrieveImage/" + data.record.MemberID + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+                MemberCode: {
+                    title: 'Code',
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Samity',
+                    create: false,
+                    edit: true
+                },
+                GroupCode: {
+                    title: 'Group',
+                    create: false,
+                    edit: false
+                },
+                FullName: {
+                    title: 'Name',
+                    create: false,
+                    edit: false
+                },
+                RefereeName: {
+                    title: 'Reference',
+                    create: false,
+                    edit: false,
+                    list:false
+                },
+                JoinDate: {
+                    title: 'Joining Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                    create: false,
+                    edit:false
+                },
+                Gender: {
+                    title: 'Gender',
+                    create: false,
+                    edit: false
+                },
+                CategoryName: {
+                    title: 'Category',
+                    create: false,
+                    edit: false,
+                    //list:false
+                },
+                NationalID: {
+                    title: 'NID',
+                    create:false,
+                    edit:false
+                },
+                SmartCard: {
+                    title: 'Smart Card',
+                    create: false,
+                    edit: false
+                },
+                PhoneNo: {
+                    title: 'Phone',
+                    create:false,
+                    edit:false
+                },
+                MemCategory: {
+                    title: 'Type',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                AdmissionFee: {
+                    title: 'AdmissionFee',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                PassBookFee: {
+                    title: 'PassBookFee',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                LoanFormFee: {
+                    title: 'LoanFormFee',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                Eligible: {
+                    title: "Approval",
+                    sort:false,
+                    display: function (data) {
+                        //return "<div class='text-center'><a href='/Member/EligibleMember?MemId=" + data.record.MemberID + "'><i class='fa fa-caret-square-o-down'></i></a></div>";
+                        //return '<div class="text-center"><a href="/Member/EligibleMember?MemId=' + data.record.MemberID + '"' + '><i class="fa fa-caret-square-o-down"></i></a></div>';
+                        return "<div class='text-center'><a href='/Member/EligibleCreate/" + data.record.MemberID + "'><i class='fa fa-caret-square-o-down'></i></a></div>";
+                    }
+                },
+                //Reject: {
+                //    title: "Reject",
+                //    sort: false,
+                //    display: function (data) {
+                //        //return "<div class='text-center'><a href='/Member/EligibleMember?MemId=" + data.record.MemberID + "'><i class='fa fa-caret-square-o-down'></i></a></div>";
+                //        //return '<div class="text-center"><a href="/Member/EligibleMember?MemId=' + data.record.MemberID + '"' + '><i class="fa fa-caret-square-o-down"></i></a></div>';
+                //        //return "<div class='text-center'><a href='/Member/EligibleEdit/" + data.record.MemberID + "'><i class='fa fa-times-circle-o'></i></a></div>";
+                        
+                //        return '<div class="text-center"><a href="/Member/EligibleEdit/' + data.record.MemberID + '" ' + ' OnClick="return confirm(' + "'" + 'Are you sure you want to reject this item?' + "'" + ');"' + '><i class="fa fa-times-circle-o"></i></a></div>';
+                //    }
+                //}
+            },
+            recordsLoaded: function (event, data) {
+                var pagenumber = $('.jtable-goto-page select option:selected').val();
+                var pagesize = $('.jtable-page-size-change select option:selected').val();
+                var SrNo = pagesize * pagenumber - pagesize;
+                if (data.records) {
+                    $.each(data.records, function (index, record) {
+                        var row = $('#grid').jtable('getRowByKey', record.MemberID);
+                        SrNo++;
+                        row.find('td:eq(0)').text(SrNo);
+                    });
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+
+        $("#btnApprove").click(function (e) {
+            e.preventDefault();
+
+            if (confirm("You are going to Approve all Members, Are you sure? ") == true) {
+                ///////////////////
+                $("#loading").show();
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("ApproveAllMember", "Member", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: {},
+                    success: function (Result) {
+                        $("#loading").hide();
+                        var msg, css;
+                        if (Result == "Ok") {
+                            var msg = "All Members are Approved";
+                            var css = "success";
+                        }
+                        else {
+                            var msg = "Failed to Approve";
+                            var css = "failed";
+                        }
+                        $("#dvMessage").attr('class', css);
+                        $("#dvMessage").html(msg);
+                        $("#dvMessage").show();
+                        if (data.Message == null)
+                            $("#dvMessage").toggle('fade', 1500);
+
+                    },
+                    error: function (request, status, error) {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html(request.statusText);
+                        $("#dvMessage").show();
+                    }
+                });
+
+                //////////////
+            }          
+        });
+
+    });
+
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        $("#loading").hide();
+    }
+</script>
+@*@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })*@
+<h2 class="page-title">Member Approval List</h2>
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+        <select id="filterColumn" class="form-control">
+            <option value="ViewAll">View All</option>
+            <option value="MemberCode">Member Code</option>
+            <option value="MemberName">Member Name</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="GroupCode">Group Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+        &nbsp;
+        @*<input type="button" id="btnApprove" value="Approve All" class="btn btn-primary"  />*@
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        &nbsp;
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

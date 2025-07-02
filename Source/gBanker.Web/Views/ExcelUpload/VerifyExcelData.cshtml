@@ -1,0 +1,155 @@
+﻿@model gBanker.Web.ViewModels.BuroCustomerInfoViewModel
+@{
+    ViewBag.Title = "Verify Excel Data";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var rowCount = Model.CheckStaffDataTable.Count();
+    WebGrid grid = new WebGrid(Model.CheckStaffDataTable, rowsPerPage: rowCount == 0 ? 1 : rowCount);
+   // Model.OfficeID = @gBanker.Web.Helpers.SessionHelper.LoginUserOfficeID.ToString();
+    //Model.IsSuperAdmin = Convert.ToBoolean(Session["IsSuperAdmin"].ToString() != null ? Session["IsSuperAdmin"].ToString() : "false");
+}
+
+
+
+<style type="text/css">
+    .webgrid-table {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        font-size: 1.2em;
+        width: 100%;
+        display: table;
+        border-collapse: separate;
+        border: solid 1px #98BF21;
+        background-color: white;
+    }
+    .webgrid-table td, th {
+            border: 1px solid #98BF21;
+            padding: 3px 7px 2px;
+        }
+    .webgrid-header {
+        background-color: #A7C942;
+        color: #FFFFFF;
+        padding-bottom: 4px;
+        padding-top: 5px;
+        text-align: left;
+    }
+    .webgrid-footer {
+    }
+    .webgrid-row-style {
+        padding: 3px 7px 2px;
+    }
+    .webgrid-alternating-row {
+        background-color: #EAF2D3;
+        padding: 3px 7px 2px;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        if ('@Model.BranchCode' != "" && @Model.CheckStaffDataTable.Count == 0 && @Model.Result==1) {
+            alert("No Problem Found For This Check");
+        }else if('@Model.BranchCode' != "" && @Model.Result==2){
+            alert("@Model.ReturnMessage");
+        }      
+
+        $("#DateTo").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+               changeMonth: true,
+               changeYear: true,
+               yearRange: "1980:2050"
+           });
+    });
+</script>
+
+@using (Html.BeginForm("VerifyExcelData", "ExcelUpload", FormMethod.Post, new { enctype = "multipart/form-data", @role = "form" }))
+{
+    
+    <div class="row">
+        <div class="col-md-12 col-sm-12">
+            <div class="box col-md-12">
+                <div class="box-inner">
+                    <div class="box-header well" style="padding:10px;">
+                        <h3 style="margin-top:10px;"><i class="glyphicon glyphicon-edit"></i> Verify Excel Data</h3>
+                    </div>
+                    <div class="box-content well">
+                        <div class="row frmRow">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label col-md-4" })
+                                    <div class="col-md-8">
+                                        @if (Model.IsSuperAdmin == true)
+                                        {
+                                            @Html.DropDownListFor(model => model.OfficeID, Model.BranchCodeList, new { @class = "form-control" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(model => model.OfficeID, new { @class = "form-control", @readonly = "readonly" })
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.DateTo, htmlAttributes: new { @class = "control-label col-md-4" })
+                                    <div class="col-md-8">
+                                        @Html.TextBoxFor(model => model.DateTo, new { @class = "form-control", @autocomplete = "off" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                        @*<div class="row frmRow">
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.SpName, htmlAttributes: new { @class = "control-label col-md-4" })
+                                    <div class="col-md-8">
+                                        @Html.DropDownListFor(model => model.SpName, Model.ReportSpNameList, new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>*@
+                       <br />
+                        <div class="row frmRow">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="item form-group">
+                                    <label class="control-label col-md-4 input-sm">&nbsp;</label>
+                                    <div class="col-md-8">
+                                        <button type="submit" class="btn btn-sm btn-success" id="btnCheck">Verify Data</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <br />
+                        @*<div class="row frmRow">
+                <div class="col-md-4 col-sm-4">
+                    <div class="item form-group">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-sm btn-success" id="btnCheck">Check</button>
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+}
+
+
+
+@grid.GetHtml(tableStyle: "webgrid",
+                            alternatingRowStyle: "webgrid-alternating-row",
+                            headerStyle: "webgrid-header",
+                            footerStyle: "webgrid-footer",
+                            selectedRowStyle: "webgrid-selected-row",
+                            rowStyle: "webgrid-row-style"
+                            )
+
+
+

@@ -1,0 +1,102 @@
+
+@model ImputedCostSavingInterestViewModel
+
+@{
+    ViewBag.Title = "Imputed Cost Saving Interest";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<h2 class="page-title">Imputed Cost Saving Interest</h2>
+
+@using (Html.BeginForm("Create", "ImputedCostSavingInterest", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">       
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.MNYR)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.INT_RATE, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.INT_RATE, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.INT_RATE)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.NPK, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.NPK, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.NPK)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Regular, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.Regular, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Regular)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.VOL, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.VOL, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.VOL)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Other, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.Other, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Other)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="raw">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <div class="form-group form-action">
+                                <button type="submit" class="btn btn-sm btn-primary" id="btnSave"> Submit </button>
+                                <button type="button" class="btn btn-sm btn-primary" id="btnView"> View </button>
+
+                                @*<button type="button" id="btnSyncToPKSF" class="btn btn-sm btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="grid"></div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/imputedCostSavingInterestManager.js"></script>
+}

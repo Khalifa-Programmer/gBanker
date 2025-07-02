@@ -1,0 +1,125 @@
+﻿@model gBanker.Web.ViewModels.MRAReportViewModel
+
+@{
+    ViewBag.Title = "MRA Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {
+
+        GetMainProduct()
+
+        $("#DateTo").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+              changeMonth: true,
+              changeYear: true,
+              yearRange: "1920:2100"
+
+          });
+        $("#btnPrint").click(function () {
+            debugger;
+
+            var mainProdCode = $("#ddlMainProduct").val();
+            var ExportType = $("#ExportType").val();
+
+            var date = $("#DateTo").val();
+            var office = $("#Office").val();
+            if (date != "" || office != "") {
+                if (ExportType == 'pdf') {
+                    var url = '/MRAReport/MRA_DBMS_4_Report_Print?date=' + date + '&office=' + office + '&mainProdCode=' + mainProdCode;
+                }
+                else if (ExportType == 'excel') {
+                    var url = '/MRAReport/MRA_DBMS_4_Report_Print_Excel?date=' + date + '&office=' + office + '&mainProdCode=' + mainProdCode;
+
+                } else {
+                    $.alert.open("Warning", "Please select export type.");
+                }
+            }
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+        });
+    });
+
+    function GetMainProduct() {
+        var ddlMainProduct = $("#ddlMainProduct");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMainProductCode", "MRAReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMainProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlMainProduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+</script>
+
+<h2 class="page-title">Branch Wise Loan Information Report</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Date</label>
+                <div class="col-sm-4">
+                    @Html.TextBoxFor(model => model.DateTo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Office</label>
+                <div class="col-sm-4">
+                    @Html.DropDownListFor(model => model.Office, Model.OfficeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                @Html.Label("Main Product", new { @class = "control-label col-sm-2" })
+                <div class="col-sm-4">
+                    @Html.DropDownList("MainProductList", null, new { @ID = "ddlMainProduct", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                @Html.Label("Export Type", new { @class = "control-label col-sm-2" })
+                <div class="col-sm-4">
+                    <select class="form-control" id="ExportType">
+                        <option value="0" selected>Please Select</option>
+                        <option value="pdf">View As PDF</option>
+                        <option value="excel">Export As Excel</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Print" id="btnPrint" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

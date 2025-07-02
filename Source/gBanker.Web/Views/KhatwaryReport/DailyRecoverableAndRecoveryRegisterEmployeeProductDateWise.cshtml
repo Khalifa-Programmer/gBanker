@@ -1,0 +1,148 @@
+﻿@model gBanker.Web.ViewModels.MemberViewModel
+
+
+@{
+    ViewBag.Title = "DailyRecoverableAndRecoveryRegister Employee and Product wise";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var cntr = Model == null ? null : Model.CenterList;
+}
+
+
+<script type="text/javascript">
+
+    function LoadCenterByOfficeId(office_id) {
+        var ddlCenters = $("#CenterID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "Member", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenters.html('');
+                $.each(data, function (id, option) {
+                    ddlCenters.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+       // LoadCenterByOfficeId($("#OfficeID").val());
+
+        $(".centerdiv").hide();
+        //$("#ddlQtype").change(function (e) {
+        //    var ddlQtype = $("#ddlQtype option:selected").val();
+        //    if (ddlQtype == 2) {
+        //        $(".centerdiv").show();
+        //    } else {
+        //        $(".centerdiv").hide();
+        //    }
+        //});
+
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var Qtype = $("#ddlQtype").val();
+            var CenterID = 0;
+            //CenterID = $("#CenterID option:selected").val();
+            if (Qtype == 2 && CenterID != 0) {
+                Qtype = 5;
+            }
+
+            var url = '/KhatwaryReport/GetDailyRecoverableAndRecoveryRegisterEmployeeProductDateWise?DateFrom=' + DateFrom + '&DateTo=' + DateTo + '&Qtype=' + Qtype + '&CenterID=' + CenterID;
+
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+<h2 class="page-title">Daily Recoverable And Recovery Employee and Product Wise</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtFromDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Report", new { @class = "control-label" })
+                    @Html.DropDownList("QtypeList", new[] {
+                       new SelectListItem() {Text="ProductWise", Value="1",Selected = true},
+                       new SelectListItem() {Text="EmployeeWise", Value="2"}
+                       },
+                       new { @ID = "ddlQtype", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+
+        @*<div class="row centerdiv">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.CenterID, cntr, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.OfficeID)
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>*@
+
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

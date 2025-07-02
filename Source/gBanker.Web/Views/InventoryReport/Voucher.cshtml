@@ -1,0 +1,106 @@
+﻿
+@{
+    ViewBag.Title = "Common Reports";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style type="text/css">
+    label {
+        font-size: 13px;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#ReportType").on("change", function () {
+            var rt = $("#ReportType option:selected").val();
+            $("#Item").val('')
+            if (rt == 1) {
+                //$("#FromDate,#ToDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+                $("#FromDate,#ToDate").val('@ViewBag.TransactionDate')
+                $("#dvPosting,#dvDate").show();
+            }
+            else {
+                $("#dvDate,#dvPosting").hide()
+            }
+        });
+
+        ////////// Button
+        $("#btnReport").button().click(function (e) {
+            e.preventDefault();
+            if ($('#ReportType').val() > 0) {
+                var url = "";
+                if ($("#ReportType option:selected").val() == 1)
+                    url = "/InventoryReport/DayWiseVoucher?reportTypeId=" + $('#ReportType').val()
+                + "&from=" + $('#FromDate').val()
+                + "&to=" + $('#FromDate').val();
+                window.open(url, 'mywindow'
+           , 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=no,width=600,height=600');
+            }
+        });
+        $("#btnPosting").button().click(function (e) {
+            e.preventDefault();
+            var data = GenerateAjaxRequist('/InventoryReport/VoucherPosting', JSON.stringify({ date: $('#FromDate').val() }), "POST")
+            $.alert.open("Information", data.Message);
+            //if (Date.Result == 1)
+
+
+        });
+        ////////// Button
+        $("#FromDate,#ToDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+       });
+        //$("#FromDate,#ToDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+        $("#FromDate,#ToDate").val('@ViewBag.TransactionDate')
+    });
+</script>
+<h2 class="page-title">Common Reports</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="form-group">
+            <label class="control-label col-md-2" for="ReportType">Report Type</label>
+            <div class="col-md-4">
+                <select class="form-control" id="ReportType" name="ReportType">
+                    <option value="0">Select Report Type</option>
+                    <option value="1">Common Voucher</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div id="dvDate">
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">Date: </label>
+                <div class="col-md-4">
+                    <input type="text" id="FromDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row" style="display:none">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">To date: </label>
+                <div class="col-md-4">
+                    <input type="text" id="ToDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-1">
+            <button id="btnReport" type="button" class="btn btn-primary">Report</button>
+        </div>
+        <div class="col-md-1" style="display:none;" id="dvPosting">
+            <button id="btnPosting" type="button" class="btn btn-primary">Voucher Posting</button>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,298 @@
+﻿@model gBanker.Web.ViewModels.SurveyMemberMasterViewModel
+@{
+    ViewBag.Title = "CreateSurveyKnownMember";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+@using (Html.BeginForm(null, null, new { @id = string.Empty }, FormMethod.Post, new { @id = "create", @mode = "create" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="accordion">
+        <div class="panel-group" id="accordion">
+
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-8">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse8"><i class="fa fa-plus"></i>&nbsp;Survey Known Member</a>
+                    </h4>
+                </div>
+                <div id="collapse8" class="panel-collapse collapse">
+                    @Html.ActionLink("Member Survey List", "Index", null, new { @class = "btn btn-success btn-sm pull-right" })
+                    <div class="panel-body">
+                        @{
+                            Html.RenderPartial("~/Views/MemberSurvey/Partial/_SurveyKnownMember.cshtml", @Model);
+                        }
+                        <div class="row">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input id="btnSurveyKnownMember" type="submit" value="Save" class="btn btn-primary" onclick="SaveSurveyKnownMember()" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="page-title">Survey Known Member List</h4>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            &nbsp;
+                        </div>
+                    </div>
+
+                    <div id="grid"></div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            &nbsp;
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="row">
+                @Html.HiddenFor(model => model.KnownMemberId)
+            </div>
+
+        </div>
+    </div>
+
+
+    <script src="~/Scripts/bootbox.min.js"></script>
+    <script type="text/javascript">
+
+
+        $(document).ready(function () {
+            GetsCodeWiseIds();
+            GRIDLOAD();
+
+            $("#search").click(function () {
+                var MemberCode = $("#MemberCode").val();
+                SurveyKnownMemberByMemberCodes(MemberCode);
+            });
+        });
+
+        function SurveyKnownMemberByMemberCodes() {
+            debugger;
+            var MemberCode = $('#MemberCode').val();
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SurveyKnownMemberByMemberCode", "MemberSurvey")',
+                data: { MemberCode: MemberCode },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    $("#MemberCode").val(data.AutoChequeNumberList[0].MemberCode);
+                    $("#Name").val(data.AutoChequeNumberList[0].Name);
+                    $("#Contact").val(data.AutoChequeNumberList[0].Contact);
+                    $("#Address").val(data.AutoChequeNumberList[0].Address);
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+        function GetsCodeWiseIds() {
+            debugger;
+            var sCode = $('#SurveyCode').val();
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetsCodeWiseIdforSurveyKnownMember", "MemberSurvey")',
+                data: { sCode: sCode },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    $("#MemberCode").val(data.MemberCode);
+                    $("#IsBloodRelated").val(data.IsBloodRelated);
+                    $(".RemarksSurveyKnownMember").val(data.Remarks);
+                    $("#KnownMemberId").val(data.KnownMemberId);
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+
+        function GenerateSurveyKnownMember() {
+            var item = {};
+            item.KnownMemberId = $("#KnownMemberId").val();
+            item.SurveyId = $("#SurveryId").val();
+            item.MemberCode = $("#MemberCode").val();
+            item.IsBloodRelated = $("#IsBloodRelated").val();
+            item.Remarks = $(".RemarksSurveyKnownMember").val();
+            return item;
+        }
+
+
+
+        function SaveSurveyKnownMember() {
+            var MemberSurvey = GenerateSurveyKnownMember();
+            var sCode = $("#SurveyCode").val();
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: true,
+                cache: false,
+                url: '@Url.Action("SaveSurveyKnownMember", "MemberSurvey")',
+                data: JSON.stringify({ MemberSurvey: MemberSurvey, sCode: sCode }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data == "Save Successfull") {
+                        bootbox.alert({
+                            message: "Save Successfull",
+                            size: 'small'
+                        });
+                    } else if(data == "Updated successfully"){
+                        bootbox.alert({
+                            message: "Updated Successfull",
+                            size: 'small'
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+
+            });
+        }
+
+
+        function GRIDLOAD(parameters) {
+            $('#grid').jtable({
+                paging: true,
+                pageSize: 20,
+                sorting: true,
+                defaultSorting: 'InventoryId ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        //var carId = $("#VMCarId").val();
+                        //if (carId == '' || carId == "" || carId == null) {
+                        //    carId = 0;
+                        //}
+
+                        return $.Deferred(function ($dfd) {
+
+                            $.ajax({
+                                url: '/MemberSurvey/ListSurveyKnownMember?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+
+                                success: function (data) {
+                                    $dfd.resolve(data);
+
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    }
+
+                },
+                fields: {
+                    Id: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    //SurveyId: {
+                    //    title: 'Survey Id',
+                    //    width: '10%'
+                    //},
+
+                    KnownMemberId: {
+                        title: 'KnownMemberId',
+                        width: '10%'
+                    },
+
+                    SurveyCode: {
+                        title: 'SurveyCode',
+                        width: '10%'
+                    },
+
+                    MemberCode: {
+                        title: 'MemberCode',
+                        width: '10%'
+                    },
+                    IsBloodRelated: {
+                        title: 'IsBloodRelated',
+                        width: '10%'
+                    },
+                    Remarks: {
+                        title: 'Remarks',
+                        width: '10%'
+                    },
+                    Edit: {
+                        title: "Edit",
+                        sorting: false,
+                        display: function (data) {
+                            return "<div class='text-center'><a href='/MemberSurvey/CreateSurveyKnownMember?sCode=" + data.record.SurveyCode + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        }
+                    },
+                    Delete: {
+                        title: "Delete",
+                        display: function (data) {
+                            return '<div class="text-center"><a href="#" OnClick="InformationDelete(' + data.record.KnownMemberId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                        }
+
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+
+
+
+        function InformationDelete(Id) {
+            $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+                if (button == 'yes') {
+                    $.ajax({
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("InformationDeleteKnownMember", "MemberSurvey", "http")',
+                        data: { Id: Id },
+                        dataType: 'json',
+                        async: true,
+                        success: function (data) {
+                            if (data.result == 1) {
+                                $('#grid').jtable('load');
+                                $.alert.open("Error", data.message);
+                            } else {
+                                $.alert.open("Error", data.message);
+                            }
+
+                        },
+                        error: function (request, status, error) {
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                    return true;
+                }
+                else {
+                    hiddenField.value = 'false';
+                    return false;
+                }
+            });
+        }
+
+
+
+
+    </script>
+
+}
+
+
+@section Scripts {
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+
+}
+

@@ -1,0 +1,342 @@
+﻿@model gBanker.Web.ViewModels.AccountCloseViewModel
+
+@{
+    ViewBag.Title = "AccountClose Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    
+    var noAccount = Model == null ? null : Model.AccountListItems;
+    
+    var office = Model == null ? null : Model.officeListItems;
+    
+    var center = Model == null ? null : Model.centerListItems;
+   
+    var member = Model == null ? null : Model.memberListItems;
+  
+}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        // $("#TrxDate").datepicker();
+        $("#TransactionDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        //gBankerDatePicker("TransactionDate");
+    });
+    function SetProductid(value) {
+
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+
+    }
+    function SetNoOfAccount(value) {
+
+        var ddlValue = $("#NoOfAccount option:selected").val();
+        $("#hfNoOfAccount").val(ddlValue);
+
+    }
+    function GetProductList(Member_id, center_id) {
+        var ddlproduct = $("#ProductID");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "AccountClose", "http")',
+            data: { Member_id: Member_id, center_id: center_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlproduct.html('');
+                $.each(data, function (id, option) {
+                    ddlproduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetAccountNo(officeId, centerId, MemId, ProdId) {
+        var ddlAccount = $("#NoOfAccount");
+
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAccountNo", "AccountClose", "http")',
+            data: { officeId: officeId, centerId: centerId, MemId: memId, ProdId: prodId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlAccount.html('');
+                $.each(data, function (id, option) {
+                    ddlAccount.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+
+        });
+    }
+      function CalcLoanTerm() {
+        //alert('fn');
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+        var NoOfAccount = $("#NoOfAccount").val();
+        if (prodId > 0 && memId > 0 && officeId > 0 && centerId > 0 && NoOfAccount>0) {
+
+           // $body.addClass("loading");
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetStopSavingBalance", "AccountClose", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, ProdId: prodId, NoOfAccount: NoOfAccount },
+
+                success: function (result) {
+
+                    $("#NoOfAccount").val(result.LoanTerm);
+                    $("#Balance").val(result.Balance);
+                    $body.removeClass("loading");
+
+
+                },
+                error: function (err) {
+                    $body.removeClass("loading");
+                }
+            });
+        }
+    }
+    $(document).ready(function () {
+
+        //$("#ProductID").change(function () {
+        //    CalcLoanTerm();
+
+        //});
+        //$("#ProductID").blur(function () {
+        //    CalcLoanTerm();
+        //    // CalcBalance()
+        //});
+        //$("#MemberID").change(function () {
+        //    CalcLoanTerm();
+        //    //CalcBalance()
+        //});
+        $("#ProductID").blur(function () {
+
+            GetAccountNo();
+            //CalcBalance()
+        });
+        //$("#NoOfAccount").blur(function () {
+
+        //    CalcLoanTerm();
+        //    //CalcBalance()
+        //});
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "AccountClose", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        //alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            if ($("#CenterID").val() > 0 && data[0].MemberID > 0) {
+                               // alert($("#CenterID").val());
+                                GetProductList(data[0].MemberID, $("#CenterID").val());
+                            }
+                            //CalcLoanTerm();
+                        }
+                        else if (data.length == 0) {
+                            // alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            // alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "AccountClose", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Close Account</h2>
+
+@using (Html.BeginForm("Create", "AccountClose", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="">
+    
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @*<div class="form-group">
+            @Html.LabelFor(model => model.SavingSummaryID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.SavingSummaryID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.SavingSummaryID, "", new { @class = "text-danger" })
+            </div>
+        </div>*@
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+                    @*@Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control", onchange = "SetProductid(this.value);" })
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NoOfAccount, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.NoOfAccount, product, new { @class = "form-control", onchange = "SetNoOfAccount(this.value);" })
+                    @*@Html.EditorFor(model => model.NoOfAccount, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.Hidden("NoOfAccount")
+                    @Html.ValidationMessageFor(model => model.NoOfAccount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TransactionDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.TransactionDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.TransactionDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Balance, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            <div class="form-group">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

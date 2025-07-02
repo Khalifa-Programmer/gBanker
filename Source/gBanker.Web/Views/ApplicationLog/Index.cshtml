@@ -1,0 +1,260 @@
+﻿@model IEnumerable<gBanker.Data.CodeFirstMigration.ApplicationLog>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<script type="text/javascript">
+    
+    function filterChanged()
+    {
+        var filterColumn = $("#filterColumn").val();
+        if (filterColumn == "CreateDate") {
+            $("#filterValue").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                buttonImage: '/images/calendar_icon.png'
+            });
+        }
+        else {           
+            $("#filterValue").datepicker("destroy");
+        }
+        $("#filterValue").val('');
+    }
+
+    function GetEmpList() {
+        var ddlEmp = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmpList", "ApplicationLog", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetEmpList();
+
+        $("#txtFromDt").datepicker(
+      {
+          dateFormat: "dd-M-yy",
+          showAnim: "scale"
+      });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $('#txtFromDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+        //$('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+        $('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+     
+        //////////////////////////
+        $('#grid').jtable({
+           // title: 'LoanSummary List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/ApplicationLog/GetLogRecords?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+               // listAction: '/LoanSummary/GetLoanSummary'
+
+            },
+            fields: {
+                ApplicationLogId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LogDate: {
+                    title: 'Date',
+                    width: '10%',
+                    type: 'date',
+                },
+                ClientIP: {
+                    title: 'IP',
+                    width: '10%'
+                },
+                RequestUser: {
+                    title: 'User',
+                    width: '10%'
+                },
+                ControllerName:{
+                    title: 'Page',
+                    width: '10%'
+                },
+                ActionName: {
+                    title: 'Action',
+                    width: '10%'
+                },
+                HttpMethod: {
+                    title: 'Request Type',
+                    width: '10%'
+                },
+
+                ActionURL: {
+                    title: 'URL',
+                    width: '18%'
+                },
+                OfficeCode: {
+                    title: 'OfficeCode',
+                    width: '18%'
+                },
+                EditLink: {
+                    title: "Detail",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/ApplicationLog/Detail/" + data.record.ApplicationLogId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                     }
+                }
+            }
+        });
+        reloadGrid();
+        //////////////////////////
+
+    });
+
+    function reloadGrid() {
+        //$('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        $('#grid').jtable('load', { dateFrom: $('#txtFromDt').val(), dateTo: $('#txtToDt').val(), action: $('#ddlAction').val(), user: $('#ddlEmp').val() });
+    }
+</script>
+
+
+<h2 class="page-title">Audit Trail</h2>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date From</label>
+            @Html.TextBox(" ", null, new { @ID = "txtFromDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date To</label>
+            @Html.TextBox(" ", null, new { @ID = "txtToDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Action</label>
+            @*@Html.TextBox(" ", null, new { @ID = "txtAction", @style = "width:150px; height:35px;" })*@
+            <select id="ddlAction" class="form-control">
+                <option value="V">View All</option>
+                <option value="Create">Create</option>
+                <option value="Edit">Edit</option>
+                <option value="Delete">Delete</option>
+                <option value="DayInitialProcess">Day Initial Process</option>
+                <option value="DayEndProcess">Day End Process</option>
+                <option value="Login">Login</option>
+                <option value="LogOff">LogOff</option>
+            </select></div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">User</label>
+            @*@Html.TextBox(" ", null, new { @ID = "txtUser", @style = "width:150px; height:35px;" })*@
+            @Html.DropDownList("EmpList", null, new { @ID = "ddlEmp", @class = "form-control" })
+        </div>
+    </div>
+    @*<div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">User</label>
+            <select id="ddlSmsType" class="form-control">
+                <option value="V">View All</option>
+                <option value="D">Disburse</option>
+                <option value="C">Collection</option>
+            </select>
+        </div>
+    </div>*@
+    @*mahi*@
+    @*<div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">SMS Status</label>
+            <select id="ddlSmsStatus" class="form-control">
+                <option value="V">View All</option>
+                <option value="Sent">Sent</option>
+                <option value="Fail">Fail</option>
+            </select>
+        </div>
+    </div>*@
+    <div class="col-md-2" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+@*<div>
+    Filter By:&nbsp;
+    <select id="filterColumn" onchange="filterChanged();">
+        <option value="">View All</option>
+        <option value="RequestUser">User</option>
+        <option value="CreateDate">Date</option>
+        <option value="ControllerName">Page</option>
+        <option value="IP">IP</option>
+        <option value="ActionName">Action</option>
+    </select>
+    <input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+    <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />
+</div>*@
+
+@*<div id="confirmDlg" style="display:none">
+    <div class="form-group">
+        Do you want Ledgerpost?
+    </div>
+
+</div>*@
+<br />
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+

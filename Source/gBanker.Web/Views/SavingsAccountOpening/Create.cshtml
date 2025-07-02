@@ -1,0 +1,582 @@
+﻿@model gBanker.Web.ViewModels.SavingsAccountOpeningViewModel
+
+@{
+    ViewBag.Title = "SavingsAccountOpening Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var branch = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var member = Model == null ? null : Model.memberListItems;
+
+}
+<style type="text/css">
+    #tblAdd input[type=text], #tblAdd input[type=number], #tblAdd textarea {
+        width: 137px;
+        height: 30px;
+    }
+
+    #tblAdd td, #tblAdd th {
+        padding: 2px 2px !important;
+    }
+
+    #tblAdd th {
+        text-align: center;
+    }
+
+    #tblAdd tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    #tblAdd {
+        table-layout: fixed;
+        /*width:100px;*/
+    }
+
+        #tblAdd td:not(:first-child) {
+            overflow-x: auto;
+            overflow-y: auto;
+            white-space: nowrap;
+            max-width: 40px;
+        }
+
+        #tblAdd thead tr th:first-child,
+        #tblAdd tbody tr td:first-child {
+            width: 50px;
+        }
+
+        #tblAdd thead tr th:last-child,
+        #tblAdd tbody tr td:last-child {
+            width: 80px;
+        }
+
+    .dvpInline {
+        display: flex;
+        justify-content: center;
+    }
+
+    .dvInline {
+        display: inline;
+    }
+</style>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        ////
+        
+        $(".add-row").click(function () {
+            var status = 0;
+            
+            if ($("#txtNomineeName").val() && $("#txtNomRelation").val()
+                && $("#txtNomAlocation").val()
+                && $("#txtNomAlocation").val() > 0 && $("#txtNomAlocation").val() <= 100) {
+                var itemAddStatus = true;
+                var totalAlocation = 0;
+                $("#tblAdd tbody tr").each(function () {
+                    totalAlocation += parseInt($(this).closest('tr').find('td').eq(5).html());
+                });
+                totalAlocation += parseInt($("#txtNomAlocation").val());
+                if (totalAlocation > 100)
+                    itemAddStatus = false;
+                if (itemAddStatus) {
+                    var markup = "<tr><td style=\"text-align: center;\"><input type='checkbox' name='record'>" +
+                                    "</td><td style='text-align: center;'> " + $("#txtNomineeName").val() +
+                                    "</td><td style='text-align: center;'>" + $("#txtNoFatherName").val() +
+                                   "</td><td style='text-align: center;'>" + $("#txtNomRelation").val() +
+                                   "</td><td style='text-align: center;'>" + $("#txtNomAddress").val() +
+                                   "</td><td style='text-align: center;'>" + $("#txtNomAlocation").val() + "</td><td></td></tr>";
+                    $("#tblAdd tbody").append(markup);
+
+                    $("#txtNomineeName").val('');
+                    $("#txtNoFatherName").val('');
+                    $("#txtNomRelation").val('');
+                    $("#txtNomAddress").val('');
+                    $("#txtNomAlocation").val('');
+                }
+                else $.alert.open("Warning", "Alocation Check");
+            }
+            else $.alert.open("Warning", "Required Field Check");
+        });
+
+        // Find and remove selected table rows
+        $(".delete-row").click(function () {
+            $("#tblAdd tbody").find('input[name="record"]').each(function () {
+                if ($(this).is(":checked"))
+                    $(this).parents("tr").remove();
+            });
+            $("#chkAll").prop('checked', false);
+        });
+
+        $("#chkAll").click(function () {
+            var status = $(this).prop("checked")
+            $("input[type=checkbox][name=record]").each(function () {
+                $(this).prop('checked', status);
+            });
+        })
+        ////
+
+        $("#CenterID").change(function () {
+            $("#memberAutoComplete").val('');
+            $("#MemberID").val('');
+
+        });
+
+        ////////////////////////////////////
+        $("#ProductID").blur(function () {
+
+            var prodId = $("#ProductID").val();
+            var memId = $("#MemberID").val();
+            var cenID = $("#CenterID").val();
+            if (prodId > 0 && memId > 0 && cenID > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetRate", "SavingsAccountOpening")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { productid: prodId, memberId: memId, centerID: cenID },
+
+                    success: function (result) {
+                        $("#InterestRate").val(result.rate);
+                        $("#OpeningDate").val(result.jdate);
+                    },
+                    error: function (error) {
+                        alert('Invalid Rate');
+                    }
+                });
+            }
+        });
+        $("#ProductID").blur(function () {
+
+            var prodId = $("#ProductID").val();
+            var memId = $("#MemberID").val();
+            var cenID = $("#CenterID").val();
+            if (prodId > 0 && memId > 0 && cenID > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetRate", "SavingsAccountOpening")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { productid: prodId, memberId: memId, centerID: cenID },
+
+                    success: function (result) {
+                        $("#InterestRate").val(result.rate);
+                        $("#OpeningDate").val(result.jdate);
+                        $("#NoOfAccount").val(result.loanterm);
+                    },
+                    error: function (error) {
+                        alert('Invalid Rate');
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemberList", "SavingsAccountOpening", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    // alert(data.length);
+                    if (data.length == 1) {
+                        $("#memberAutoComplete").val(data[0].MemberName);
+                        $("#MemberID").val(data[0].MemberID);
+                    }
+                    else if (data.length == 0) {
+                        // alert("No member found.");
+                        $("#MemberID").val("");
+                    }
+                    else {
+                        //  alert("More than one member found with the given Member code.");
+                        $("#MemberID").val("");
+                    }
+
+                }
+            });
+        });
+        $("#EmployeeAutoComplete").blur(function () {
+            var member = $("#EmployeeAutoComplete").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetEmployeeList", "SavingsAccountOpening", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    // alert(data.length);
+                    if (data.length == 1) {
+                        $("#EmployeeAutoComplete").val(data[0].EmployeeName);
+                        $("#Ref_EmployeeID").val(data[0].EmployeeID);
+                    }
+                    else if (data.length == 0) {
+                        // alert("No member found.");
+                        $("#Ref_EmployeeID").val("");
+                    }
+                    else {
+                        //  alert("More than one member found with the given Member code.");
+                        $("#Ref_EmployeeID").val("");
+                    }
+
+                }
+            });
+        });
+
+        $("#EmployeeAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetEmployeeList", "SavingsAccountOpening", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.Ref_EmployeeID,
+                                label: item.EmployeeName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#EmployeeAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#EmployeeAutoComplete").val(ui.item.label);
+                $("#Ref_EmployeeID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#EmployeeAutoComplete").val(ui.item.label);
+                $("#Ref_EmployeeID").val(ui.item.value);
+                return false;
+            }
+        });
+
+
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "SavingsAccountOpening", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+        $(".only-numeric").bind("keypress", function (e) {
+
+            var keyCode = e.which ? e.which : e.keyCode
+            if (!(keyCode >= 48 && keyCode <= 57)) {
+                return false;
+            } else {
+
+                if (e.target.value <= 100)
+                    return true;
+                else
+                    return false;
+            }
+        });
+        $(".only-numeric").on("keyup", function (e) {
+            if (e.target.value > 100) e.target.value = "";
+
+        });
+
+        $("#btnSave").on("click", function () {
+            //  debugger;
+            //if ($("#ProductID").val() && $("#MemberID").val() && $("#InterestRate").val() && $("#Ref_EmployeeID").val()) {
+            if ($("#ProductID").val() && $("#MemberID").val() && $("#InterestRate").val() ) {
+                jsonObj = [];
+                if ($("#tblAdd tbody tr").length > 0) {
+                    $("#tblAdd tbody tr").each(function () {
+                        item = {}
+                        item["NomineeName"] = $(this).closest('tr').find('td').eq(1).html();
+                        item["NFatherName"] = $(this).closest('tr').find('td').eq(2).html();
+                        item["NRelationName"] = $(this).closest('tr').find('td').eq(3).html();
+                        item["NAddressName"] = $(this).closest('tr').find('td').eq(4).html();;
+                        item["NAlocation"] = $(this).closest('tr').find('td').eq(5).html();
+
+                        item["OfficeID"] = $("#OfficeID").val();
+                        item["MemberID"] = $("#MemberID").val();
+                        item["CenterID"] = $("#CenterID").val();
+                        item["ProductID"] = $("#ProductID").val();
+                        item["InterestRate"] = $("#InterestRate").val();
+                        item["SavingInstallment"] = $("#SavingInstallment").val();
+                        item["NoOfAccount"] = $("#NoOfAccount").val();
+                        item["Ref_EmployeeID"] = $("#Ref_EmployeeID").val();
+                        jsonObj.push(item);
+                    });
+                    /////////
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '/SavingsAccountOpening/SavingsAccountOpening',
+                        type: "POST",
+                        data: JSON.stringify({ obj: jsonObj }),
+                        dataType: 'json',
+                        async: true,
+                        success: function (data) {
+                            if (data.Result == "OK")
+                            {
+                                $.alert.open("Success", data.Message);
+                                $("#tblAdd tbody").find('input[name="record"]').each(function () {
+                                    $(this).parents("tr").remove();
+                                });
+                                $("#MemberID").val('')
+                                $("#memberAutoComplete").val('')
+                                $("#ProductID").val('')
+                                $("#InterestRate").val('')
+                                $("#SavingInstallment").val('')
+                                $("#NoOfAccount").val('')
+                                $("#Ref_EmployeeID").val('')
+                                $("#EmployeeAutoComplete").val('')
+                                totalAlocation = 0;
+                            }
+                            else if (data.Result == "Error")
+                                $.alert.open(data.Result, data.Message);
+                            else
+                                $.alert.open(data.Result, data.Message);
+                        },
+                        error: function (data) {
+                            $.alert.open("Error", data.message);
+                        }
+                    });
+                }
+                else
+                    $.alert.open("Warning", "Nominee Required");
+            }
+            else $.alert.open("Warning", "Required field check");
+        });
+    });
+
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#OpeningDate").val('');
+        gBankerDatePicker("OpeningDate");
+
+        $("#MaturedDate").val('');
+        gBankerDatePicker("MaturedDate");
+
+    });
+
+</script>
+
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Add SavingsAccount</h2>
+@using (Html.BeginForm("Create", "SavingsAccountOpening", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, branch, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NoOfAccount, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.NoOfAccount, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.NoOfAccount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InterestRate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.InterestRate, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.InterestRate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SavingInstallment, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.SavingInstallment, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.SavingInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group" style="display:none">
+                    @Html.LabelFor(model => model.OpeningDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.OpeningDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.OpeningDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group" style="display:none">
+                    @Html.LabelFor(model => model.MaturedDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MaturedDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.MaturedDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Ref_Employee", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("EmployeeAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.Ref_EmployeeID)
+                    @Html.TextBoxFor(model => model.Ref_EmployeeID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.Ref_EmployeeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" style="display:none">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <table id="tblAdd">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Nominee Name</th>
+                        <th>Father's Name</th>
+                        <th>Relation</th>
+                        <th>Address</th>
+                        <th>Alocation (%)</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" id="chkAll" /></th>
+                        <th><input type="text" id="txtNomineeName" /></th>
+                        <th><input type="text" id="txtNoFatherName"></th>
+                        <th><input type="text" id="txtNomRelation"></th>
+                        <th><textarea id="txtNomAddress" style="resize:none;height:30px"></textarea></th>
+                        <th><input type="number" id="txtNomAlocation" min="0" max="100" class="only-numeric" value="100"></th>
+                        <th>
+                            <div class="dvpInline">
+                                <div class="dvInline"><button type="button" class="add-row btn btn-info"><i class="fa fa-plus"></i></button></div>
+                                <div class="dvInline"><button type="button" class="delete-row btn btn-warning"><i class="fa fa-trash-o"></i></button></div>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7" style="text-align:right;">
+                            <button id="btnSave" type="button" class="btn btn-primary"><i class="fa fa-plus"></i>Save</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

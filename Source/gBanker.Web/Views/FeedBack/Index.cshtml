@@ -1,0 +1,800 @@
+﻿@{
+    ViewBag.Title = "Index";
+    ViewBag.Title = "";
+}
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+<link href="~/Content/RichTextEditor/editor.css" rel="stylesheet" />
+<script src="~/Content/RichTextEditor/editor.js"></script>
+
+@*<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<link href="~/Content/RichTextEditor/editor.css" rel="stylesheet" />
+<script src="~/Content/RichTextEditor/editor.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">*@
+
+
+
+
+<style>
+    .jtable > thead > tr {
+        height: 50px;
+    }
+</style>
+
+<h2>FeedBack</h2>
+ 
+ 
+
+<script>
+
+    function func()
+    {
+        alert("Hello");
+				
+        //var x = document.getElementsByClassName("Editor-editor")[0];
+        var value = "";
+        var x = document.getElementsByClassName("Editor-editor");
+        var i;
+        for (i = 0; i < x.length; i++) {
+            x[i].style.backgroundColor = "red";
+				  
+            // x[i].innerHTML = "red";
+            //alert(x[i].innerHTML);
+            value = value+ ' ' + x[i].innerHTML;
+				  
+        }
+				
+        alert(value);
+				
+    }
+
+
+    function GetCorrectionStatus() {
+        var CorrectionStatusId = $("#CorrectionStatusId");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetStatusType", "FeedBack", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                CorrectionStatusId.html('');
+              //  CorrectionStatusId.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    if(option.Selected)
+                    {
+
+                    }
+                    CorrectionStatusId.append($('<option></option>').val(option.Value).html(option.Text).select(option.Selected));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetNecessityId() {
+         var NecessityId = $("#NecessityId");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetNecessityType", "FeedBack", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                NecessityId.html('');
+                NecessityId.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    NecessityId.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetProblemTypeId() {
+        var ProblemTypeId = $("#ProblemTypeId");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProblemType", "FeedBack", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ProblemTypeId.html('');
+                ProblemTypeId.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ProblemTypeId.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetSolvedByList() {
+        var SolvedBy = $("#SolvedBy");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSolvedById", "FeedBack", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                SolvedBy.html('');
+                SolvedBy.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    SolvedBy.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    //Save Work Area
+    function SaveSetFeedBackInfo() {
+
+        var CorrectionStatusId = $('#CorrectionStatusId option:selected').val();
+        var ProblemDate = $("#ProblemDate").val();
+        var SolutionRequire = $("#SolutionRequire").val();
+        var Email = $("#Email").val();
+        var Mobile = $("#Mobile").val();
+        var NecessityId = $('#NecessityId option:selected').val();
+        var ProblemTypeId = $('#ProblemTypeId option:selected').val();
+
+
+        var value = "";
+        var x = document.getElementsByClassName("Editor-editor");
+        var i;
+        for (i = 0; i < x.length; i++) {
+            //x[i].style.backgroundColor = "red";
+				  
+            // x[i].innerHTML = "red";
+            //alert(x[i].innerHTML);
+            value = value+ ' ' + x[i].innerHTML;
+				  
+        }
+				
+        //alert(value);
+
+        var ProblemDetail =  value;  //$("#ProblemDetail").val();
+        var SolvedDetail = $("#SolvedDetail").val();
+        var SolvedBy = $('#SolvedBy option:selected').val();
+        var FeedBackId = $("#FeedbackId").val();
+
+       // alert(ProblemDetail);
+            $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SetFeedBackInfo", "FeedBack", "http")', //CreateWorkArea(string WorkAreaName)
+                data: {FeedBackId: FeedBackId, CorrectionStatusId: CorrectionStatusId, ProblemDate: ProblemDate, SolutionRequire: SolutionRequire, Email: Email, Mobile: Mobile, NecessityId: NecessityId, ProblemTypeId: ProblemTypeId, ProblemDetail: ProblemDetail, SolvedDetail: SolvedDetail, SolvedBy: SolvedBy},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Saved Successfully");
+                $("#CorrectionStatusId").val("");
+                $("#CorrectionStatusId").prop('selectedIndex', 0);
+                $("#ProblemDate").val("");
+                $("#SolutionRequire").val("");
+                $("#Email").val("");
+                $("#Mobile").val("");
+                $("#NecessityId").val("");
+                $("#NecessityId").prop('selectedIndex', 0);
+                $("#ProblemTypeId").val("");
+                $("#ProblemTypeId").prop('selectedIndex', 0);
+                $("#ProblemDetail").val("");
+                $("#SolvedDetail").val("");
+                $("#SolvedBy").val("");
+                $("#SolvedBy").prop('selectedIndex', 0);
+                reloadGrid();
+               // $('#gridRequisition').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Saved");
+                //$('#btnEntrySave').attr("disabled", false);
+                reloadGrid();
+               // $('#gridRequisition').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+
+            }
+
+        });
+
+    }// End of Function
+
+
+
+    function LoadFeedbackInfo(FeedbackId) {
+
+       // alert(FeedbackId);
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCorrectionList", "FeedBack", "http")',
+            data: {  CorrectionId: FeedbackId, jtStartIndex: 1, jtPageSize: 5, jtSorting: true, filterColumn: null, filterValue: null },
+            dataType: 'json',
+            async: true,
+            success: function (List_ViewModel) {
+                if (List_ViewModel != "") {
+
+                    $.each(List_ViewModel, function (index, option) {
+
+                        // adjust_ment = emp.Adjustment;  txtEmpName EmployeeRank OfficeName DepartmentName DesignationName OfficeDesignationName
+                        $("#ProblemDate").val(option.ProblemDate);
+                        $("#ProblemDate").prop("disabled", true);
+                        $("#SolutionRequire").val("SolutionRequire");
+                        $("#SolutionRequire").prop("disabled", true);
+                        $("#Email").val( option.Email );
+                        $("#Email").prop("disabled", true);
+                        $("#Mobile").val(option.Mobile);
+                        $("#Mobile").prop("disabled", true);
+                        $("#CorrectionStatusId option[value='" + option.CorrectionStatusId + "']").prop('selected', 'selected');
+                        $("#NecessityId option[value='" + option.NecessityId + "']").prop('selected', 'selected');
+                        $("#NecessityId").prop("disabled", true);
+                        $("#ProblemTypeId option[value='" + option.ProblemTypeId + "']").prop('selected', 'selected');
+                        $("#ProblemTypeId").prop("disabled", true);
+
+                        
+                          
+                         var x = document.getElementsByClassName("Editor-editor");
+                         var i;
+                         for (i = 0; i < x.length; i++) {
+                             //x[i].style.backgroundColor = "red";
+				  
+                             // x[i].innerHTML = "red";
+                             //alert(x[i].innerHTML);
+                             x[i].innerHTML = option.ProblemDetail;
+				  
+                         }
+
+                        
+
+                         $('#ProblemDetail').html(option.ProblemDetail);
+                         $('#SolvedDetail').html( option.SolvedDetail);
+
+                         
+
+                    });
+                }
+                else {
+                    $.alert.open('alert', 'Invalid code');
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+
+                // Clean Fields
+
+                $("#ProblemDate").val("");
+                $("#SolutionRequire").val("");
+                $("#Email").val("");
+                $("#Mobile").val("");
+                $("#NecessityId").val("");
+                $("#NecessityId").prop('selectedIndex', 0);
+                $("#ProblemTypeId").val("");
+                $("#ProblemTypeId").prop('selectedIndex', 0);
+                $("#ProblemDetail").val("");
+                $("#SolvedDetail").val("");
+                $("#SolvedBy").val("");
+                $("#SolvedBy").prop('selectedIndex', 0);
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+
+      $("#txtEditor").Editor();
+
+
+        GetSolvedByList();
+        
+        // TEST
+
+
+        //var content = tinymce.get("texteditor").getContent();
+        //$("#data-container").html(content);
+        //$('#title').html("someText");
+
+        //$('#ProblemDetail').html("FRED");
+        //$('#SolvedDetail').html();
+
+        var v = $("li").find("p").html()
+
+        //tinyMCE.init({
+        //    // General options
+        //    mode : "specific_textareas",
+        //    theme : "advanced",
+        //    width: "100%",
+        //    plugins : "pagebreak,paste,fullscreen,visualchars",
+
+        //    // Theme options
+        //    theme_advanced_buttons1 : "code,|,bold,italic,underline,|,sub,sup,|,charmap,|,fullscreen,|,bullist,numlist,|,pasteword",
+        //    theme_advanced_buttons2 :"",
+        //    theme_advanced_buttons3 :"",
+        //    theme_advanced_buttons4 :"",
+        //    theme_advanced_toolbar_location : "top",
+        //    theme_advanced_toolbar_align : "left",
+        //    theme_advanced_statusbar_location : "bottom",
+        //    valid_elements : "i,sub,sup",
+        //    invalid_elements : "p, script",
+        //    editor_deselector : "mceOthers"
+        //});
+
+
+
+
+
+        GetCorrectionStatus();
+
+        var SolutionRequire = @Html.Raw(Json.Encode(ViewData["LoginOfficeName"]));
+        GetProblemTypeId();
+        var Email = @Html.Raw(Json.Encode(ViewData["OfficeEmail"]));
+
+        var OfficeMobile = @Html.Raw(Json.Encode(ViewData["OfficeMobile"]));
+        var employee = @Html.Raw(Json.Encode(ViewData["LoginEmployeeName"]));
+
+        var SameUser = @Html.Raw(Json.Encode(ViewData["SameUser"]));
+
+        $("#SolutionRequire").val(SolutionRequire);
+        $("#Email").val(Email);
+        $("#Mobile").val(OfficeMobile);
+        $("#User").val(employee);
+        $("#SolvedBy").val(employee);
+
+
+        $('#gridNote').jtable({
+            //title: 'Member List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'FeedBackId ASC',
+            actions: {
+                //deleteAction: '/Member/Delete',
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FeedBack/GetNoteList?NoteId=' + 0 + '&jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+
+            fields: {
+                rowSl: {
+                    title: 'SI No',
+                    width: '10%'
+                },
+                NoteId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                User: {
+                    title: 'User',
+                    width: '10%'
+                },
+                Comment: {
+                    title: 'Comment',
+                    width: '20%'
+                },
+                Date: {
+                    title: 'Date',
+                    width: '10%'
+                },
+
+            }
+        });
+
+        reloadGrid();
+
+
+
+        var FeedbackId =  @Html.Raw(Json.Encode(ViewData["FeedbackId"]));
+        GetNecessityId();
+        if (FeedbackId > 0) {
+            LoadFeedbackInfo(FeedbackId);
+
+            $("#FeedbackId").val(FeedbackId);
+            $('#gridNote').jtable('load', { FeedbackId: $('#FeedbackId').val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+            // $('#gridNote').jtable('load', {FeedbackId : FeedbackId} );
+            if(SameUser == true)
+            {
+                $("#SolutionDV").hide();
+                $("#solvedByDV").hide();
+                $("#btnEntrySave").hide();
+
+            }
+            else
+            {
+                $("#SolutionDV").show();
+                $("#solvedByDV").show();
+                $("#btnEntrySave").show();
+
+            }
+            $("#SolutionDV").show();
+            $("#solvedByDV").show();
+            $("#AddNote").show();
+
+
+        }
+        else
+        {
+            $("#FeedbackId").val(0);
+
+            $("#SolutionDV").hide();
+            $("#solvedByDV").hide();
+            $("#AddNote").hide();
+
+            $("#CorrectionStatusId").prop('selectedIndex', 1);
+
+            $("#CorrectionStatusId option[value='" + 1 + "']").prop('selected', 'selected');
+
+            $("#CorrectionStatusId").prop("disabled", true);
+        }
+
+
+        $("#btnEntrySave").click(function () {
+            //$("#btnEntrySave").attr("disabled", true);
+            SaveSetFeedBackInfo();
+        });// end of click event
+
+        $("#CorrectionStatusId").change(function () {
+            var v = $('#CorrectionStatusId option:selected').val();
+        });
+
+        $("#NecessityId").change(function () {
+            var v = $('#NecessityId option:selected').val();
+        });
+
+        $("#ProblemTypeId").change(function () {
+            var v = $('#ProblemTypeId option:selected').val();
+        }); //end of change event
+
+        function popupNoteDiv() {
+            $('html, body').animate({ scrollTop: $('#NoteDiv').offset().top }, 'slow');
+            $("#NoteDiv").dialog({
+                autoOpen: false,
+                height: 400,
+                width: 600,
+                modal: true,
+                buttons: {
+                    //"Save": function () {
+                    //    SaveUpdateProgram();
+                    //},
+                    "Close": function () {
+                        //alert("No Office selected. Employee office will be used.");
+                        // window.location.href = "Member/Create";
+
+                        $(this).dialog("close");
+                    }
+                }
+            });
+
+            var showPopup = "True";
+            if (showPopup == "True") {
+                $("#NoteDiv").dialog('open');
+            }
+
+        }//End of Show Popup
+
+        $("#AddNote").click(function (e) {
+            popupNoteDiv();
+        });
+
+
+
+
+        $("#btnNoteSave").click(function (e) {
+
+            var Comments = $("#Comments").val();
+            var Date = $("#Date").val();
+           // var ddlProduct = $('option:selected', $('#ddlProduct')).val();
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("Create_NEW_NOTE", "FeedBack", "http")', //SP::: SMS_CreateUpdateMessage
+                data: {
+                    FeedBackId:  $("#FeedbackId").val(), Comment: Comments
+                },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    //alert(data);
+                    reloadGrid();
+                },
+                error: function (request, status, error) {
+                    reloadGrid();
+                }
+
+            });
+
+
+        });
+
+        $("#Date").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+
+         });
+        $("#Date").datepicker(
+       'setDate', new Date());
+
+
+        $("#ProblemDate").datepicker(
+         {
+             dateFormat: "dd-M-yy"
+         });
+
+        $("#ProblemDate").datepicker(
+       'setDate', new Date());
+
+
+
+
+    })//end of document
+    function reloadGrid() {
+
+        $("#loading").show();
+        $('#gridNote').jtable('load', { FeedbackId: $('#FeedbackId').val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+        $("#loading").hide();
+    }
+
+
+
+</script>
+<hr />
+@Html.ActionLink("Back to List", "List", null, new { @class = "pull-right" })
+
+<input type="hidden" id="FeedbackId" value="0" />
+ 
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">অবস্থা</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "CorrectionStatusId", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">সমাধানপ্রার্থী</label>
+            <div class="col-sm-8">
+                <input type="text" id="SolutionRequire" readonly="readonly" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">সমস্যার তারিখ</label>
+            <div class="col-sm-8">
+                <input type="text" id="ProblemDate" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">ই-মেইল</label>
+            <div class="col-sm-8">
+                <input type="text" id="Email" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">মোবাইল</label>
+            <div class="col-sm-8">
+                <input type="number" id="Mobile" onkeydown="return event.keyCode !== 69" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">প্রয়োজনীয়তা</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "NecessityId", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">সমস্যার ধরন</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "ProblemTypeId", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-10">
+        <div class="form-group">
+            <label class="control-label col-sm-4">বিস্তারিত</label>
+            <div class="col-md-12">
+                <textarea id="txtEditor"></textarea> 
+                 
+                <textarea name="ProblemDetail" id="ProblemDetail" style="display:none;"></textarea>
+
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row" id="SolutionDV" style="display:none;">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">সমস্যার সমাধান</label>
+            <div class="col-sm-8">
+                <textarea name="SolvedDetail" id="SolvedDetail" rows="10" cols="112"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div class="row">
+    <textarea style="width: 95%;" name="title" id="title"></textarea>
+</div>*@
+
+<br />
+<div class="row" id="solvedByDV" style="display:none;">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">সমাধানকারী</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "SolvedBy", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <input type="button" value="Save" id="btnEntrySave" class="btn btn-primary" />
+    &nbsp;
+    <input type="button" value="Note" id="AddNote" class="btn btn-success" />
+</div>
+
+
+@*<div class="row">
+    <div class="col-sm-12">
+        <div class="form-group">
+            <div class="form-group form-action" style="padding:10px;margin:5px;">
+                &nbsp;
+                <input type="button" value="Note" id="AddNote" class="btn btn-success" />
+                &nbsp;
+            </div>
+        </div>
+    </div>
+</div>*@
+<hr />
+<div class="row">
+    <div id="gridNote">
+    </div>
+</div>
+
+<!-- Popup Note -->
+<div id="NoteDiv" title="Add Note" style="display:none">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label col-md-3">User</label>
+                    <div class="col-md-6">
+                        <input type="text" id="User" readonly="readonly" class="form-control" />
+                    </div>
+                    </div>
+                <div class="col-sm-6">
+                    <label class="control-label col-sm-3">Date</label>
+                    <div class="col-sm-6">
+                        <input type="text" id="Date" readonly="readonly" class="form-control" />
+                    </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+    <br />
+    @*<div class="row">
+        <div class="col-sm-8">
+            <div class="form-group">
+                <label class="control-label col-sm-3">Date</label>
+                <div class="col-sm-8">
+                    <input type="text" id="Date" readonly="readonly" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />*@
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-2">Comments</label>
+                <div class="col-sm-8">
+                    <textarea id="Comments" rows="8" cols="50" placeholder="Any Comment"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <label id="lblCount" class="control-label col-md-8">  </label>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Save" id="btnNoteSave" class="btn btn-success" />
+                    &nbsp;
+                    <input type="button" value="Reset" id="btnNoteReset" class="btn btn-facebook" />
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-sm-8">
+            &nbsp;
+        </div>
+    </div>
+</div>
+<!-- End Of Note Div -->
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,72 @@
+﻿
+@model gBanker.Models.ViewModels.Common.OfficeViewModel
+
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-horizontal content-padding">
+        <div>
+            <div class="row">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeLevelID, new { @class = "control-label required col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.OfficeLevelID, new List<SelectListItem>(), new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.OfficeLevelID)
+                    </div>                    
+                </div>
+            </div>
+
+            <div class="row" id="HeadOfficeDiv">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.HeadOfficeID, new { @class = "control-label required col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.HeadOfficeID, new List<SelectListItem>(), new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.HeadOfficeID)
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="ZoneOfficeDiv">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ZoneOfficeID, new { @class = "control-label required col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.ZoneOfficeID, new List<SelectListItem>(), new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ZoneOfficeID)
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="AreaOfficeDiv">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AreaOfficeID, new { @class = "control-label required col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.AreaOfficeID, new List<SelectListItem>(), new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.AreaOfficeID)
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row" id="ParentOfficeDiv">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ParentOfficeID, new { @id= "lblParentOffice", @class = "control-label required col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.ParentOfficeID, new List<SelectListItem>(), new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ParentOfficeID)
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="ParentCodeDiv">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ParentCode, new { @class = "control-label required col-md-2" })
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.ParentCode, new { htmlAttributes = new { @class = "form-control", @readonly="readonly" } })
+                        @Html.ValidationMessageFor(model => model.ParentCode, "", new { @class = "text-danger" })
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

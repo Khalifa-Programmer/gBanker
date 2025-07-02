@@ -1,0 +1,540 @@
+﻿@model gBanker.Web.ViewModels.CenterViewModel
+
+@{
+    ViewBag.Title = "Samity Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var offc = Model == null ? null : Model.OfficeList;
+    var geo = Model == null ? null : Model.GeoLocationList;
+    var CenterCategory = Model == null ? null : Model.CenterCategoryList;
+    var emp = Model == null ? null : Model.EmployeeList;
+    var day = Model == null ? null : Model.CollectionDayList;
+    var status = Model == null ? null : Model.CenterStatusList;
+    var org = Model == null ? null : Model.OrganizerList;
+    var colltype = Model == null ? null : Model.CenterCollectionType;
+    var centertype = Model == null ? null : Model.CenterTypeList;
+
+    var country = Model == null ? null : Model.CountryList;
+    var div = Model == null ? null : Model.DivisionList;
+    var dist = Model == null ? null : Model.DistrictList;
+    var upo = Model == null ? null : Model.UpozillaList;
+    var uni = Model == null ? null : Model.UnionList;
+    var vill = Model == null ? null : Model.VillageList;
+
+}
+<script src="~/Scripts/wickedpicker.js"></script>
+<link href="~/Content/wickedpicker.css" rel="stylesheet" />
+
+<script type="text/javascript">
+    function LoadCenterByOfficeId(office_id) {
+        var ddlCenters = $("#CenterID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "Member", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenters.html('');
+                $.each(data, function (id, option) {
+                    ddlCenters.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+  function centerType() {
+
+      var centerType = $("#CenterTypeID option:selected").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLastCenterCode", "Center")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { centerType: centerType},
+
+            success: function (result) {
+                $("#CenterCode").val(result.centerCode);
+               // $("#CenterTypeID").val(result.CenterTypeID);
+            },
+            error: function (error) {
+                alert('error');
+            }
+        });
+    }
+
+
+     function LoadDivisionByCountry(country_id) {
+        var ddlDivision = $("#DivisionCode");
+        var ddlDivisionPer = $("#PerDivisionCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDivisionList", "Member", "http")',
+            data: { country_id: country_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlDivision.html('');
+                ddlDivisionPer.html('');
+                $.each(data, function (id, option) {
+                    ddlDivision.append($('<option></option>').val(option.Value).html(option.Text));
+                    ddlDivisionPer.append($('<option></option>').val(option.Value).html(option.Text));
+
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadDistrictByDivision(div_id) {
+        var ddlDistrict = $("#DistrictCode");
+       // var ddlDistrictPer = $("#PerDistrictCode");
+        var ddlPlaceOfBirth = $("#PlaceOfBirth");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Member", "http")',
+            data: { div_id: div_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlDistrict.html('');
+                //ddlDistrictPer.html('');
+                ddlPlaceOfBirth.html('');
+                $.each(data, function (id, option) {
+                    ddlDistrict.append($('<option></option>').val(option.Value).html(option.Text));
+                    //ddlDistrictPer.append($('<option></option>').val(option.Value).html(option.Text));
+                    ddlPlaceOfBirth.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadUpozillaByDistrict(dis_id) {
+        var ddlUpozilla = $("#UpozillaCode");
+        //var ddlUpozillaPer = $("#PerUpozillaCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUpozillaList", "Member", "http")',
+            data: { dis_id: dis_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlUpozilla.html('');
+                //ddlUpozillaPer.html('');
+                $.each(data, function (id, option) {
+                    ddlUpozilla.append($('<option></option>').val(option.Value).html(option.Text));
+                    //ddlUpozillaPer.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadUnionByUpozilla(upo_id) {
+
+        var ddlUnion  = $("#UnionCode");
+       // var ddlUnionPer = $("#PerUnionCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUnionList", "Member", "http")',
+            data: { upo_id: upo_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlUnion.html('');
+               // ddlUnionPer.html('');
+                $.each(data, function (id, option) {
+                    ddlUnion.append($('<option></option>').val(option.Value).html(option.Text));
+                   // ddlUnionPer.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadVillageByUnion(uni_id) {
+        var ddlVillage = $("#VillageCode");
+
+        //var ddlVillagePer = $("#PerVillageCode");
+
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetVillageList", "Member", "http")',
+            data: { uni_id: uni_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlVillage.html('');
+               // ddlVillagePer.html('');
+                $.each(data, function (id, option) {
+                    ddlVillage.append($('<option></option>').val(option.Value).html(option.Text));
+                   // ddlVillagePer.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+    $(document).ready(function () {
+
+        LoadDivisionByCountry(18);
+
+        $("#CountryID").change(function () {
+            var country_id = $("#CountryID").val();
+            if (country_id > 0) {
+                LoadDivisionByCountry(country_id);
+            }
+        });
+
+        $("#DivisionCode").change(function () {
+            var div_id = $("#DivisionCode").val();
+            if (div_id > 0) {
+                LoadDistrictByDivision(div_id);
+                $('#hfDivisionCode').val(div_id);
+            }
+        });
+        $("#DistrictCode").change(function () {
+            var dis_id = $("#DistrictCode").val();
+            if (dis_id > 0) {
+                LoadUpozillaByDistrict(dis_id);
+                // $('#PerDistrictCode').val(dis_id);
+            }
+        });
+        $("#UpozillaCode").change(function () {
+            var upo_id = $("#UpozillaCode").val();
+            if (upo_id > 0) {
+                LoadUnionByUpozilla(upo_id);
+                // $("#PerUpozillaCode").val(upo_id);LoadDivisionByCountry
+            }
+        });
+        $("#UnionCode").change(function () {
+            var uni_id = $("#UnionCode").val();
+            if (uni_id > 0) {
+                LoadVillageByUnion(uni_id);
+
+            }
+        });
+        $("#VillageCode").change(function () {
+            var Vil_id = $("#VillageCode").val();
+            if (Vil_id > 0) {
+
+            }
+        });
+
+
+
+
+
+        //Timepicker
+        var options = {// now: "12:35", //hh:mm 24 hour format only, defaults to current time
+            twentyFour: true, //Display 24 hour format, defaults to false
+            upArrow: 'wickedpicker__controls__control-up', //The up arrow class selector to use, for custom CSS
+            downArrow: 'wickedpicker__controls__control-down', //The down arrow class selector to use, for custom CSS
+            close: 'wickedpicker__close', //The close class selector to use, for custom CSS
+            hoverState: 'hover-state', //The hover state class to use, for custom CSS
+            title: 'Timepicker', //The Wickedpicker's title,
+            showSeconds: false, //Whether or not to show seconds,
+            secondsInterval: 1, //Change interval for seconds, defaults to 1  ,
+            minutesInterval: 1, //Change interval for minutes, defaults to 1
+            beforeShow: null, //A function to be called before the Wickedpicker is shown
+            show: null, //A function to be called when the Wickedpicker is shown
+            clearable: false, //Make the picker's input clearable (has clickable "x")
+        };
+
+        $("#CenterTime").wickedpicker(options);
+        $("#Edit-CenterTimeOnly").wickedpicker(options);
+        $("input[name='CenterTimeOnly']").wickedpicker(options);
+
+        $("#CollectionDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+            });
+        $("#OperationStartDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+            });
+        $("#CenterTypeID").change(function () {
+            centerType()
+        });
+
+        //$("#InActiveDate").datepicker(
+        //    {
+        //        dateFormat: "dd-M-yy",
+        //        showAnim: "scale",
+        //    });
+        $("#CollectionDate").val('');
+        $("#OperationStartDate").val('');
+        //$("InActiveDate").val('');
+        //$("#OfficeID").change(function () {
+        //    var office_id = $("#OfficeID").val();
+        //    LoadCenterByOfficeId(office_id);
+        //    LoadGroupByOfficeId(office_id);
+        //});
+
+    });
+    function callback(centerCode) {
+        $("#CenterCode").val(centerCode);
+    }
+    function SetProductid(value) {
+        var ddlValue = $("#CenterTypeID option:selected").val();
+        $("#CenterTypeID").val(ddlValue);
+    }
+
+</script>
+
+@Html.ActionLink("Back to List", "AdminIndex", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Samity Create</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterTypeID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.CenterTypeID, centertype, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.CenterTypeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterCategoryID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.CenterCategoryID, CenterCategory, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.CenterCategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterCode, htmlAttributes: new { @class = "control-label", @readonly = true })
+                    @Html.HiddenFor(model => model.OfficeID)
+                    @Html.EditorFor(model => model.CenterCode, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.CenterCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Organizer, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.Organizer, org, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.Organizer, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.CenterName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.CenterName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterNameBng, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterNameBng, colltype, new { @class = "form-control" })
+                    @*@Html.EditorFor(model => model.CenterNameBng, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.ValidationMessageFor(model => model.CenterNameBng, "", new { @class = "text-danger" })
+                </div>
+            </div>
+           
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GeoLocationID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.GeoLocationID, geo, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.GeoLocationID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.EmployeeId, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.EmployeeId, emp, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.EmployeeId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CollectionDay, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.CollectionDay, day, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.CollectionDay, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CollectionDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.CollectionDate, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.CollectionDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OperationStartDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.OperationStartDate, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.OperationStartDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterTime, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.CenterTime, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.CenterTime, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <fieldset>
+            <legend> Address </legend>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CountryID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                        @Html.DropDownListFor(model => model.CountryID, country, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CountryID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DivisionCode, htmlAttributes: new { @class = "control-label" })
+                        @Html.DropDownListFor(model => model.DivisionCode, div, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.DivisionCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DistrictCode, htmlAttributes: new { @class = "control-label" })
+                        @Html.DropDownListFor(model => model.DistrictCode, dist, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.DistrictCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.UpozillaCode, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                        @Html.DropDownListFor(model => model.UpozillaCode, upo, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.UpozillaCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.UnionCode, htmlAttributes: new { @class = "control-label" })
+                        @Html.DropDownListFor(model => model.UnionCode, uni, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.UnionCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <lable class="control-label">Village / Street</lable>
+                        @Html.DropDownListFor(model => model.VillageCode, vill, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.VillageCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ZipCode, htmlAttributes: new { @class = "control-label" })
+                        @Html.EditorFor(model => model.ZipCode, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.ZipCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CenterAddress, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.EditorFor(model => model.CenterAddress, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.CenterAddress, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-8" style="display:none;">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                        @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control", @placeholder = "House/Holding No, Road No, Village Name, Post office etc.", @autocomplete = "off" } })
+                        @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+
+        </fieldset>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

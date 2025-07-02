@@ -1,0 +1,253 @@
+﻿@{
+    ViewBag.Title = "Dispose";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<script type="text/javascript">
+    GetRequsitionNo();
+    function GetRequsitionNo() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '/Common/NoGenerate?prefix=SD',
+            type: "Get",
+            dataType: 'json',
+            success: function (data) {
+                if (data.status == 1)
+                    $("#lblRequsition").val(data.Result);
+                else
+                    location.reload(true);
+            },
+            error: function (data) {
+                $.alert.open("Error", data.message);
+            }
+        });
+    }
+    $(document).ready(function () {
+        var data = GenerateAjaxRequist('/Common/GetAllCategory', null, "POST")
+        $("#Category").html("");
+        $("#Category").append("<option value=''>Select Catagory</option>")
+        for (var i = 0; i < data.Records.length; i++) {
+            $("#Category").append('<option value=' + data.Records[i].CategorySubCategoryID + '>' +
+                data.Records[i].CategorySubCategoryName + '</option>')
+        }
+        $("#Category").change(function () {
+            ////////// Item
+            $("#ddlItem").html("");
+
+            $("#ddlItem").append("<option value=''>Select Item</option>");
+            if ($(this).val()) {
+                var data = GenerateAjaxRequist('/Store/GetWarehouseItemsXCategory?categoryID=' + $(this).val() + '', null, "GET")
+                for (var i = 0; i < data.Records.length; i++) {
+                    $("#ddlItem").append("<option value='" + data.Records[i].ItemID + "'>" + data.Records[i].ItemName + "</option>")
+                }
+            }
+
+            ////////// Item
+        })
+
+        NumericTextboxOnly("#txtQty");
+        $("#txtDate").datepicker(
+      {
+          dateFormat: "dd-M-yy",
+          showAnim: "scale"
+      });
+        //$("#txtDate").val($.datepicker.formatDatze('dd-M-yy', new Date()))
+        $("#txtDate").val('@ViewBag.TransactionDate')
+        //var data = GenerateAjaxRequist('/Store/GetWarehouseItems', null, "Get")
+        //var _optionFirstText = '<option value="">Please Select</option>';
+        //$("#ddlItem").html('').trigger('chosen:updated');
+        //if (data.Records.length > 0) {
+        //    $.each(data.Records, function (i, v) {
+        //        _optionFirstText = _optionFirstText + '<option value="' + v.ItemID + '">' + v.ItemCode + ' ' + v.ItemName + '</option>';
+        //    });
+        //    $("#ddlItem").html(_optionFirstText).trigger('chosen:updated');
+        //} else {
+        //    $("#ddlItem").html('').trigger('chosen:updated');
+        //}
+
+        $("#ddlItem").change(function () {
+            $('#grid').jtable({
+                paging: false,
+                sorting: false,
+                defaultSorting: 'ID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+                            //debugger
+                            console.log($dfd)
+                            data = GenerateAjaxRequist('/Store/GetItemwiseStore', { itemID: ($("#ddlItem").val() ? $("#ddlItem").val() : 0) }, "Get")
+                            if (data.Records.length > 0) {
+                                $("#btnSubmit").show();
+                            }
+                            else
+                                $("#btnSubmit").hide();
+                            $dfd.resolve(data);
+
+                        });
+                    },
+                },
+                fields: {
+                    ID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    ItemCode: {
+                        title: 'Item Code',
+                        width: '10%'
+
+                    },
+                    ItemName: {
+                        title: 'ItemName',
+                        width: '10%'
+                    },
+
+                    StockBalance: {
+                        title: 'Qty.',
+                        width: '20%'
+                    },
+                    UnitPrice: {
+                        title: 'UnitPrice',
+                        width: '25%'
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        });
+
+        $("#btnSubmit").click(function (e) {
+            e.preventDefault();
+            $("#ifrReport").attr('src', '')
+            $("#ifrVoucherReport").attr('src', '')
+            var stock = 0;
+            $('#grid').find('table tbody tr').each(function () {
+                stock += parseInt($(this).find('td').eq(2).text() ? $(this).find('td').eq(2).text() : 0);
+            });
+            if ($("#txtDate").val()) {
+                if (stock > 0 && $("#txtQty").val() && $("#txtQty").val()>0) {
+                    var qty = parseInt($("#txtQty").val());
+                    if (stock > qty) {
+                        //debugger
+                        dataObject = {
+                            ItemID: $("#ddlItem").val(),
+                            Date: $("#txtDate").val(),
+                            Qty: $("#txtQty").val(),
+                            StoreNo: $("#lblRequsition").val()
+                        };
+
+                        data = GenerateAjaxRequist('/Store/ItemXDispose', JSON.stringify({ v: dataObject }), "POST");
+                        $.alert.open("Message", data.Message);
+                        if (data.Result == 1) {
+                            $("#ifrVoucherReport").attr('src', "http://" + window.location.host + "/InventoryReport/VoucherReport?masterID=" + data.VID + "");
+                            $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/ItemXStoreDetailsReport?masterID=" + data.VID + "&type=D")
+                            GetRequsitionNo()
+                            $("#txtQty").val('')
+                            $('#grid').jtable('load');
+                        }
+
+                    }
+                    else
+                        $.alert.open("Error", "Stock Balance Check");
+                }
+                else
+                    $.alert.open("Error", "Stock Balance & Dispose Quantity Check");
+            }
+            else
+                $.alert.open("Error", "Date is Required");
+
+        });
+    });
+</script>
+@if (ViewBag.OfficeLevel == 3)
+{
+    <h2> Your Office is not Authorized </h2>
+}
+else
+{
+    <h2 class="page-title">Item Dispose</h2>
+    <div class="form-horizontal">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label class="control-label">SL.No:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="lblRequsition" class="form-control" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label class="control-label">Date:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="txtDate" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label class="control-label">Category:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" id="Category"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label class="control-label">Item:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" id="ddlItem"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label class="control-label">Quantity:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="txtQty" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" id="btnSubmit" class="btn btn-danger" style="display:none;">Dispose</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="grid"></div>
+            </div>
+        </div>
+        <br />
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+                <iframe id="ifrReport" width="520" height="300" frameBorder="0"></iframe>
+            </div>
+            <div class="col-md-6" style="display:none">
+                <iframe id="ifrVoucherReport" width="520" height="300" frameBorder="0"></iframe>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}

@@ -1,0 +1,71 @@
+﻿
+@using gBanker.Web.Helpers
+
+@{
+    ViewBag.Title = "Overdue Borrower List (All) Main Product Wise";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">Overdue Borrower List (All) Main Product Wise</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.Hidden("HiddenForOrg", SessionHelper.LoginUserOrganizationID)
+    <div>
+        @if (SessionHelper.LoginUserOrganizationID == MFIConstants.Society_For_Social_Service_SSS)
+        {
+            <div class="row">
+                <div class="col-md-1">
+                    <input type="checkbox" id="chkProd" style="margin-left:50px; margin-top:30px;" />
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        @Html.Label("Product", new { @class = "control-label" })
+                        @Html.DropDownList("ProductList", null, new { @ID = "ddlProd", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-1">
+                    <input type="checkbox" id="chkDueType" style="margin-left:50px; margin-top:30px;" />
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        @Html.Label("Due Type", new { @class = "control-label" })
+                        @Html.DropDownList("DueType", null, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col-md-1">
+
+            </div>
+            <div class="col-md-5">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-1">
+
+            </div>
+            <div class="col-md-5">
+                <div class="form-group from-action">
+                    <button type="button" class="btn btn-primary" id="btnView"><i class="fa fa-list"></i> View </button>
+                    <button type="button" id="btnExport" class="btn btn-success"> <i class="fa fa-file-excel-o"></i> Export </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    <script src="~/Assets/js/overdue-members-con/overdueMemberConManager.js"></script>
+}
+

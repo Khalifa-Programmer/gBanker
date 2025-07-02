@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ProductInfo" targetNamespace="http://tempuri.org/ProductInfo.xsd" xmlns:mstns="http://tempuri.org/ProductInfo.xsd" xmlns="http://tempuri.org/ProductInfo.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections>
+          <Connection AppSettingsObjectName="Web.config" AppSettingsPropertyName="gBankerConnectionString" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="gBankerConnectionString (Web.config)" ParameterPrefix="@" PropertyReference="AppConfig.System.Configuration.ConfigurationManager.0.ConnectionStrings.gBankerConnectionString.ConnectionString" Provider="System.Data.SqlClient" />
+        </Connections>
+        <Tables>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="DataTable1TableAdapter" GeneratorDataComponentClassName="DataTable1TableAdapter" Name="DataTable1" UserDataComponentName="DataTable1TableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="gBankerConnectionString (Web.config)" DbObjectType="Unknown" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="true">
+                    <CommandText>select p.ProductID, p.ProductCode, p.ProductName, p.ProductFullNameEng, p.ProductShortNameBng, p.ProductFullNameBng,
+ p.InvestorID,i.InvestorCode,
+ p.InterestRate, p.Duration, p.MainProductCode, p.LoanInstallment, p.InterestInstallment, p.SavingsInstallment, p.MinLimit, 
+ p.MaxLimit, p.InterestCalculationMethod, p.PaymentFrequency, p.InsuranceItemCode, p.InsuranceItemRate
+
+
+ from Product
+p inner join Investor i on p.InvestorID=i.InvestorID
+ where p.IsActive=1</CommandText>
+                    <Parameters />
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+            <Mappings>
+              <Mapping SourceColumn="ProductID" DataSetColumn="ProductID" />
+              <Mapping SourceColumn="ProductCode" DataSetColumn="ProductCode" />
+              <Mapping SourceColumn="ProductName" DataSetColumn="ProductName" />
+              <Mapping SourceColumn="ProductFullNameEng" DataSetColumn="ProductFullNameEng" />
+              <Mapping SourceColumn="ProductShortNameBng" DataSetColumn="ProductShortNameBng" />
+              <Mapping SourceColumn="ProductFullNameBng" DataSetColumn="ProductFullNameBng" />
+              <Mapping SourceColumn="InvestorID" DataSetColumn="InvestorID" />
+              <Mapping SourceColumn="InvestorCode" DataSetColumn="InvestorCode" />
+              <Mapping SourceColumn="InterestRate" DataSetColumn="InterestRate" />
+              <Mapping SourceColumn="Duration" DataSetColumn="Duration" />
+              <Mapping SourceColumn="MainProductCode" DataSetColumn="MainProductCode" />
+              <Mapping SourceColumn="LoanInstallment" DataSetColumn="LoanInstallment" />
+              <Mapping SourceColumn="InterestInstallment" DataSetColumn="InterestInstallment" />
+              <Mapping SourceColumn="SavingsInstallment" DataSetColumn="SavingsInstallment" />
+              <Mapping SourceColumn="MinLimit" DataSetColumn="MinLimit" />
+              <Mapping SourceColumn="MaxLimit" DataSetColumn="MaxLimit" />
+              <Mapping SourceColumn="InterestCalculationMethod" DataSetColumn="InterestCalculationMethod" />
+              <Mapping SourceColumn="PaymentFrequency" DataSetColumn="PaymentFrequency" />
+              <Mapping SourceColumn="InsuranceItemCode" DataSetColumn="InsuranceItemCode" />
+              <Mapping SourceColumn="InsuranceItemRate" DataSetColumn="InsuranceItemRate" />
+            </Mappings>
+            <Sources />
+          </TableAdapter>
+        </Tables>
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ProductInfo" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="ProductInfo" msprop:Generator_UserDSName="ProductInfo">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="DataTable1" msprop:Generator_TableClassName="DataTable1DataTable" msprop:Generator_TableVarName="tableDataTable1" msprop:Generator_TablePropName="DataTable1" msprop:Generator_RowDeletingName="DataTable1RowDeleting" msprop:Generator_RowChangingName="DataTable1RowChanging" msprop:Generator_RowEvHandlerName="DataTable1RowChangeEventHandler" msprop:Generator_RowDeletedName="DataTable1RowDeleted" msprop:Generator_UserTableName="DataTable1" msprop:Generator_RowChangedName="DataTable1RowChanged" msprop:Generator_RowEvArgName="DataTable1RowChangeEvent" msprop:Generator_RowClassName="DataTable1Row">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ProductID" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columnProductID" msprop:Generator_ColumnPropNameInRow="ProductID" msprop:Generator_ColumnPropNameInTable="ProductIDColumn" msprop:Generator_UserColumnName="ProductID" type="xs:short" />
+              <xs:element name="ProductCode" msprop:Generator_ColumnVarNameInTable="columnProductCode" msprop:Generator_ColumnPropNameInRow="ProductCode" msprop:Generator_ColumnPropNameInTable="ProductCodeColumn" msprop:Generator_UserColumnName="ProductCode">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="10" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ProductName" msprop:Generator_ColumnVarNameInTable="columnProductName" msprop:Generator_ColumnPropNameInRow="ProductName" msprop:Generator_ColumnPropNameInTable="ProductNameColumn" msprop:Generator_UserColumnName="ProductName">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ProductFullNameEng" msprop:Generator_ColumnVarNameInTable="columnProductFullNameEng" msprop:Generator_ColumnPropNameInRow="ProductFullNameEng" msprop:Generator_ColumnPropNameInTable="ProductFullNameEngColumn" msprop:Generator_UserColumnName="ProductFullNameEng" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ProductShortNameBng" msprop:Generator_ColumnVarNameInTable="columnProductShortNameBng" msprop:Generator_ColumnPropNameInRow="ProductShortNameBng" msprop:Generator_ColumnPropNameInTable="ProductShortNameBngColumn" msprop:Generator_UserColumnName="ProductShortNameBng" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="10" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ProductFullNameBng" msprop:Generator_ColumnVarNameInTable="columnProductFullNameBng" msprop:Generator_ColumnPropNameInRow="ProductFullNameBng" msprop:Generator_ColumnPropNameInTable="ProductFullNameBngColumn" msprop:Generator_UserColumnName="ProductFullNameBng" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="InvestorID" msprop:Generator_ColumnVarNameInTable="columnInvestorID" msprop:Generator_ColumnPropNameInRow="InvestorID" msprop:Generator_ColumnPropNameInTable="InvestorIDColumn" msprop:Generator_UserColumnName="InvestorID" type="xs:int" minOccurs="0" />
+              <xs:element name="InvestorCode" msprop:Generator_ColumnVarNameInTable="columnInvestorCode" msprop:Generator_ColumnPropNameInRow="InvestorCode" msprop:Generator_ColumnPropNameInTable="InvestorCodeColumn" msprop:Generator_UserColumnName="InvestorCode">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="5" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="InterestRate" msprop:Generator_ColumnVarNameInTable="columnInterestRate" msprop:Generator_ColumnPropNameInRow="InterestRate" msprop:Generator_ColumnPropNameInTable="InterestRateColumn" msprop:Generator_UserColumnName="InterestRate" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Duration" msprop:Generator_ColumnVarNameInTable="columnDuration" msprop:Generator_ColumnPropNameInRow="Duration" msprop:Generator_ColumnPropNameInTable="DurationColumn" msprop:Generator_UserColumnName="Duration" type="xs:short" minOccurs="0" />
+              <xs:element name="MainProductCode" msprop:Generator_ColumnVarNameInTable="columnMainProductCode" msprop:Generator_ColumnPropNameInRow="MainProductCode" msprop:Generator_ColumnPropNameInTable="MainProductCodeColumn" msprop:Generator_UserColumnName="MainProductCode" type="xs:short" minOccurs="0" />
+              <xs:element name="LoanInstallment" msprop:Generator_ColumnVarNameInTable="columnLoanInstallment" msprop:Generator_ColumnPropNameInRow="LoanInstallment" msprop:Generator_ColumnPropNameInTable="LoanInstallmentColumn" msprop:Generator_UserColumnName="LoanInstallment" type="xs:decimal" minOccurs="0" />
+              <xs:element name="InterestInstallment" msprop:Generator_ColumnVarNameInTable="columnInterestInstallment" msprop:Generator_ColumnPropNameInRow="InterestInstallment" msprop:Generator_ColumnPropNameInTable="InterestInstallmentColumn" msprop:Generator_UserColumnName="InterestInstallment" type="xs:decimal" minOccurs="0" />
+              <xs:element name="SavingsInstallment" msprop:Generator_ColumnVarNameInTable="columnSavingsInstallment" msprop:Generator_ColumnPropNameInRow="SavingsInstallment" msprop:Generator_ColumnPropNameInTable="SavingsInstallmentColumn" msprop:Generator_UserColumnName="SavingsInstallment" type="xs:decimal" minOccurs="0" />
+              <xs:element name="MinLimit" msprop:Generator_ColumnVarNameInTable="columnMinLimit" msprop:Generator_ColumnPropNameInRow="MinLimit" msprop:Generator_ColumnPropNameInTable="MinLimitColumn" msprop:Generator_UserColumnName="MinLimit" type="xs:decimal" minOccurs="0" />
+              <xs:element name="MaxLimit" msprop:Generator_ColumnVarNameInTable="columnMaxLimit" msprop:Generator_ColumnPropNameInRow="MaxLimit" msprop:Generator_ColumnPropNameInTable="MaxLimitColumn" msprop:Generator_UserColumnName="MaxLimit" type="xs:decimal" minOccurs="0" />
+              <xs:element name="InterestCalculationMethod" msprop:Generator_ColumnVarNameInTable="columnInterestCalculationMethod" msprop:Generator_ColumnPropNameInRow="InterestCalculationMethod" msprop:Generator_ColumnPropNameInTable="InterestCalculationMethodColumn" msprop:Generator_UserColumnName="InterestCalculationMethod">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="PaymentFrequency" msprop:Generator_ColumnVarNameInTable="columnPaymentFrequency" msprop:Generator_ColumnPropNameInRow="PaymentFrequency" msprop:Generator_ColumnPropNameInTable="PaymentFrequencyColumn" msprop:Generator_UserColumnName="PaymentFrequency">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="InsuranceItemCode" msprop:Generator_ColumnVarNameInTable="columnInsuranceItemCode" msprop:Generator_ColumnPropNameInRow="InsuranceItemCode" msprop:Generator_ColumnPropNameInTable="InsuranceItemCodeColumn" msprop:Generator_UserColumnName="InsuranceItemCode">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="7" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="InsuranceItemRate" msprop:Generator_ColumnVarNameInTable="columnInsuranceItemRate" msprop:Generator_ColumnPropNameInRow="InsuranceItemRate" msprop:Generator_ColumnPropNameInTable="InsuranceItemRateColumn" msprop:Generator_UserColumnName="InsuranceItemRate" type="xs:decimal" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:DataTable1" />
+      <xs:field xpath="mstns:ProductID" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

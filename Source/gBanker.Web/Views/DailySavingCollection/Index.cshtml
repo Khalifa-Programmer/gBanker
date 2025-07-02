@@ -1,0 +1,642 @@
+﻿@model gBanker.Web.ViewModels.DailySavingCollectionViewModel
+
+@{
+    ViewBag.Title = "Savings Collection List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    // var center = Model == null ? null : Model.centerListItems;
+    var center = Model.centerListItems == null ? new List<SelectListItem>() { new SelectListItem() { Text = "Select Center", Value = "0" } } : Model.centerListItems;
+    var product = Model == null ? null : Model.productListItems;
+    var member = Model == null ? null : Model.memberListItems;
+}
+
+<style type="text/css">
+    .summaryTitle {
+        color: yellow !important;
+        padding-left: 5px !important;
+    }
+
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+
+
+@*<table style="width:100%;">
+        <tr>
+            <td style="width:90%"><h2>Saving Collection</h2></td>
+            <td>@Html.ActionLink("Add Transfer", "Create")</td>
+        </tr>
+    </table>
+
+    <hr />*@
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Savings Collection</h2>
+
+<script type="text/javascript">
+    $body = $("body");
+    function SetProductid(value) {
+
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+
+    }
+    $(document).ready(function () {
+        confirmDayInitiated();
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "DailySavingCollection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            CalcLoanTerm();
+                        }
+                        else if (data.length == 0) {
+                            //alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            //alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "DailySavingCollection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+
+        $('#btnShow').click(function (e) {
+            e.preventDefault();
+            var startDate = "24/11/2012";
+            var endDate = "30/11/2012";
+             var CenterID = $("#CenterID").val();
+             var url = '/DailySavingCollection/GenerateReport?fromDate=' + startDate + '&toDate=' + endDate + '&CenterID=' + CenterID;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+        $('#btnPost').click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var CenterID = $("#CenterID").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateDataLessFiftyPercent", "DailySavingCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, CenterID: CenterID },
+                //minLength: 1,
+                success: function (data) {
+
+                    $("#loading").hide();
+                    var msg = "50% Updated successfully";
+                    var css = "success";
+                    if (data.Message != null) {
+                        msg = data.Message;
+                        css = "failed"
+                    }
+
+                    $("#dvMessage").attr('class', css);
+                    $("#dvMessage").html(msg);
+                    $("#dvMessage").show();
+                    if (data.Message == null)
+                        $("#dvMessage").toggle('fade', 1500);
+
+                },
+                error: function (request, status, error) {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html(request.statusText);
+                    $("#dvMessage").show();
+                }
+            });
+
+        });
+
+        //var centerId = 6;
+        //$("#CenterID").change(function () {
+        //    //var centerId = $("#CenterID").val();
+        //    $('#filterColumn').val('');
+        //    $('#filterValue').val('');
+        //    reloadGrid();
+
+        //});
+        //var centerId = 6;
+        //var centerId = $("#CenterID").val();
+        $('#grid').jtable({
+            // title: 'Savings Collection list', 
+            paging: true,
+            pageSize: 1,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        var prodId = $("#hfProdId").val();
+                        var memId = $("#MemberID").val();
+
+
+                        $.ajax({
+                            url: '/DailySavingCollection/GetDailySavingCollectionProductList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&productId=' + prodId + '&memberID=' + memId,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                DailySavingTrxID: {
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                ProductID: {
+                    list: true,
+                    create: false,
+                    edit: false,
+                    display: function (savTrx) {
+                        //Create an image that will be used to open child table
+                        //Create an image that will be used to open child table
+                        var dueSavingTextbox = '<span class="summaryTitle">Due Savings:</span> <input disabled="disabled" type="text" style="width:40px; color:black;" id="DueSavingSummary' + savTrx.record.ProductID + '"  value= "' + savTrx.record.DueSavingSummary + '" />';
+                        var savingCollection = '<span class="summaryTitle">Saving Collection:</span> <input disabled="disabled" type="text" style="width:40px; color:red;" id="SavingCollectionSummary' + savTrx.record.ProductID + '"  value= "' + savTrx.record.SavingCollectionSummary + '" />';
+                        var withdrawal = '<span class="summaryTitle">Saving Withdrawal:</span> <input disabled="disabled" type="text" style="width:40px; color:red;" id="WithDrawalSummary' + savTrx.record.ProductID + '"  value= "' + savTrx.record.WithDrawalSummary + '" />';
+                        var penalty = '<span class="summaryTitle">Penalty:</span> <input disabled="disabled" type="text" style="width:40px; color:black;" id="PenaltySummary' + savTrx.record.ProductID + '"  value= "' + savTrx.record.PenaltySummary + '" />';
+                        //Open child table when user clicks the image
+
+                        var $product = $('<div class="jtable-title"> <div class="jtable-title-text">' + 'Product Code - ' + savTrx.record.ProductCode + ' Name - ' + savTrx.record.ProductName + dueSavingTextbox + savingCollection + withdrawal + penalty + '</div></div>');
+                        //Open child table when user clicks the image
+
+                        $product.show(function () {
+                            $('#grid').jtable('openChildTable',
+
+                                            $product.closest('tr'),
+                                            {
+                                                paging: true,
+                                                pageSize: 1,
+                                                actions: {
+                                                    listAction: '/DailySavingCollection/GetDailySavingCollectionSheet?centerId=' + savTrx.record.CenterID + '&productId=' + savTrx.record.ProductID + '&memberID=' + savTrx.record.MemberID
+                                                },
+
+                                                fields: {
+                                                    MemberCode: {
+                                                        title: 'Member Code',
+                                                        width: '10%'
+                                                    },
+                                                    MemberName: {
+                                                        title: 'Member Name',
+                                                        width: '15%'
+                                                    },
+                                                    SavingInstallment: {
+                                                        title: 'Saving Installment',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'SavingInstallment' + "'" + ');"  onkeyup="calculate(2,' + data.record.DailySavingTrxID + ',' + data.record.Balance + ',' + data.record.ProductID + ');" style="width:100px" ' + 'id="SavingInstallment' + data.record.DailySavingTrxID + '" SavingPaidProduct="SavingInstallment' + data.record.ProductID + '" value="' + data.record.SavingInstallment + '" />' +
+                                                                   '<input type="text" value="' + data.record.DailySavingTrxID + '" style="display:none;" name="PrimaryKeyId" id="PrimaryKeyId' + data.record.rowSl + '" />';
+
+                                                        }
+                                                    },
+                                                    Withdrawal: {
+                                                        title: 'With Drawal',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'Withdrawal' + "'" + ');"  onkeyup="calculate(3, ' + data.record.DailySavingTrxID + ',' + data.record.Balance + ',' + data.record.ProductID + ');" style="width:100px" ' + 'id="Withdrawal' + data.record.DailySavingTrxID + '" SavingPaidProduct="Withdrawal' + data.record.ProductID + '" value="' + data.record.Withdrawal + '" />';
+
+                                                        }
+                                                    },
+                                                    Penalty: {
+                                                        title: 'Penalty',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'Penalty' + "'" + ');"  onkeyup="calculate(4, ' + data.record.DailySavingTrxID + ',' + data.record.Balance + ',' + data.record.ProductID + ');" style="width:100px" ' + 'id="Penalty' + data.record.DailySavingTrxID + '" SavingPaidProduct="Penalty' + data.record.ProductID + '" value="' + data.record.Penalty + '" />';
+                                                        }
+                                                    },
+                                                    NoOfAccount: {
+                                                        title: 'NoOf Account',
+                                                        width: '5%',
+                                                        display: function (data) {
+                                                            var id = '<input type="hidden"' + ' value="' + data.record.DailySavingTrxID + '" /> ';
+                                                            return id + '<input type="text" disabled="disabled" name="NoOfAccount" style="width:30px"' + 'id="NoOfAccount' + data.record.DailySavingTrxID + '" value="' + data.record.NoOfAccount + '" />';
+                                                        }
+                                                    },
+                                                    TransType: {
+                                                        title: 'TransType',
+                                                        width: '5%',
+                                                        display: function (data) {
+                                                            var id = '<input type="hidden"' + ' value="' + data.record.DailySavingTrxID + '" /> ';
+                                                            return id + '<input type="text" disabled="disabled" name="TransType" style="width:30px"' + 'id="TransType' + data.record.DailySavingTrxID + '" value="' + data.record.TransType + '" />';
+                                                        }
+                                                    },
+                                                    Deposit: {
+                                                        title: 'Deposit',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" disabled="disabled" style="width:100px"' + 'id="Deposit' + data.record.DailySavingTrxID + '" value="' + data.record.Deposit + '" />';
+                                                        }
+                                                    },
+                                                    TransferDeposit: {
+                                                        title: 'Cum. Interest',
+                                                        width: '5%',
+                                                        // list: false,
+                                                        display: function (data) {
+                                                            return '<input type="text" disabled="disabled" style="width:100px"' + 'id="TransferDeposit' + data.record.DailySavingTrxID + '" value="' + data.record.TransferDeposit + '" />';
+                                                        }
+                                                    },
+                                                    Balance: {
+                                                        title: 'Balance',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            var total = data.record.Deposit + data.record.TransferDeposit + data.record.SavingInstallment - data.record.Withdrawal;
+                                                            // return '<input type="text"  name="Balance" disabled="disabled" style="width:100px"' + 'id="Balance' + data.record.DailySavingTrxID + '" value="' + data.record.Balance + '" />';
+                                                            return '<input type="text"  name="Balance" disabled="disabled" style="width:100px"' + 'id="Balance' + data.record.DailySavingTrxID + '" SavingPaidProduct="Total' + data.record.ProductID + '" value="' + total + '"  />';
+                                                        }
+                                                    }
+                                                    //Balance: {
+                                                    //    title: 'Saving Installment',
+                                                    //    width: '10%',
+                                                    //    display: function (data) {
+                                                    //        var total = data.record.LoanPaid + data.record.IntPaid;
+
+                                                    //        return '<input type="text" onkeypress="return checkNumberic(event);"  onkeyup="calculate(1, ' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + ');" style="width:100px" ' + 'id="Total' + data.record.DailyLoanTrxID + '" value="' + total + '" />';
+                                                    //    }
+                                                    //},
+
+                                                }
+                                            }, function (data) { //opened handler
+                                                data.childTable.jtable('load');
+
+                                            })
+
+
+                        });
+                        //Return image to show on the person row
+                        // $('#grid').jtable('getRowByKey', loanTrx.record.DailyLoanTrxID).find("span").click();
+                        return $product;
+                    }
+                }
+            }
+        });
+        reloadGrid();
+        //$('#grid').jtable('load');
+        //$('.jtable-column-header').hide();
+        $('.jtable .jtable-title').find('div').hide();
+
+    });
+
+
+    function goNextRow(e, rowSl, id) {
+        //up arrow 38
+        if (e.keyCode == 38) {
+            var newId = '#' + 'PrimaryKeyId' + (rowSl - 1).toString();
+            var newIdVal = $(newId).val();
+            var newFocusId = id + newIdVal.toString();
+            $('#' + newFocusId).focus();
+            $('#' + newFocusId).select();
+        }
+        else if (e.keyCode == 40) {
+            var newId = '#' + 'PrimaryKeyId' + (rowSl + 1).toString();
+            var newIdVal = $(newId).val();
+            var newFocusId = id + newIdVal.toString();
+            $('#' + newFocusId).focus();
+            $('#' + newFocusId).select();
+        }
+
+
+
+    }
+    function checkNumberic(e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }
+   
+    function reloadGrid() {
+        $('#grid').jtable('load', { centerId: $('#CenterID').val(), productID: $('#hfProdId').val(), memberId: $('#MemberID').val() });
+        $('.jtable-column-header').hide();
+        $('.jtable .jtable-title').find('div').hide();
+        // $('#grid').jtable('getRowByKey', 10).find("span").trigger('click');
+    }
+    function calculate(type, id, vBal, productid) {
+
+        var BalanceId = 'Balance' + id;
+        var WithdrawallId = 'Withdrawal' + id;
+        var vSavingInstallment = 'SavingInstallment' + id;
+        var vPenalty = 'Penalty' + id;
+        var vDeposit = 'Deposit' + id;
+        var vMonthlyInterest = 'TransferDeposit' + id;
+        if (type == 2) {
+            var vBalance ;
+            var vSavingInstallment;
+            var vWithdrawal;
+            var vPenalty;
+            var vDepo;
+            var vMI;
+            vBalance = $('#' + BalanceId).val();
+            vSavingInstallment = $('#' + vSavingInstallment).val();
+            vWithdrawal = $('#' + WithdrawallId).val();
+            vPenalty = $('#' + vPenalty).val();
+            vDepo = $('#' + vDeposit).val();
+            vMI = $('#' + vMonthlyInterest).val();
+            var total = Number(vDepo) + Number(vMI) + Number(vSavingInstallment) + Number(vPenalty) - Number(vWithdrawal);
+
+            $('#' + BalanceId).val(total);
+
+        }
+        if (type == 3) {
+            var vBalance;
+            var vSavingInstallment;
+            var vWithdrawal;
+            var vPenalty;
+            var vDepo;
+            var vMI;
+            vBalance = $('#' + BalanceId).val();
+            vSavingInstallment = $('#' + vSavingInstallment).val();
+            vWithdrawal = $('#' + WithdrawallId).val();
+            vPenalty = $('#' + vPenalty).val();
+            vDepo = $('#' + vDeposit).val();
+            vMI = $('#' + vMonthlyInterest).val();
+            var total = Number(vDepo) + Number(vMI) + Number(vSavingInstallment) + Number(vPenalty) - Number(vWithdrawal);
+
+            $('#' + BalanceId).val(total);
+
+        }
+        if (type == 4) {
+            var vBalance;
+            var vSavingInstallment;
+            var vWithdrawal;
+            var vPenalty;
+            var vDepo;
+            var vMI;
+            vBalance = $('#' + BalanceId).val();
+            vSavingInstallment = $('#' + vSavingInstallment).val();
+            vWithdrawal = $('#' + WithdrawallId).val();
+            vPenalty = $('#' + vPenalty).val();
+            vDepo = $('#' + vDeposit).val();
+            vMI = $('#' + vMonthlyInterest).val();
+            var total = Number(vDepo) + Number(vMI) + Number(vSavingInstallment) + Number(vPenalty) - Number(vWithdrawal);
+
+            $('#' + BalanceId).val(total);
+
+        }
+        displaySumary(productid, "SavingInstallment", "SavingCollectionSummary");
+        displaySumary(productid, "Withdrawal", "WithDrawalSummary");
+        displaySumary(productid, "Penalty", "PenaltySummary");
+        //displaySumary(productid, "Total", "TotalCollectionSummary");
+    }
+    function displaySumary(productId, initial, summaryfield) {
+        var total = 0;
+        var $allInputs = $('input[SavingPaidProduct="' + initial + productId + '"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            total = total + parseFloat(value);
+        });
+        $('#' + summaryfield + productId).val(total);
+    }
+    function checkLoanInstallment(loanInstallmentId) {
+        //alert(loanInstallmentId);
+    }
+    function checkInterestInstallment(loanInstallmentId) {
+        //alert(loanInstallmentId);
+    }
+    function SaveAdnReload() {
+
+        var allCollection = new Array();
+        var $allInputs = $('input[type="text"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allCollection[allCollection.length] = obj;
+        });
+
+
+        var $allId = $('input[type="hidden"]');
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        var allTrx = new Object();
+        allTrx.allTrx = allCollection;
+        allTrx.allLoanTrxId = allIds;
+
+        var json = JSON.stringify(allTrx);
+
+        $("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveSavingTransaction", "DailySavingCollection", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+                $("#loading").hide();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                    $("#dvMessageDown").toggle('fade', 1500);
+                }
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+            }
+        });
+    }
+</script>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                @Html.Label("Samity", htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+                @*@Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control", onchange = "SetProductid(this.value);" })
+                @Html.Hidden("hfProdId")
+                @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                @Html.HiddenFor(model => model.MemberID)
+                @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-1" style="padding-top:22px; padding-left:0;" align="left">
+            <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+        </div>
+    </div>
+
+    @*<div>
+            Filter By:&nbsp; <select id="filterColumn">
+                <option value="">View All</option>
+                <option value="MemberCode">Member Code</option>
+                <option value="ProductCode">Product Code</option>
+            </select>
+            <input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+            <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />
+        </div>*@
+
+
+    <div id="grid"></div>
+
+    @*<div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="button" value="Save" class="btn btn-default" onclick="SaveAdnReload();" />
+            </div>
+        </div>*@
+    <div class="row">
+        <div class="col-md-4" align="left">
+            <input type="button" value="Save" class="btn btn-primary" onclick="SaveAdnReload(); " />
+            &nbsp;
+            <input id="btnShow" type="submit" value="Collection Info" class="btn btn-primary" />
+        </div>
+        <div class="col-md-8" style="padding-right:20px;" align="right">
+
+            <input id="btnPost" type="submit" value="50%" class="btn btn-primary" />
+
+        </div>
+    </div>
+}
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,414 @@
+﻿@model gBanker.Web.ViewModels.ProcessConfigViewModel
+
+@{
+    ViewBag.Title = "Process Config";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script src="~/Scripts/wickedpicker.js"></script>
+<link href="~/Content/wickedpicker.css" rel="stylesheet" />
+
+<script type="text/javascript">
+ 
+    
+    function StartWorkProcess(id) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCurrentSetting", "ProcessConfig", "http")',
+            data: {id : id},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.each(data, function (index, data) {
+                    if (data != "Error") {
+
+                        if (id == 1) {
+                            $("#startWorkProcess").val(data.startWorkProcess);
+                            //alert(data.KActive);
+                            if (data.KActive == true) {
+                                $("#startWorkAuto").attr('checked', true);
+                                $('#divStartWork').show();
+
+                            }
+                            else {
+                                $("#startWorkManual").attr('checked', true);
+                                $('#divStartWork').hide();
+                            }
+                            
+
+                        }
+                        else if (id == 2)
+                        {
+                            $("#EndWorkProcess").val(data.startWorkProcess);
+
+                            if (data.KActive == true) {
+                                $("#CompleteWorkAuto").attr('checked', true);
+                                $('#divCompleteWork').show();
+
+                            }
+                            else {
+                                $("#CompleteWorkManual").attr('checked', true);
+                                $('#divCompleteWork').hide();
+                            }
+
+
+                        }
+                        else if (id == 3)
+                        {
+                            $("#ProcessDate").val(data.startWorkProcess);
+                            if (data.KActive == true) {
+                                $("#MonthClosingAuto").attr('checked', true);
+                                $('#divMonthClosing').show();
+
+                            }
+                            else {
+                                $("#MonthClosingManual").attr('checked', true);
+                                $('#divMonthClosing').hide();
+                            }
+                            
+                        }
+                      
+                    }
+                    else {
+
+                     
+                    }
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }// ENd of Employee
+ 
+ 
+
+
+
+    $(document).ready(function () {
+
+        StartWorkProcess(1);
+        StartWorkProcess(2);
+        StartWorkProcess(3);
+
+        //Timepicker
+        var options = {// now: "12:35", //hh:mm 24 hour format only, defaults to current time
+            twentyFour: true, //Display 24 hour format, defaults to false
+            upArrow: 'wickedpicker__controls__control-up', //The up arrow class selector to use, for custom CSS
+            downArrow: 'wickedpicker__controls__control-down', //The down arrow class selector to use, for custom CSS
+            close: 'wickedpicker__close', //The close class selector to use, for custom CSS
+            hoverState: 'hover-state', //The hover state class to use, for custom CSS
+            title: 'Timepicker', //The Wickedpicker's title,
+            showSeconds: false, //Whether or not to show seconds,
+            secondsInterval: 1, //Change interval for seconds, defaults to 1  ,
+            minutesInterval: 1, //Change interval for minutes, defaults to 1
+            beforeShow: null, //A function to be called before the Wickedpicker is shown
+            show: null, //A function to be called when the Wickedpicker is shown
+            clearable: false, //Make the picker's input clearable (has clickable "x")
+        };
+
+        $("#startWorkProcess").wickedpicker(options);
+        $("#EndWorkProcess").wickedpicker(options);
+        //$("#LastLoginTime").wickedpicker(options);
+
+        //$("#startWorkProcess").val("10 : 00");
+        //$("#EndWorkProcess").val("18 : 00");
+
+
+        //End Time Picker
+
+      gBankerDatePicker("ProcessDate");
+        //$("#ProcessDate").datepicker(
+        // {
+        //     dateFormat: "dd-M-yy",
+        //     showAnim: "scale",
+        //     changeMonth: true,
+        //     changeYear: true,
+        //     yearRange: "1920:2100"
+
+        // });
+        //  $("#AttenDate").datepicker(
+        //'setDate', new Date());
+
+     
+
+        //if ($('#startWorkAuto').is(':checked')) {
+        //    IsStartWorkAuto = 1;
+        //}
+
+        //if ($('#startWorkManual').is(':checked')) {
+        //    IsStartWorkAuto = 0;
+        //}
+
+
+
+      var IsStartWorkAuto = 0;
+      $('#startWorkAuto').click(function () {
+          //alert("gr");
+          if ($(this).is(':checked')) {
+              IsStartWorkAuto = 1; //is Auto
+              $('#divStartWork').show();
+          }
+      });
+      $('#startWorkManual').click(function () {
+         // alert("hn");
+          if ($(this).is(':checked')) {
+              IsStartWorkAuto = 0; //is Manual
+              $('#divStartWork').hide();
+          }
+      });
+
+
+      var IsCompleteWorkAuto = 0;
+      $('#CompleteWorkAuto').click(function () {
+          //alert("gr");
+          if ($(this).is(':checked')) {
+              IsCompleteWorkAuto = 1; //is Auto
+              $('#divCompleteWork').show();
+          }
+      });
+      $('#CompleteWorkManual').click(function () {
+          // alert("hn");
+          if ($(this).is(':checked')) {
+              IsCompleteWorkAuto = 0; //is Manual
+              $('#divCompleteWork').hide();
+          }
+      });//
+ 
+
+      var IsMonthClosingAuto = 0;
+      $('#MonthClosingAuto').click(function () {
+          //alert("gr");
+          if ($(this).is(':checked')) {
+              IsMonthClosingAuto = 1; //is Auto
+              $('#divMonthClosing').show();
+          }
+      });
+      $('#MonthClosingManual').click(function () {
+          // alert("hn");
+          if ($(this).is(':checked')) {
+              IsMonthClosingAuto = 0; //is Manual
+              $('#divMonthClosing').hide();
+          }
+      });//
+
+
+      $('#btnSave').click(function () {
+          
+          if ($('#startWorkAuto').is(':checked')) {
+              IsStartWorkAuto = 1;
+          }
+          if ($('#CompleteWorkAuto').is(':checked')) {
+              IsCompleteWorkAuto = 1;
+          }
+          if ($('#MonthClosingAuto').is(':checked')) {
+              IsMonthClosingAuto = 1;
+          }
+
+
+
+
+          var startWorkTime = $('#startWorkProcess').val();
+          var completeWorkTime = $('#EndWorkProcess').val(); 
+          var MonthClosingDate = $('#ProcessDate').val();
+
+
+          $.ajax({
+              type: 'GET',
+              contentType: "application/json; charset=utf-8",
+              url: '@Url.Action("UpdateData", "ProcessConfig", "http")', //
+              data: {
+                
+                  startWorkTime: startWorkTime,
+                  IsStartWorkAuto: IsStartWorkAuto,
+             
+                  completeWorkTime : completeWorkTime,
+                  IsCompleteWorkAuto : IsCompleteWorkAuto,
+
+                  MonthClosingDate : MonthClosingDate,
+                  IsMonthClosing    : IsMonthClosingAuto
+             
+                  },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $.each(data, function (index, data) {
+                           
+                    });
+                },
+                error: function (request, status, error) {
+                    //$.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+                    $.alert.open("Message", "Data not Saved.");
+
+                }
+                ,
+                success: function () {
+                   
+                    //alert("Saved Success.");
+                    $(".panel-body .create-success").show(700).fadeToggle(2000);
+                }
+            });
+
+
+
+
+
+
+
+
+      }); //ENd Button
+
+
+
+
+
+    });// End of Document Ready
+
+   
+
+    
+    
+      
+
+
+</script>
+
+
+
+@using (Html.BeginForm())
+{
+
+    <div class="container-fluid">
+        <br />
+        <fieldset>
+            <legend>Start Work Process</legend>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group checkbox">
+                        <div class="col-md-4">
+                            <label class="radio-inline">   <input type="radio" id="startWorkAuto" name="opt" checked="checked"><font size="3.5px"> Auto </font> </label>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="radio-inline">  <input type="radio" id="startWorkManual" name="opt"><font size="3.5px"> Manual</font></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+
+            <div class="row" id="divStartWork"> <!-- If Auto Then Show Otherwise Hide-->
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.startWorkProcess, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.startWorkProcess, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </fieldset>
+        <br />
+        <br />
+
+        <fieldset>
+            <legend>Complete Work Process</legend>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group checkbox">
+                        <div class="col-md-4">
+                            <label class="radio-inline">   <input type="radio" id="CompleteWorkAuto" name="opt1" checked="checked"><font size="3.5px"> Auto </font> </label>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="radio-inline">  <input type="radio" id="CompleteWorkManual" name="opt1"><font size="3.5px"> Manual</font></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="divCompleteWork">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.EndWorkProcess, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.EndWorkProcess, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <br />
+
+
+
+        <fieldset>
+            <legend>Month Closing</legend>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group checkbox">
+                        <div class="col-md-4">
+                            <label class="radio-inline">   <input type="radio" id="MonthClosingAuto" name="opt2" checked="checked"><font size="3.5px"> Auto</font> </label>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="radio-inline">  <input type="radio" id="MonthClosingManual" name="opt2"><font size="3.5px"> Manual</font></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="divMonthClosing">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ProcessDate, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-8">
+                            @Html.EditorFor(model => model.ProcessDate, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+            <br />
+
+
+            <div class="row">
+                <div class="panel-body">
+                    <div class="create-success create-content alert alert-success alert-dismissable" role="alert" style="display:none;">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <p class="message-content">Setting Saved Successfully.</p>
+                    </div>
+                </div>
+
+                <div class="danger">
+                    <div class="create-content create-content alert alert-error alert-dismissable" role="alert" style="display:none;">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <p class="message-content">Not Saved...</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        &nbsp;
+                        <div class="col-md-8">
+                            <input type="button" id="btnSave" value="Save" class="btn btn-primary" />
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+</div>
+
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

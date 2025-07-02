@@ -1,0 +1,43 @@
+﻿
+@model ImputedCost_INFEquityInfoViewModel
+
+@{
+    ViewBag.Title = "Inf Equity Information List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+@Html.ActionLink("Add New", "INFEquityInformation", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">@ViewBag.Title</h2>
+
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label required" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+
+    <div class="col-md-3">
+        <label class = "control-label" >Synced Status</label>
+        <select class="form-control" id="SYNCED_STATUS" name="SYNCED_STATUS">
+            <option value="">Any</option>
+            <option value="1">NOT SYNCED</option>
+            <option value="2">SYNCED</option>
+        </select>
+    </div>
+    <div class="col-md-5" style="padding-top: 20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" />
+        <button type="button" id="btnRefresh" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-danger" ><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+
+<div class="raw">
+    <div id="grid"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/infEquityInformationManager.js"></script>
+}

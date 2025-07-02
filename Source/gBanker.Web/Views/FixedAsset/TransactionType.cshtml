@@ -1,0 +1,260 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Transaction Type Entry";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+        GetTransactionTypeInfo();
+        $("#btnReset").click(function () {
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+            ClearForm();
+        });
+
+    });
+    function SaveTransactionTypeInformation() {
+        var transactionCode = $("#TransactionCode").val();
+        var transactionName = $("#TransactionName").val();
+        var transactionType = $("#TransactionType").val();        
+        if (transactionCode != "" && transactionName != "" && transactionType != "") {
+            var TransactionTypeInfo = {
+                TransactionCode: transactionCode,
+                TransactionName: transactionName,
+                TransactionType: transactionType                
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveTransactionTypeInformation", "FixedAsset", "http")',
+                data: JSON.stringify({ TransactionTypeInfo: TransactionTypeInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetTransactionTypeInfo();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        }
+        else {
+            $.alert.open("Error", "Please insert required field");
+        }
+    }
+    function GetTransactionTypeInfo() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {                        
+                        $.ajax({
+                            url: '/FixedAsset/GetTransactionTypeInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                TransactionId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionCode: {
+                    width: '10%',
+                    title: 'Transaction Code'
+                },
+                TransactionName: {
+                    width: '10%',
+                    title: 'Transaction Name'
+                },
+                TransactionTypeInOut: {
+                    width: '10%',
+                    title: 'Transaction Type In Out',
+                },                
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="EditTransactionTypeInfo( ' + data.record.TransactionId + ',' + "'" + data.record.TransactionCode + "'" + ',' + "'" + data.record.TransactionName + "'" + ',' + "'" + data.record.TransactionTypeInOut + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteTransactionTypeInfo(' + data.record.TransactionId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+
+        });
+        $('#grid').jtable('load');
+    }
+    function ClearForm() {
+        $("#TransactionCode").val('');
+        $("#TransactionName").val('');
+        $("#TransactionType").val('');
+    }
+    function EditTransactionTypeInfo(TransactionId, TransactionCode, TransactionName, TransactionTypeInOut) {
+        
+        $("#TransactionId").val(TransactionId);
+        $("#TransactionCode").val(TransactionCode);
+        $("#TransactionName").val(TransactionName);
+        $("#TransactionType").val(TransactionTypeInOut);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+    function UpdateTransactionTypeInformation() {
+        var transactionid = $("#TransactionId").val();
+        var transactionCode = $("#TransactionCode").val();
+        var transactionName = $("#TransactionName").val();
+        var transactionType = $("#TransactionType").val();
+        if (transactionCode != "" && transactionName != "" && transactionType != "") {
+            var TransactionTypeInfo = {
+                TransactionId:transactionid,
+                TransactionCode: transactionCode,
+                TransactionName: transactionName,
+                TransactionType: transactionType
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateTransactionTypeInformation", "FixedAsset", "http")',
+                data: JSON.stringify({ TransactionTypeInfo: TransactionTypeInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetTransactionTypeInfo();
+                        ClearForm();
+                        $("#btnUpdate").hide();
+                        $("#btnReset").hide();
+                        $("#btnSave").show();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        }
+        else {
+            $.alert.open("Error", "Please insert required field");
+        }
+    }
+    function DeleteTransactionTypeInfo(TransactionId) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteTransactionTypeInfo", "FixedAsset", "http")',
+                    data: { TransactionId: TransactionId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            $('#grid').jtable('load');
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+</script>
+
+
+<h2 class="page-title">Transaction Type Entry</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.TransactionId)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Transaction Code</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.TransactionCode, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Transaction Name</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.TransactionName, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Transaction Type</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.TransactionType, Model.TransactionTypeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>    
+<div>
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Save" id="btnSave" class="btn btn-primary" onclick="SaveTransactionTypeInformation()" />
+            <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateTransactionTypeInformation()" />
+            <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}

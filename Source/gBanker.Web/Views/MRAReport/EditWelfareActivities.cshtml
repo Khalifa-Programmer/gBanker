@@ -1,0 +1,232 @@
+﻿@model gBanker.Web.ViewModels.WelfareActivityViewModel
+
+@{
+    ViewBag.Title = "Welfare Activity Details";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        debugger;       
+        $("#DateTo").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+          });      
+
+        $("#btnReset").click(function () {
+            debugger;
+            $("#DateTo").val('');
+            $("#ActivityId").val('');
+            $("#SourceofFund").val('');
+            $("#SurplusMicrofinance").val('');
+            $("#SurplusOtherActivities").val('');
+            $("#SurplusOwnFund").val('');
+            $("#Donation").val('');
+            $("#OtherSource").val('');
+            $("#AreaCovered").val('');
+            $("#NumberOfBeneficiaries").val('');
+            $("#DurationOfActivity").val('');
+            $("#AcitivityExpenditure").val('');
+            $("#Surplus").val('');
+        });
+
+    });
+    function UpdateWelfareAcitivity() {
+        var welfareActivityId = $("#WelfareActivityId").val();
+        var date = $("#DateTo").val();
+        var activityId = $("#ActivityId").val();
+        var sourceofFund = $("#SourceofFund").val();
+        var surplusMicrofinance = $("#SurplusMicrofinance").val();
+        var surplusOtherActivities = $("#SurplusOtherActivities").val();
+        var surplusOwnFund = $("#SurplusOwnFund").val();
+        var donation = $("#Donation").val();
+        var otherSource = $("#OtherSource").val();
+        var areaCovered = $("#AreaCovered").val();
+        var numberOfBeneficiaries = $("#NumberOfBeneficiaries").val();
+        var durationOfActivity = $("#DurationOfActivity").val();
+        var acitivityExpenditure = $("#AcitivityExpenditure").val();
+        var surplus = $("#Surplus").val();
+        var welfareActivity = {
+            WelfareActivityId:welfareActivityId,
+            DateTo: date,
+            ActivityId: activityId,
+            SourceofFund: sourceofFund,
+            SurplusMicrofinance: surplusMicrofinance,
+            SurplusOtherActivities: surplusOtherActivities,
+            SurplusOwnFund: surplusOwnFund,
+            Donation: donation,
+            OtherSource: otherSource,
+            AreaCovered: areaCovered,
+            NumberOfBeneficiaries: numberOfBeneficiaries,
+            DurationOfActivity: durationOfActivity,
+            AcitivityExpenditure: acitivityExpenditure,
+            Surplus: surplus
+        }
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateWelfareAcitivity", "MRAReport", "http")',
+            data: JSON.stringify({ welfareActivity: welfareActivity }),
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);                    
+                    ClearForm();
+                } else {
+                    $.alert.open("Error", data.message);
+                    ClearForm();
+                }
+            }
+
+        });
+    }
+    function ClearForm() {
+        $("#DateTo").val('');
+        $("#ActivityId").val('');
+        $("#SourceofFund").val('');
+        $("#SurplusMicrofinance").val('');
+        $("#SurplusOtherActivities").val('');
+        $("#SurplusOwnFund").val('');
+        $("#Donation").val('');
+        $("#OtherSource").val('');
+        $("#AreaCovered").val('');
+        $("#NumberOfBeneficiaries").val('');
+        $("#DurationOfActivity").val('');
+        $("#AcitivityExpenditure").val('');
+        $("#Surplus").val('');
+    }
+
+</script>
+@Html.ActionLink("Back to List", "IndexWelfareActivities", null, new { @class = "pull-right" })
+<h2 class="page-title">Welfare Activity Details</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.WelfareActivityId)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Date</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DateTo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Name of Activity</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.ActivityId, Model.ActivityList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Surplus from Microfinance</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.SurplusMicrofinance, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Surplus from Other Activities</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.SurplusOtherActivities, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Own Fund</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.SurplusOwnFund, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Donation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.Donation, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Other Source</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OtherSource, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Covering Area</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AreaCovered, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Number of Beneficiaries</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.NumberOfBeneficiaries, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Duration of Activities</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DurationOfActivity, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Expenditure for the welfare Activity</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AcitivityExpenditure, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Surplus/Deficit from Activity</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.Surplus, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">                
+                <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateWelfareAcitivity()" />
+                <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,67 @@
+﻿<style>
+    .settop {
+        top: 6px;
+    }
+
+    .panel-heading .huge {
+        font-size: 12px;
+    }
+</style>
+<div class="page-header">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="/images/gbankerPlusNew.png" alt="gBanker Logo" />
+        </div>
+
+        <div class="col-md-6">
+            <span style="font-size: 150%">
+              
+           
+                <h2 class="page-title" style="font-size:100%" display:inline-block>
+
+                    @*Welcome to @gBanker.Web.Helpers.SessionHelper.OrganizationName '@gBanker.Web.Helpers.SessionHelper.getOfficeName*@
+                   @gBanker.Web.Helpers.SessionHelper.OrganizationName: 
+                    <span id="OfficeName">@gBanker.Web.Helpers.SessionHelper.getOfficeName</span>
+                </h2>
+            </span>
+            @*<h2 class="page-title" id="OrgName"></h2>*@
+
+           
+            @*  Update Time 00:00:0000*@
+        </div>
+        @if (Request.IsAuthenticated)
+        {
+            <div class="col-md-6 text-right">
+                
+                <span>@gBanker.Web.Helpers.SessionHelper.UserFullName</span>
+                @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "top-logout-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <a class="btn btn-warning btn-xs" href="javascript:document.getElementById('logoutForm').submit()">Log off</a>
+                }
+
+                <a id="top-dayin-info" data-container="body" data-toggle="popover" data-placement="left" data-content="Loading......">
+                    <span class="glyphicon glyphicon-info-sign settop">
+                    </span>
+                </a>
+                <script>
+                    $('#top-dayin-info').popover();
+                </script>
+                @*<img src="/images/client-logo-home.png" alt="Client Logo" class="clogo-top" />*@
+               
+                @*<p style="margin-top: 8px;" data-placement="left" id="officeSelectDialog"></p>*@
+            </div>
+
+           
+        }
+    </div>
+</div>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var trString = '@gBanker.Web.Helpers.SessionHelper.TransactionDashBoardString';
+      
+        $("#top-dayin-info").attr('data-content', trString);
+      
+    });
+</script>

@@ -1,0 +1,146 @@
+﻿@{
+    ViewBag.Title = "FileUpload";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script src="http://malsup.github.com/jquery.form.js"></script>
+<script src="~/Content/jquery.form.js"></script>
+
+<style type="text/css">
+    .icheckbox_flat-green,
+    .iradio_flat-green {
+        display: inline-block;
+        *display: inline;
+        vertical-align: middle;
+        margin: 0;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        background: url(../../Content/AdminLTE/img/credit/green.png) no-repeat;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var SaveStatus = @Html.Raw(Json.Encode(ViewData["SaveStatus"]));
+        if(SaveStatus == '1'){
+            $(".create-success").show(800).fadeToggle(3000);
+        }
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            $('#FileUploadProfile').ajaxSubmit({
+                type: "POST",
+                target: '#thumbnil',
+                data: { UploadType: $('#typeFilterColumn option:selected').val(),IsDownloadable: $("#downloadableChk").is(':checked') },
+                dataType: 'json',
+                resetForm: true,
+                success: function (data) {
+                    console.log(data.data);
+                    //alert(data.data.EvaluationId)
+                    if (data.data > 0) {
+                        $(".create-success").show(800).fadeToggle(3000);
+                    }
+                    else {
+                        $(".create-fail").show(800).fadeToggle(3000);
+                    }
+
+                },
+                error: function () {
+                    $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                    $("#dialog-message").dialog({
+                        modal: true,
+                        buttons: {
+                            Ok: function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                }
+            });
+
+        });
+    });
+</script>
+<h2 class="page-title">Smart Upload</h2>
+&nbsp;
+@using (Html.BeginForm("FileUpload", "File", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal", id = "FileUploadProfile" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 text-right">
+                <label class="control-label" style="padding-top:8px;">Upload Type:</label>
+            </div>
+            <div class="col-md-4">
+                <select id="typeFilterColumn" class="form-control">
+                    <option value="Please Select" selected="selected">Please Select</option>
+                    @*<option value="Form 15">Form 15</option>
+                    <option value="Official">Official</option>*@
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                &nbsp;
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-2 text-right">
+                <label for="file" class="control-label" style="padding-top:8px;">File Name:</label>
+            </div>
+            <div class="col-md-4">
+                <input type="file" name="file" id="file" />
+                @*<input type="file" name="file" id="file" />*@
+            </div>
+            <div class="form-group">
+                @Html.Label("Avatar", new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="file" id="Avatar" name="upload" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                &nbsp;
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 text-right">
+                &nbsp;
+            </div>
+            <div class="col-md-4">
+                @Html.CheckBox(" ", new { @id = "downloadableChk", @class = "icheckbox_flat-green" })
+                <label for="file" class="control-label" style="padding-top:8px;">Downloadable</label>
+            </div>
+            <div class="col-md-6">
+                &nbsp;
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="create-success create-content alert alert-success alert-dismissible" role="alert" style="display: none;">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="message-content">File Uploaded successfully.</p>
+                </div>
+                <div class="create-fail alert alert-danger alert-dismissable" role="alert" style="display:none">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="message-content">Fail to save</p>
+                </div>
+                <input type="button" id="btnSave" value="Save" class="btn btn-primary" style="margin-left:160px;" />
+            </div>
+        </div>
+    </div>
+
+}
+
+
+@*<form action="" method="post" enctype="multipart/form-data">
+
+        <label for="file">Filename:</label>
+        <input type="file" name="file" id="file" />
+
+        <input type="submit" />
+    </form>*@

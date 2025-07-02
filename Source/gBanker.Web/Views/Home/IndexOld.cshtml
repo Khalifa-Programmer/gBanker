@@ -1,0 +1,488 @@
+﻿@{
+    ViewBag.Title = "gBanker";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var employeeMaping = ViewBag.EmployeeOfficeMappings as List<SelectListItem> ?? new List<SelectListItem>();
+    var showBranchPopup = (bool)ViewBag.ShowPopup;
+}
+
+
+<script type="text/javascript">
+    var showPopup = '@showBranchPopup';
+    $(document).ready(function () {       
+        var orgId = '@ViewBag.OrgId';
+        console.log(orgId);
+        if (orgId == 150)
+            $("#hideRepaymentClassification").hide();
+        if (showPopup !== "True") {
+            loadDashboardItems();
+            BarChart();
+            PieChart();
+            Aging();
+
+            //Don't Needed for now -- Ref Bappa Da
+            //Repayment();
+
+            GetDashboardCenterMemmberMiscSummary();
+        }
+        $("#officeSelectModalOk").click(function () {
+            selectOffice();
+            loadDashboardItems();
+            BarChart();
+            PieChart();
+            Aging();           
+            GetDashboardCenterMemmberMiscSummary();
+        });
+
+        $("#officeSelectModalCancel").click(function () {
+            window.location.href = "Account/Login";
+        });        
+
+        if (showPopup == "True") {            
+            $('#officeSelectDialog').modal('show');
+        }
+    });
+
+    function selectOffice() {
+        //e.preventDefault();
+        var officeId = $("#ddlOffice").val();
+        var obj = new Object();
+        obj.officeId = officeId;
+        var json = JSON.stringify(obj)
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SelectOffice", "Home")',
+            data: json,
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                var ddl = $("#ddlOffice option:selected").text();
+
+                $("#officeName").html(ddl);
+                $("#dayInitialInfo").html(result.TransactionDashBoardString);
+                $("#top-dayin-info").attr('data-content', result.TransactionDashBoardString);
+                //  $("#spTransactionDay").text(result.TransactionDay);
+                // $("#spLastDayEnd").text(result.LastDayEndDate);
+                $("#lblBrach").html(result.OfficeName);
+                $("#OfficeName").html(result.OfficeName);
+                $("#OrgName").html(result.OrgName);
+                $("#OfficeNameNew").html(result.OfficeName);
+                $("#top-dayin-infoNew").html(result.TransactionDashBoardString);
+            },
+            error: function (request, status, error) {
+                alert("Error occured.");
+            }
+        });
+    }
+    function showOfficeDialog() {
+        //$("#officeSelectDialog").dialog('open');
+        $('#officeSelectDialog').modal('show');
+    }
+
+    function loadDashboardItems() {
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDashboardItems", "Home")',
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                $("#blueDues").html(result[0].DueAmount);
+                $("#blueCollections").html(result[0].PaidAmount);
+                $("#blueRates").html(result[0].Otr);
+
+                $("#greenIncomes").html(result[0].Income);
+                $("#greenExpenditures").html(result[0].Expense);
+                $("#greenProfits").html(result[0].ProfitOrLoss);
+
+                $("#orangeMembers").html(result[0].TotalTodaysMember);
+                $("#orangeBorrowers").html(result[0].TotalTodaysBorrower);
+                $("#orangeRatio").html(result[0].Ratio);
+
+                $("#redMembers").html(result[0].TotalMember);
+                $("#redBorrowers").html(result[0].TotalBorrower);
+                $("#redDorment").html(result[0].DormantMember);
+            },
+            error: function (request, status, error) {
+                alert("Error occured.");
+            }
+        });
+    }
+
+    google.load("visualization", "1", { packages: ["bar"] });
+
+    function BarChart() {
+        var chartData;
+
+        $.ajax({
+            url: "Home/GetBarChartData",
+            data: "",
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json; chartset=utf-8",
+            success: function (data) {
+
+                chartData = data;
+
+                var barData = new google.visualization.DataTable();
+                barData.addColumn('string', 'Year');
+                barData.addColumn('number', 'Disbursement');
+                barData.addColumn('number', 'Loan Repaid');
+                barData.addColumn('number', 'Bad Loan');
+                barData.addColumn('number', 'Over Due');
+                barData.addColumn('number', 'Savings');
+
+                $.each(chartData, function (i, d) {
+                    //console.log(chartData[i].BarDisbursements);
+                    barData.addRow([chartData[i].BarYear, chartData[i].BarDisbursements, chartData[i].BarLoanRepaid, chartData[i].BarBadLoans, chartData[i].BarOverDueAmount, chartData[i].BarSavings]);
+                    //barData.addRow([chartData[i].BarYear, chartData[i].BarDisbursements, chartData[i].BarLoanRepaid, chartData[i].BarBadLoans, chartData[i].BarOverDueAmount]);
+                });
+
+                var options = {
+                    title: 'Year Wise Disburse & Repayment',
+                    subtitle: 'Disbursement, Outstanding, Bad loan and Overdue: 2012-2014'
+                };
+
+                var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+                chart.draw(barData, options);
+            },
+            error: function () {
+                alert("Error loading data! Please try again.");
+            }
+        });
+    }
+
+    google.load("visualization", "1", { packages: ["corechart"] });
+    var chartData;
+    function PieChart() {
+        $.ajax({
+            url: "Home/GetPieChartData",
+            data: "",
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json; chartset=utf-8",
+            success: function (data) {
+                chartData = data;
+            },
+            error: function () {
+                alert("Error loading data! Please try again.");
+            }
+        }).done(function () {
+            // after complete loading data
+            google.setOnLoadCallback(drawChart);
+            drawChart();
+        });
+    }
+
+    function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'word');
+        data.addColumn('number', 'count');
+
+        $.each(chartData, function (i, d) {
+            data.addRow([chartData[i].PieNode, chartData[i].PieValue]);
+        });
+
+        var options = {
+            title: '',
+            is3D: true,
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+        chart.draw(data, options);
+    }
+
+    function Aging() {
+        var dtTable = $('#topoffice');
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetArrearAging", "Home", "http")',
+            data: "",
+            dataType: 'json',
+            async: true,
+            success: function (ArrearItem) {
+                var tableBody = dtTable.find('tbody');
+                var TotDebit = 0;
+                var TotCredit = 0;
+                tableBody.empty();
+                $.each(ArrearItem, function (index, acc) {
+                    var sl = index + 1;
+                    tableBody.append('<tr>' +
+                                 '<td style="text-align:center;">' + sl + '</td>' +
+                                 '<td>' + acc.ItemName + '</td>' +
+                                 '<td>' + acc.Members + '</td>' +
+                                 '</tr>')
+                })
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }   
+
+    function GetDashboardCenterMemmberMiscSummary() {
+        var dtTable = $('#topofficeRep');
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDashboardCenterMemmberMiscSummary", "Home", "http")',           
+            async: true,
+            success: function (RapaymentItem) {
+                var tableBody = dtTable.find('tbody');
+                var TotDebit = 0;
+                var TotCredit = 0;
+                tableBody.empty();
+                $.each(RapaymentItem, function (index, acc) {
+                    var sl = index + 1;
+                    tableBody.append('<tr>' +
+                                 '<td style="text-align:center;">' + sl + '</td>' +
+                                 '<td>' + acc.ItemName + '</td>' +
+                                /* '<td>' + acc.Members + '</td>' +*/
+                                 '<td>' + acc.SummaryValue + '</td>'+
+                                 '</tr>')
+                })
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+</script>
+@if (ViewBag.Expire_Msg != null)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                @ViewBag.Expire_Msg
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+<!-- Panel start -->
+<div class="row">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="blueDues"></div>
+                        <div>Recoverable</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="blueCollections"></div>
+                        <div>Collections</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="blueRates"></div>
+                        <div>Overdue</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <span class="pull-left">Current Month Repayment Status(100K) </span>
+                <span class="pull-right"><i class="fa fa-th"></i></span>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="greenIncomes">0</div>
+                        <div>Income</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="greenExpenditures">0</div>
+                        <div>Expenditure</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="greenProfits">0</div>
+                        <div>Profit/Loss</div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <span class="pull-left">Profit/Loss(100K)</span>
+                <span class="pull-right"><i class="fa fa-money"></i></span>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-yellow">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="orangeMembers"></div>
+                        <div>Admission</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="orangeBorrowers">0</div>
+                        <div>Disburse</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="orangeRatio">0</div>
+                        <div>Dropout</div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <span class="pull-left">Current Month Progress</span>
+                <span class="pull-right"><i class="fa fa-tasks"></i></span>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-red">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="redMembers">0</div>
+                        <div>Active Members</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="redBorrowers">0</div>
+                        <div>Borrowers</div>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <div class="huge" id="redDorment">0</div>
+                        <div>Waiting for Loan</div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <span class="pull-left">Member Statistics</span>
+                <span class="pull-right"><i class="fa fa-bars"></i></span>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 col-md-6 col-sm-6">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Year wise Disbursement, Repayment & Savings</h3>
+            </div>
+            <div class="panel-body">
+                <div id="columnchart_material"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-6">
+        <!--Load the AJAX API-->
+
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Member, Borrower & Dorment Ratio</h3>
+            </div>
+            <div class="panel-body">
+                <!--Div that will hold the pie chart-->
+                <div id="piechart_3d"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 col-md-6 col-sm-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Overdue Classification (Arear Aging)</h3>
+            </div>
+            <div class="panel-body">
+                <table id="topoffice" class="table table-striped display" width="100%">
+                    <thead>
+                        <tr>
+                            <th>SL</th>
+                            <th>Overdue Range</th>
+                            <th>Borrowers</th>
+                            @*<th>First</th>*@
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                @*<tr>
+                        <th scope="row">6</th>
+                        <td>>365 Days Drop</td>
+                        <td>8</td>
+                    </tr>*@
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-6" id="hideRepaymentClassification">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Repayment Classification</h3>
+            </div>
+            <div class="panel-body">
+
+
+                <table id="topofficeRep" class="table table-striped display" width="100%">
+                    <thead>
+                        <tr>
+                            <th>SL</th>
+                            @*<th>Repayment Percentage</th>
+                                <th>Borrowers</th>*@
+                            <th>Tittle</th>
+                            <th>Value</th>
+
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="officeSelectDialog" tabindex="-1" role="dialog" aria-labelledby="officeSelectDialogLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4>Select office to work on.</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <fieldset>
+                        <div class="form-group">
+                            @Html.Label("Office: ", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-10 col-sm-10">
+                                @Html.DropDownList("ddlOffice", employeeMaping)
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-primary" data-dismiss="modal" id="officeSelectModalOk">Ok</a>
+                <a href="#" class="btn btn-default" data-dismiss="modal" id="officeSelectModalCancel">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

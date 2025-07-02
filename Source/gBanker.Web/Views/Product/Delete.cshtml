@@ -1,0 +1,193 @@
+﻿@model gBanker.Web.ViewModels.ProductViewModel
+
+@{
+    ViewBag.Title = "Product Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to discontinue this?</h3>
+<div>
+    <h4>Product</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        @*<dt>
+            @Html.DisplayNameFor(model => model.CreateUser)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateUser)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateDate)
+        </dd>*@
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductName)
+        </dd>
+
+        @*<dt>
+            @Html.DisplayNameFor(model => model.ProductShortNameBng)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductShortNameBng)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductFullNameBng)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductFullNameBng)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InvestorID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InvestorID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InterestRate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InterestRate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Duration)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Duration)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MainProductCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MainProductCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MainItemName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MainItemName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InterestInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InterestInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SavingsInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SavingsInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MinLimit)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MinLimit)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaxLimit)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaxLimit)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InterestCalculationMethod)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InterestCalculationMethod)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PaymentFrequency)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PaymentFrequency)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InsuranceItemCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InsuranceItemCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InsuranceItemRate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InsuranceItemRate)
+        </dd>*@
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

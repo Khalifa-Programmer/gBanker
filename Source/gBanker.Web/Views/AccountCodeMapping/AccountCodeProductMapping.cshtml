@@ -1,0 +1,400 @@
+﻿@model gBanker.Web.ViewModels.ProductViewModel
+
+
+@{
+    ViewBag.Title = "Product Account Code Mapping";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+
+<script>
+
+    function LoadTrxInd() {
+        var ddlTrxInd = $("#ddlTrxInd");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetTrxIndList", "AccountCodeMapping", "http")',
+            data: { productType: $("#ProductType").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlTrxInd.html('');
+                $.each(data, function (id, option) {
+                    ddlTrxInd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function Delete(Id) {
+
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("Delete", "AccountCodeMapping", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Result) {
+                        $.alert.open("Message", Result);
+                        searchReloadGrid();
+                    },
+                    error: function (request, status, error) {
+                        $.alert.open("Message", "This in Use. Can Not Delete.");
+                    }
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+
+    }//END delete
+
+
+    $(document).ready(function () {
+        
+        $("#btnSave").click(function () {
+
+            let TrxInd = $('#ddlTrxInd :selected').val();
+            let ProductID = $('#ProductID').val();
+            let AccCode = $('#AccCode').val();
+
+            if (TrxInd == 0 || TrxInd == "") {
+                $.alert.open("Message", "Please select TrxId");
+                return;
+            }
+
+            if (ProductID == 0 || ProductID == "") {
+                $.alert.open("Message", "Please select Product.");
+                return;
+            }
+            if (AccCode == 0 || AccCode == "") {
+                $.alert.open("Message", "Please select AccCode.");
+                return;
+            }
+
+
+
+             $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("Create", "AccountCodeMapping", "http")',
+                 data: {
+                     TrxInd: TrxInd, ProductID : ProductID, AccCode : AccCode
+                 },
+                    dataType: 'json',
+                    async: true,
+                 success: function (Result) {
+                     $.alert.open("Message", Result);
+                        searchReloadGrid();
+                    },
+                    error: function (request, status, error) {
+                        $.alert.open("Message", error);
+                    }
+                });
+
+        });
+
+
+
+        $("#productAutoComplete").blur(function () {
+            var product = $("#productAutoComplete").val();
+            ///function
+
+            if (product.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetActiveProductListAuto", "AccountCodeMapping", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { productCode: product },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#productAutoComplete").val(data[0].ProductName);
+                             
+                           // $("#ProductID").val(data[0].ProductID);
+
+                            var myArray = data[0].ProductID.split("-");
+
+                            $("#ProductID").val(myArray[0]);
+                            $("#ProductType").val(myArray[1]);
+                             
+                        }
+                        else if (data.length == 0) {
+                            // alert("No member found.");
+                            $("#ProductID").val("");
+                            $("#ProductType").val("");
+
+                        }
+                        else {
+                            $("#ProductID").val("");
+                            $("#ProductType").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#productAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetActiveProductListAuto", "AccountCodeMapping", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { productCode: request.term },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.ProductID,
+                                label: item.ProductName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#productAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#productAutoComplete").val(ui.item.label);
+                 //$("#ProductID").val(ui.item.value);
+                var myArray = ui.item.value.split("-");
+                
+                $("#ProductID").val(myArray[0]);
+                $("#ProductType").val(myArray[1]);
+
+                LoadTrxInd();
+                //$("#ProductType").val(ui.item);
+                
+                searchReloadGrid();
+                return false;
+            },
+            change: function (event, ui) {
+                $("#productAutoComplete").val(ui.item.label);
+                 //$("#ProductID").val(ui.item.value);
+                var myArray = ui.item.value.split("-");
+                //let selectedProductID = myArray[0];
+
+                $("#ProductID").val(myArray[0]);
+                $("#ProductType").val(myArray[1]);
+
+                
+               
+                return false;
+            }
+        });
+
+
+        // Acc Code AutoComplete
+        $("#AccAutoComplete").blur(function () {
+            var AccCode = $("#AccAutoComplete").val();
+
+            if (AccCode.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccCodeListAuto", "AccountCodeMapping", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AccCode: AccCode },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#AccAutoComplete").val(data[0].AccName);
+                           // $("#AccID").val(data[0].AccID);
+                            $("#AccCode").val(data[0].AccCode);
+                        }
+                        else if (data.length == 0) {
+                            // alert("No member found.");
+                            //$("#AccID").val("");
+                            $("#AccCode").val("");
+                        }
+                        else {
+                            $("#AccCode").val("");
+                            //$("#AccID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#AccAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccCodeListAuto", "AccountCodeMapping", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AccCode: request.term },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.AccCode,
+                                label: item.AccName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#AccAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#AccAutoComplete").val(ui.item.label);
+                $("#AccCode").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#AccAutoComplete").val(ui.item.label);
+                $("#AccCode").val(ui.item.value);
+                return false;
+            }
+        });
+
+
+
+        /// GRID:::
+        $('#grid2').jtable({
+
+            paging: true,
+            pageSize: 50,
+            sorting: false,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: '/AccountCodeMapping/GetTrxIndProductMappingList'
+            },
+            fields: {
+                rowSl: {
+                    title: 'SI No',
+                    width: '4%'
+                },
+                ProductName: {
+                    title: 'Product Name',
+                    width: '15%'
+                },
+                AccCode: {
+                    title: 'Acc Code',
+                    width: '6%'
+                },
+                voucher_category: {
+                    title: 'voucher Category',
+                    width: '8%'
+                },
+                voucher_type: {
+                    title: 'voucher type',
+                    width: '6%'
+                },
+                trx_ind_FullName: {
+                    title: 'trx Ind FullName',
+                    width: '15%'
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Delete(' + data.record.AccountingInterfaceID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+
+            }// end Fields
+        });
+
+    }); // END Document Ready
+
+    function searchReloadGrid() {
+        $('#grid2').jtable('load', { ProductID: $("#ProductID").val(), AccCode:0, trx_ind :0 });
+    }
+
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Account Product Mapping</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Product", htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBox("productAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.ProductID)
+                    @Html.HiddenFor(model => model.ProductType)
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Account Code", htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBox("AccAutoComplete", "", new { @class = "form-control" })
+                    <input type="hidden" id="AccCode" value="" />
+
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Trx Indicator", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownList("AccountingInterfaceMaster", null, new { @ID = "ddlTrxInd", @class = "form-control" })
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="button" value="Save Mapping" id="btnSave" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+        <hr />
+
+        <div class="row">
+
+            <div id="grid2"></div>
+
+        </div>
+
+    </div>
+}
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

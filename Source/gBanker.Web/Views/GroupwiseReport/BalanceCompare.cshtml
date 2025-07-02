@@ -1,0 +1,238 @@
+﻿@model gBanker.Web.ViewModels.BalanceCompareViewModel
+
+@{
+    ViewBag.Title = "Special Loan Collection";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var compareList = Model == null ? null : Model.ComareList;
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#gridLoan').hide();
+        $('#gridSavings').hide();
+        
+        $('#ddlCompareSelected').change(function () {
+            var compareSelected = $('#ddlCompareSelected').val();
+
+            if (compareSelected == 1) {
+                $('#gridLoan').show();
+                $('#gridSavings').hide();
+
+                $('#gridLoan').jtable({
+                    paging: true,
+                    pageSize: 50,
+                    sorting: true,
+                    defaultSorting: 'RowSl ASC',
+                    actions: {
+                        listAction: function (postData, jtParams) {
+                            return $.Deferred(function ($dfd) {
+                                $.ajax({
+                                    url: '/GroupWiseReport/GetBalanceCompare?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&Qtype=1',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: postData,
+                                    success: function (data) {
+                                        $dfd.resolve(data);
+                                    },
+                                    error: function () {
+                                        $dfd.reject();
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    fields: {
+                        RowSl: {
+                            title: 'Sl No',
+                            list: true,
+                            width: '5%'
+                        },
+                        OfficeID: {
+                            list: false,
+                            create: false,
+                            edit: false
+                        },
+                        OfficeCode: {
+                            title: 'Office Code',
+                            width: '5%'
+                        },
+                        OfficeName: {
+                            title: 'Office Name',
+                            width: '5%'
+                        },
+                        LoanBalR: {
+                            title: 'Loan Balance Register',
+                            width: '10%'
+                        },
+                        LoanBalS: {
+                            title: 'Loan Balance Summary',
+                            width: '10%'
+                        },
+                        BalanceA: {
+                            title: 'Accounts',
+                            width: '5%'
+                        },
+                        Diff_R_S: {
+                            title: 'Register With Summary',
+                            width: '10%'
+                        },
+                        Diff_R_A: {
+                            title: 'Register With Accounts',
+                            width: '10%'
+                        },
+                        Diff_S_A: {
+                            title: 'Summary With Accounts',
+                            width: '10%'
+                        },
+                        AccCode: {
+                            title: 'Account Code',
+                            width: '10%'
+                        },
+                        AccName: {
+                            title: 'Account Name',
+                            width: '15%'
+                        },
+                        CompleteWorkDate: {
+                            title: 'Complete Work Date',
+                            width: '10%',
+                            type: 'date',
+                            displayFormat: 'dd M yy'
+                        }
+                    }
+                });
+                $('#gridLoan').jtable('load', { Qtype: $('#ddlCompareSelected').val() });
+            }
+            else if (compareSelected == 2) {
+                $('#gridLoan').hide();
+                $('#gridSavings').show();
+
+                $('#gridSavings').jtable({
+                    paging: true,
+                    pageSize: 50,
+                    sorting: true,
+                    defaultSorting: 'RowSl ASC',
+                    actions: {
+                        listAction: function (postData, jtParams) {
+                            return $.Deferred(function ($dfd) {
+                                $.ajax({
+                                    url: '/GroupWiseReport/GetBalanceCompare?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&Qtype=2',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: postData,
+                                    success: function (data) {
+                                        $dfd.resolve(data);
+                                    },
+                                    error: function () {
+                                        $dfd.reject();
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    fields: {
+                        RowSl: {
+                            title: 'Sl No',
+                            list: true,
+                            width: '5%'
+                        },
+                        OfficeID: {
+                            list: false,
+                            create: false,
+                            edit: false
+                        },
+                        OfficeCode: {
+                            title: 'Office Code',
+                            width: '5%'
+                        },
+                        OfficeName: {
+                            title: 'Office Name',
+                            width: '5%'
+                        },
+                        BalanceR: {
+                            title: 'Register',
+                            width: '5%'
+                        },
+                        BalanceS: {
+                            title: 'Summary',
+                            width: '5%'
+                        },
+                        BalanceA: {
+                            title: 'Accounts',
+                            width: '5%'
+                        },
+                        Diff_R_S: {
+                            title: 'Register With Summary',
+                            width: '10%'
+                        },
+                        Diff_R_A: {
+                            title: 'Register With Accounts',
+                            width: '10%'
+                        },
+                        Diff_S_A: {
+                            title: 'Summary With Accounts',
+                            width: '10%'
+                        },
+                        AccCode: {
+                            title: 'Account Code',
+                            width: '10%'
+                        },
+                        AccName: {
+                            title: 'Account Name',
+                            width: '15%'
+                        },
+                        CompleteWorkDate: {
+                            title: 'Complete Work Date',
+                            width: '10%',
+                            type: 'date',
+                            displayFormat: 'dd M yy'
+                        }
+                    }
+                });
+                $('#gridSavings').jtable('load', { Qtype: $('#ddlCompareSelected').val() });
+            }
+            else {
+                $('#gridLoan').hide();
+                $('#gridSavings').hide();
+            }
+        });
+        
+
+
+        
+    });
+</script>
+
+<div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label>Compare List </label>
+                @Html.DropDownList("ddlCompareSelected", compareList, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div id="gridLoan"></div>
+    <div id="gridSavings"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

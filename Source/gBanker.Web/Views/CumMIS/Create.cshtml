@@ -1,0 +1,279 @@
+﻿@model gBanker.Web.ViewModels.CumMISViewModel
+
+@{
+    ViewBag.Title = "CumMIS Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var office = Model == null ? null : Model.OfficeList;
+    var center = Model == null ? null : Model.centerListItems;
+    var investor = Model == null ? null : Model.investorListItems;
+    var gender = Model == null ? null : Model.GenderList;
+    var cumMis = Model == null ? null : Model.CumMisItemList;
+}
+<style type="text/css">
+     .modal {
+         display: none;
+         position: fixed;
+         z-index: 1000;
+         top: 0;
+         left: 0;
+         height: 100%;
+         width: 100%;
+         background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+     }
+
+     /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+     body.loading {
+         overflow: hidden;
+     }
+
+         /* Anytime the body has the loading class, our
+    modal element will be visible */
+         body.loading .modal {
+             display: block;
+         }
+</style>
+<script type="text/javascript">
+    function SetProductid(value) {
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+    }
+    function SetCumisid(value) {
+        var ddlValue = $("#CumMisItemID option:selected").val();
+        $("#hfCumMisItemID").val(ddlValue);
+    }
+    $(document).ready(function () {
+        //  $("#ApproveDate").datepicker();
+        gBankerDatePicker("MisDate");
+       
+    });
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+@using (Html.BeginForm("Create", "CumMIS", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+
+
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control", onchange = "SetProductid(this.value);" })
+                    @*@Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CumMisItemID, htmlAttributes: new { @class = "control-label" })
+
+
+                    @Html.DropDownListFor(model => model.CumMisItemID, cumMis, new { @class = "form-control", onchange = "SetCumisid(this.value);" })
+                    @*@Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                    @Html.Hidden("hfCumMisItemID")
+                    @Html.ValidationMessageFor(model => model.CumMisItemID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InvestorID, htmlAttributes: new { @class = "control-label" })
+
+
+                    @*@Html.DropDownListFor(model => model.InvestorID, investor, new { onchange = "SetProductid(this.value);" })*@
+                    @Html.DropDownListFor(model => model.InvestorID, investor, new { @class = "form-control", @readonly = true })
+                    @Html.Hidden("hfInvesId")
+                    @Html.ValidationMessageFor(model => model.InvestorID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Gender, htmlAttributes: new { @class = "control-label" })
+
+
+                  
+                    @Html.DropDownListFor(model => model.Gender, gender, new { @class = "form-control"})
+                   
+                    @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NoOfLoanee, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.NoOfLoanee, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.NoOfLoanee, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UpToLoanDis, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UpToLoanDis, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UpToLoanDis, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UptoDisburseMent, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UptoDisburseMent, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UptoDisburseMent, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UpToRecovery, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UpToRecovery, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UpToRecovery, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UptoAdmission, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UptoAdmission, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UptoAdmission, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UpToDropOut, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UpToDropOut, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UpToDropOut, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UptoFullyRepaid, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UptoFullyRepaid, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UptoFullyRepaid, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UptoDeposit, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UptoDeposit, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UptoDeposit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UptoInterest, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.UptoInterest, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UptoInterest, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.uptowithdrawal, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.uptowithdrawal, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.uptowithdrawal, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.WriteOffLoan, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.WriteOffLoan, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.WriteOffLoan, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.WriteOffInterest, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.WriteOffInterest, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.WriteOffInterest, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MisDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MisDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.MisDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+   
+
+   
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+
+
+
+
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

@@ -1,0 +1,1196 @@
+﻿@model gBanker.Web.ViewModels.RebateViewModel
+
+@{
+    ViewBag.Title = "Rebate Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var cashItem = Model == null ? null : Model.cashListItems;
+    // var vmaxLoanterm == null ? null : Model.vMaxLoanTerm.ToString();
+
+}
+<style type="text/css">
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+
+
+
+
+<script type="text/javascript">
+    $body = $("body");
+
+    function SetProductid(value) {
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+    }
+    function SetTrxTypeid(value) {
+        var ddlValue = $("#TrxType option:selected").val();
+        $("#hftranId").val(ddlValue);
+    }
+    function GetProductList(Member_id, center_id) {
+        var ddlproduct = $("#ProductID");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "Rebate", "http")',
+            data: { Member_id: Member_id, center_id: center_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlproduct.html('');
+                $.each(data, function (id, option) {
+                    ddlproduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function getBalance() {
+
+        var loanRepaid = $("#LoanPaid").val();
+        var intPaid = $("#IntPaid").val();
+        if (loanRepaid.length == 0) {
+            $("#LoanPaid").val("0");
+            loanRepaid = "0";
+        }
+        if (intPaid.length == 0) {
+            $("#IntPaid").val("0");
+            intPaid = "0";
+        }
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBalance", "SpecialLoanCollectionRebateAndTransfer")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { loanRepaid: loanRepaid, intPaid: intPaid },
+
+            success: function (result) {
+                $("#TotalPaid").val(result.balance);
+
+            },
+            error: function (error) {
+                alert('error');
+            }
+        });
+    }
+   
+    function CalcLoanTerm() {
+        //alert('fn');
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+
+        if (prodId > 0 && memId > 0 && officeId > 0 && centerId > 0) {
+
+            $body.addClass("loading");
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMaxLoanTerm", "Rebate", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, ProdId: prodId },
+
+                success: function (result) {
+                    $("#LoanTerm").val(result.LoanTerm);
+                    $body.removeClass("loading");
+                    if (result.LoanTerm == 0) {
+                        $('#PrincipalLoan').val('0');
+                        $('#LoanRepaid').val('0');
+                       $("#CumIntCharge").val('0');
+                       $("#CumIntDue").val('0');
+                       $("#LoanBalance").val('0');
+                       $("#IntBalance").val('0');
+                       $("#NewRebate").val('0');
+                       $("#TotalRebate").val('0');
+                    }
+
+                },
+                error: function (err) {
+                    $body.removeClass("loading");
+                }
+            });
+        }
+    }
+    function calculate() {
+        var TotPaid = $("#TotalPaid").val();
+        var LoanPaid = $("#LoanPaid").val();
+        var IntPaid = $("#IntPaid").val();
+        var calcMethod = $("#hfInterestCalculationMethod").val();
+        var PaymentFrequency = $("#hfPaymentFrequency").val();
+        var LoanDue = $("#hfLoanDue").val();
+        var IntDue = $("#hfIntDue").val();
+        var PrincipalLoan = $("#hfPrincipalLoan").val();
+        var LoanRepaid = $("#hfLoanRepaid").val();
+        var cumIntPaid = $("#DueRecovery").val();
+        var cumIntCharge = $("#CumIntCharge").val();
+        var vInterestBalance = Number(cumIntCharge) - Number(cumIntPaid)
+        var vLoanInstallment = LoanPaid;
+        var vInterestInstallment = IntPaid;
+        var vPrincipalLOan = PrincipalLoan;
+        var vloanRepaid = LoanRepaid;
+
+        var total = TotPaid;
+        var vLoan = LoanDue;
+        var vInt = IntDue;
+        var vTotalInstall = Number(vLoan) + Number(vInt);
+
+        var  vDuration =$("#hfDuration").val();
+        var vDurationOverLoanDue = $("#hfDurationOverLoanDue").val();
+        var vDurationOverIntDue=$("#hfDurationOverIntDue").val();
+        var vInstallmentNo=$("#hfInstallmentNo").val();
+        if (Number(vInstallmentNo) > Number(vDuration)) {
+            vLoan = vDurationOverLoanDue;
+            vInt = vDurationOverIntDue;
+
+            if (total == 0) {
+                vLoanInstallment = 0;
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) >= parseFloat(total)) {
+
+                        vLoanInstallment = parseFloat(total)
+                    }
+                    // if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) > 0 && (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) < (parseFloat(vLoan) + parseFloat(vInt)))
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) > 0 && (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) < parseFloat(total)) {
+                        vLoanInstallment = (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid))
+
+                    }
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) == 0)
+
+                        vLoanInstallment = 0
+
+                    //if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                    //    if (parseFloat(total) > parseFloat(vInt)) {
+                    //        vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                    //    }
+                    //    if (parseFloat(total) <= parseFloat(vInt)) {
+                    //        vLoanInstallment = 0
+                    //    }
+                    //}
+                    //else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                    //    if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                    //        vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                    //    }
+                    //    if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                    //        vLoanInstallment = 0
+                    //    }
+                    //}
+
+                    //    /////////////////////for General Calculation///////////////////////////////////////
+                    //else {
+
+                    //    if (parseFloat(total) < parseFloat(vLoan)) {
+                    //        //vLoanInstallment = 0;
+                    //        vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    //    }
+                    //    else {
+                    //        vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    //    }
+                    //}
+                }
+
+
+                //else if (calcMethod == "A" || calcMethod == "R") //For JCF
+                else if (calcMethod == "A" || calcMethod == "R" || calcMethod=="D")
+                {
+
+
+                        if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) >= parseFloat(total))
+                        {
+
+                            vLoanInstallment = parseFloat(total)
+                        }
+                       // if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) > 0 && (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) < (parseFloat(vLoan) + parseFloat(vInt)))
+                        if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) > 0 && (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) < parseFloat(total))
+                        {
+                            vLoanInstallment = (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid))
+
+                        }
+                        if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) == 0)
+
+                            vLoanInstallment = 0
+
+                }
+                else if (calcMethod == "E") {
+                    if (parseFloat(total) > parseFloat(vInt)) {
+                        vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                    }
+                    if (parseFloat(total) <= parseFloat(vInt)) {
+                        vLoanInstallment = 0
+                    }
+                }
+                else {
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) > parseFloat(vInt)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+                        vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+            }
+            // loanPaidId = vLoanInstallment;
+
+            if (total == 0) {
+
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    //if (calcMethod == "A") {
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) >= parseFloat(total)) {
+
+                        vInterestInstallment = 0
+                    }
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) > 0 && (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) < parseFloat(total)) {
+                        vInterestInstallment = parseFloat(total) - (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid))
+
+                    }
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) == 0)
+
+                        vInterestInstallment = parseFloat(total)
+                    //if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                    //    if (parseFloat(total) > parseFloat(vInt)) {
+                    //        vInterestInstallment = parseFloat(vInt)
+                    //    }
+                    //    if (parseFloat(total) <= parseFloat(vInt)) {
+                    //        vInterestInstallment = parseFloat(total)
+                    //    }
+                    //}
+                    //else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                    //    if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                    //        vInterestInstallment = parseFloat(vInterestBalance)
+                    //    }
+                    //    if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                    //        vInterestInstallment = parseFloat(total)
+                    //    }
+                    //}
+                    //    /////////////////////for General Calculation///////////////////////////////////////
+                    //else {
+                    //    if (parseFloat(total) < parseFloat(vInt)) {
+                    //        //vInterestInstallment = total;
+                    //        vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    //    }
+                    //    else {
+                    //        vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    //    }
+                    //}
+                }
+
+                else if (calcMethod == "A" || calcMethod == "R" || calcMethod == "D") {
+
+                    //if (calcMethod == "A") {
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) >= parseFloat(total)) {
+
+                        vInterestInstallment = 0
+                    }
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) > 0 && (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) < parseFloat(total)) {
+                        vInterestInstallment = parseFloat(total) - (parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid))
+
+                    }
+                    if ((parseFloat(vPrincipalLOan) - parseFloat(vloanRepaid)) == 0)
+
+                        vInterestInstallment = parseFloat(total)
+
+
+                }
+                else if (calcMethod == "E") {
+                    if (parseFloat(total) > parseFloat(vInt)) {
+                        vInterestInstallment = parseFloat(vInt)
+                    }
+                    if (parseFloat(total) <= parseFloat(vInt)) {
+                        vInterestInstallment = parseFloat(total)
+                    }
+                }
+                else {
+
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) > parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(vInt)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(vInterestBalance)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+                        vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+            }
+        }
+        else {
+            if (total == 0) {
+                vLoanInstallment = 0;
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) > parseFloat(vInt)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+
+                        if (parseFloat(total) < parseFloat(vLoan)) {
+                            //vLoanInstallment = 0;
+                            vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                        }
+                        else {
+                            vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                        }
+                    }
+                }
+                    //else if (calcMethod == "A") {
+                    //    if (parseFloat(total) > parseFloat(vInt)) {
+                    //        vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                    //    }
+                    //    if (parseFloat(total) <= parseFloat(vInt)) {
+                    //        vLoanInstallment = 0
+                    //    }
+                    //}
+                else if (calcMethod == "A" || calcMethod == "R") {
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) > parseFloat(vInt)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            if (parseFloat(vInterestBalance) <= 0)
+                            {
+                                vLoanInstallment = parseFloat(total)
+                            }
+                            else
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+
+                        if (calcMethod == "A") {
+                            if (vInterestBalance > vInt) {
+                                if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                                    if (vInterestBalance <= 0) {
+                                        vLoanInstallment = parseFloat(total) - vInterestBalance
+
+                                    }
+                                    else
+
+                                    vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                                }
+                                if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                                    vLoanInstallment = 0
+                                }
+                                // vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                            }
+
+                            else {
+                                if (parseFloat(total) > parseFloat(vInt)) {
+                                    if (vInterestBalance <= 0) {
+                                        vLoanInstallment = parseFloat(total) - vInterestBalance
+
+                                    }
+                                    else
+
+                                    vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                                }
+                                if (parseFloat(total) <= parseFloat(vInt)) {
+                                    vLoanInstallment = 0
+                                }
+                            }
+                        }
+                        else if (calcMethod == "R") {
+                            if (parseFloat(total) > (parseFloat(vLoan) + parseFloat(vInt)) && parseFloat(total) - (parseFloat(vLoan) + parseFloat(vInt)) > vInterestBalance - parseFloat(vInt)) {
+
+                                if (vInterestBalance > 0)
+                                {
+                                    vLoanInstallment = parseFloat(total) - vInterestBalance
+
+                                }
+                                else
+                                {
+                                    vLoanInstallment = parseFloat(total)
+                                }
+
+
+                            }
+                            else {
+                                if (parseFloat(total) < (parseFloat(vLoan) + parseFloat(vInt))) {
+
+                                    if (parseFloat(total) < parseFloat(vInt))
+                                    {
+                                        vLoanInstallment=0
+                                    }
+                                    else
+                                    {
+                                        vLoanInstallment = parseFloat(total) - parseFloat(vInt)
+                                    }
+
+                                }
+                                else
+                                    vLoanInstallment = parseFloat(vLoan)
+
+                            }
+
+
+                        }
+                        //if (vInterestBalance > vInt) {
+                        //    if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                        //        vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        //    }
+                        //    if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                        //        vLoanInstallment = 0
+                        //    }
+                        //    // vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        //}
+
+                        //else {
+                        //    if (parseFloat(total) > parseFloat(vInt)) {
+                        //        vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                        //    }
+                        //    if (parseFloat(total) <= parseFloat(vInt)) {
+                        //        vLoanInstallment = 0
+                        //    }
+                        //}
+                    }
+                }
+                else if (calcMethod == "E") {
+                    if (parseFloat(total) > parseFloat(vInt)) {
+                        vLoanInstallment = (parseFloat(total) - parseFloat(vInt))
+                    }
+                    if (parseFloat(total) <= parseFloat(vInt)) {
+                        vLoanInstallment = 0
+                    }
+                }
+                else {
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) >= parseFloat(vInterestBalance)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            vLoanInstallment = (parseFloat(total) - parseFloat(vInterestBalance))
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vLoanInstallment = 0
+                        }
+                    }
+
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+                        vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+            }
+            // loanPaidId = vLoanInstallment;
+
+            if (total == 0) {
+
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) > parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(vInt)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(vInterestBalance)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+                        if (parseFloat(total) < parseFloat(vInt)) {
+                            //vInterestInstallment = total;
+                            vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                        }
+                        else {
+                            vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                        }
+                    }
+                }
+                    //else if (calcMethod == "A") {
+                    //    if (parseFloat(total) > parseFloat(vInt)) {
+                    //        vInterestInstallment = parseFloat(vInt)
+                    //    }
+                    //    if (parseFloat(total) <= parseFloat(vInt)) {
+                    //        vInterestInstallment = parseFloat(total)
+                    //    }
+                    //}
+                else if (calcMethod == "A" || calcMethod == "R") {
+
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) > parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(vInt)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            if (parseFloat(vInterestBalance) <= 0)
+                            {
+                                vInterestInstallment=0
+                            }
+                            else
+                            vInterestInstallment = parseFloat(vInterestBalance)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+                        if (calcMethod == "A") {
+                            if (vInterestBalance > vInt) {
+                                if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                                    vInterestInstallment = parseFloat(vInterestBalance)
+                                }
+                                if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                                    vInterestInstallment = parseFloat(total)
+                                }
+                                //vInterestInstallment = parseFloat(vInterestBalance)
+                            }
+                            else {
+                                if (parseFloat(total) > parseFloat(vInt)) {
+                                    if (vInterestBalance <= 0) {
+                                        vInterestInstallment = 0
+
+                                    }
+                                    else
+
+                                    vInterestInstallment = parseFloat(vInt)
+                                }
+                                if (parseFloat(total) <= parseFloat(vInt)) {
+                                    vInterestInstallment = parseFloat(total)
+                                }
+                            }
+                        }
+                        else if (calcMethod == "R") {
+                            if (parseFloat(total) > (parseFloat(vLoan) + parseFloat(vInt)) && parseFloat(total) - (parseFloat(vLoan) + parseFloat(vInt)) > vInterestBalance - parseFloat(vInt)) {
+
+                                if (vInterestBalance > 0)
+                                {
+                                    vInterestInstallment = vInterestBalance
+                                }
+                                else
+                                {
+                                    vInterestInstallment = 0
+                                }
+
+
+                            }
+                            else {
+                                if (parseFloat(total) < (parseFloat(vLoan) + parseFloat(vInt))) {
+                                    if (parseFloat(total) < parseFloat(vInt))
+                                    { vInterestInstallment = parseFloat(total) }
+                                    else
+                                    {
+                                        vInterestInstallment = parseFloat(vInt)
+                                    }
+
+                                }
+                                else {
+                                    vInterestInstallment = parseFloat(total) - parseFloat(vLoan)
+                                }
+
+                            }
+                        }
+                        //if (vInterestBalance > vInt) {
+                        //    if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                        //        vInterestInstallment = parseFloat(vInterestBalance)
+                        //    }
+                        //    if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                        //        vInterestInstallment = parseFloat(total)
+                        //    }
+                        //    //vInterestInstallment = parseFloat(vInterestBalance)
+                        //}
+                        //else {
+                        //    if (parseFloat(total) > parseFloat(vInt)) {
+                        //        vInterestInstallment = parseFloat(vInt)
+                        //    }
+                        //    if (parseFloat(total) <= parseFloat(vInt)) {
+                        //        vInterestInstallment = parseFloat(total)
+                        //    }
+                        //}
+                    }
+                    //if (parseFloat(total) > parseFloat(vInt)) {
+                    //    vInterestInstallment = parseFloat(vInt)
+                    //}
+                    //if (parseFloat(total) <= parseFloat(vInt)) {
+                    //    vInterestInstallment = parseFloat(total)
+                    //}
+                }
+                else if (calcMethod == "E") {
+                    if (parseFloat(total) > parseFloat(vInt)) {
+                        vInterestInstallment = parseFloat(vInt)
+                    }
+                    if (parseFloat(total) <= parseFloat(vInt)) {
+                        vInterestInstallment = parseFloat(total)
+                    }
+                }
+                else {
+
+                    if (parseFloat(vLoan) == 0 && parseFloat(vInt) > 0) {
+                        if (parseFloat(total) >= parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(vInterestBalance)
+                        }
+                        if (parseFloat(total) < parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInt)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                    else if (parseFloat(vLoan) == 0 && parseFloat(vInt) == 0) {
+                        if (parseFloat(total) > parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(vInterestBalance)
+                        }
+                        if (parseFloat(total) <= parseFloat(vInterestBalance)) {
+                            vInterestInstallment = parseFloat(total)
+                        }
+                    }
+                        /////////////////////for General Calculation///////////////////////////////////////
+                    else {
+                        vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+            }
+        }
+
+
+
+
+        if (calcMethod != "A")
+        {
+            var vLoanBal = Number(vPrincipalLOan) - Number(vloanRepaid)
+            var calIns = Number(vloanRepaid) + Number(vLoanInstallment)
+            if (calIns >= Number(vPrincipalLOan)) {
+                vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+                vLoanInstallment = Number(vPrincipalLOan) - Number(vloanRepaid)
+            }
+
+
+            var vLoanBalance = Number(vPrincipalLOan) - Number(vloanRepaid);
+            var vBal = Number(vLoanBalance) + Number(vInterestBalance);
+            if (Number(Math.round(vBal)) <= Number(total)) {
+
+                if (Number(vInterestBalance) > 0) {
+                    vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+                    vLoanInstallment = Number(vPrincipalLOan) - Number(vloanRepaid)
+
+                }
+                else
+                    if (Number(Math.round(total)) > Number(Math.round(vLoanBalance))) {
+                        vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+                        vLoanInstallment = Number(vPrincipalLOan) - Number(vloanRepaid)
+                    }
+                    else {
+                        vInterestInstallment = 0
+                        // vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+                        vLoanInstallment = Number(Math.round(total))
+                    }
+
+
+            }
+            if ((Math.round(vLoanInstallment) + Math.round(vInterestInstallment)) > Number(total)) {
+                vLoanInstallment = Number(total) - Math.round(vInterestInstallment);
+
+            }
+
+        }
+
+        $('#LoanPaid').val(Math.round(vLoanInstallment));
+        $('#IntPaid').val(Math.round(vInterestInstallment));
+    }
+
+    $(document).ready(function () {
+       
+
+        $("#ProductID").change(function () {
+
+            CalcLoanTerm();
+
+        });
+        $("#CenterID").change(function () {
+            $("#memberAutoComplete").val('');
+            $("#MemberID").val('');
+            CalcLoanTerm();
+         
+        });
+        $("#MemberID").change(function () {
+            CalcLoanTerm();
+          
+        });
+        $("#OfficeID").change(function () {
+            CalcLoanTerm();
+           
+        });
+      
+        ////////////////////////////////////
+        $("#LoanTerm").blur(function () {
+            var LoanTerm = $("#LoanTerm").val();
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var centerId = $("#CenterID").val();
+       
+                //  var transtype = $("#TrxType").val();
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetInstallment", "Rebate", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { officeId: officeId, centerId: centerId, MemId: memId, productid: prodId, loanTerm: LoanTerm },
+                    success: function (result) {
+                        $("#PrincipalLoan").val(result.PrincipalLoan);
+                        $("#LoanRepaid").val(result.LoanRepaid);
+                        $("#LoanBalance").val(result.LoanBalance);
+                        $("#IntCharge").val(result.CumIntCharge);
+                        $("#PrevIntPaid").val(result.PrevIntPaid);
+                        $("#IntBalance").val(result.IntBalance);
+                        $("#CumIntDue").val(result.CumIntDue);
+                        $("#NewRebate").val(result.NewRebate);
+                        $("#TotalRebate").val(result.TotalRebate);
+                        $("#IntCollection").val(result.IntCollection);
+                        $("#LoanBalSC").val(result.LOanBalIntColection);
+                        $("#hfPrincipalLoan").val(result.PrincipalLoan);
+                        $("#hfLoanRepaid").val(result.LoanRepaid);
+                      
+                     
+                        $("#hfDuration").val(result.duration);
+                        $("#hfInstallmentNo").val(result.NoOfInstallment);
+
+
+
+                        
+
+                    }
+                });
+            
+        });
+
+
+      
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "Rebate", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+
+                           // alert(data[0].MemberID);
+                            if ($("#CenterID").val() > 0 && data[0].MemberID > 0) {
+
+                                GetProductList(data[0].MemberID, $("#CenterID").val());
+                            }
+                            CalcLoanTerm();
+                        }
+                        else if (data.length == 0) {
+                            // alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            // alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "Rebate", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnExport").click(function (e) {
+            e.preventDefault();
+            var CenterID;
+            var MemberID;
+            var ProductID;
+            var LoanTerm;
+            var CenterID = $("#CenterID").val();
+            var MemberID = $("#MemberID").val();
+            var ProductID = $("#ProductID").val();
+            var LoanTerm = $("#LoanTerm").val();
+            var url = '/Rebate/RebateView?CenterID=' + CenterID + '&MemberID=' + MemberID + '&ProductID=' + ProductID + '&LoanTerm=' + LoanTerm;
+
+                //$("#divLoading").hide();
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+           
+        });
+        // $("#TrxDate").datepicker();
+        gBankerDatePicker("TrxDate");
+    });
+
+
+</script>
+
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Add Rebate</h2>
+
+@using (Html.BeginForm("Create", "Rebate", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+  @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+                    @* @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control", onchange = "SetProductid(this.value);" })
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+           <div class="col-md-6">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.LoanTerm, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanTerm, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.LoanTerm, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PrincipalLoan, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.PrincipalLoan, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.PrincipalLoan, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanRepaid, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanRepaid, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.LoanRepaid, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanBalance, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanBalance, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.LoanBalance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+          
+           
+
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IntCharge, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.IntCharge, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.IntCharge, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PrevIntPaid, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.PrevIntPaid, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.PrevIntPaid, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+           
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IntBalance, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.IntBalance, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.IntBalance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+ 
+
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CumIntDue, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.CumIntDue, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.CumIntDue, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NewRebate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.NewRebate, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.NewRebate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TotalRebate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.TotalRebate, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.TotalRebate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IntCollection, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.IntCollection, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.IntCollection, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanBalSC, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanBalSC, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.LoanBalSC, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            <div class="form-group">
+                <div class="form-group form-action">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                    <input type="hidden" id="hfInterestCalculationMethod" />
+                    <input type="hidden" id="hfPaymentFrequency" />
+                    <input type="hidden" id="hfLoanDue" />
+                    <input type="hidden" id="hfIntDue" />
+                    <input type="hidden" id="hfPrincipalLoan" />
+                    <input type="hidden" id="hfLoanRepaid" />
+                    <input type="hidden" id="hfDuration" />
+                    <input type="hidden" id="hfDurationOverLoanDue" />
+                    <input type="hidden" id="hfDurationOverIntDue" />
+                    <input type="hidden" id="hfInstallmentNo" />
+                    @Html.HiddenFor(model => model.DailyLoanTrxID)
+                </div>
+            </div>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group from-action">
+                    <input type="button" id="btnExport" value="View" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+       
+        </div>
+}
+
+@*<div>
+        @Html.ActionLink("Back to List", "Index")
+    </div>
+    <div class="modal">
+    </div>*@
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

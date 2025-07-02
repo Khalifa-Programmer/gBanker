@@ -1,0 +1,195 @@
+﻿@model gBanker.Web.ViewModels.MemberNomineeSavingViewModel
+
+@{
+    ViewBag.Title = "Member Nominee";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<script>
+
+    function clickAddNewNominee() {
+        var MemberId = $("#MemberId").val();
+        if (MemberId == "") {
+            window.location.href = "/MemberNominee/Create";
+        } else {
+            window.location.href = "/MemberNominee/Create?MemberId=" + MemberId;
+        }
+
+    }
+
+    $(document).ready(function () {
+
+
+        var EditMemberCodeCheck = "@ViewData["EditMemberCode"]";
+        if (EditMemberCodeCheck != "")
+        {
+            var Employees_ViewData = $("#Employees_ViewData").val();
+            $("#txtMemberCode").val(Employees_ViewData);
+            var member_Code = $("#txtMemberCode").val();
+            $("#MemberCode").val(member_Code);
+            if (member_Code != "") {
+                LoadMemberInfoByCode(member_Code);
+            }
+        }
+
+        $('#gridNominee').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'InventoryId ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        var MemberId = $("#MemberId").val();
+                        $.ajax({
+                            url: '/MemberNominee/ListMemberNomineeInformation?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&MemberId=' + MemberId,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                Id: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                SNO: {
+                    title: 'SL',
+                    width: '5%'
+                },
+                NomineeImage: {
+                    title: 'Image',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return "<div class='text-center'><img src='/MemberNominee/RetrieveNomineeImage/" + data.record.MemberNomineeId + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+                NomineeSignatureImage: {
+                    title: 'Signature',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return "<div class='text-center'><img src='/MemberNominee/RetrieveNomineeSignatureImage/" + data.record.MemberNomineeId + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+                NomineeName: {
+                    title: 'NomineeName',
+                    width: '15%'
+                },
+                NomineeRelation: {
+                    title: 'Relation',
+                    width: '15%'
+                },
+                //EditLink: {
+                //    title: "Edit",
+                //    sorting: false,
+                //    display: function (data) {
+                //        return '<div class="text-center"><a href="#" OnClick="EditNomineeInformation(' + "'" + data.record.MemberNomineeId + "'" + ',' + "'" + data.record.NomineeName + "'" + ',' + "'" + data.record.NomineeFather + "'" + ',' + "'" + data.record.NomineeMother + "'" + ',' + "'" + data.record.NomineeHusbandWife + "'" + ',' + "'" + data.record.NomineeBirthdateStr + "'" + ',' + "'" + data.record.NomineeMobileNo + "'" + ',' + "'" + data.record.NomineeRelation + "'" + ',' + "'" + data.record.IdType + "'" + ',' + "'" + data.record.NomineeNationalId + "'" + ',' + "'" + data.record.CountryID + "'" + ',' + "'" + data.record.DivisionCode + "'" + ',' + "'" + data.record.DistrictCode + "'" + ',' + "'" + data.record.UpozillaCode + "'" + ',' + "'" + data.record.UnionCode + "'" + ',' + "'" + data.record.VillageCode + "'" + ',' + "'" + data.record.ZipCode + "'" + ',' + "'" + data.record.AddressLine1 + "'" + ',' + "'" + data.record.MemberId + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                //    }
+                //},
+
+                //Delete: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<div class="text-center"><a href="#" OnClick="InformationDelete(' + data.record.MemberNomineeId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                //    }
+                //},
+            }
+        });
+        $('#gridNominee').jtable('load');
+    });
+
+
+    function LoadMemberInfoByCode(member_Code) {
+        $("#MemberId").val(0);
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemInfoByCode", "MemberNominee", "http")',
+            data: { member_Code: member_Code },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.each(data.data, function (index, data) {
+                        debugger;
+                        $("#MemberId").val(data.MemberId);
+                        $("#MemberName").val(data.MemberName);
+                    });
+                }
+                else {
+                    $.alert.open("Error", "Invalid Member");
+                }
+            },
+        });
+    }
+
+</script>
+
+
+<button onclick="clickAddNewNominee()" class="btn btn-info btn-sm pull-right">Add Nominee</button>
+
+@*@Html.ActionLink("Add Nominee", "Create", "MemberNominee", new { MemberId = Model.MemberId }, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title text-info">Member Info</h2>
+
+<input type="hidden" id="Employees_ViewData" value="@ViewData["EditMemberCode"]" />
+
+@using (Html.BeginForm("Create", "MemberNominee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal", id = "NomineeCreate" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="container-fluid">
+        <fieldset>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MemberCode, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                        <div class="col-sm-8">
+                            @Html.TextBox("txtMemberCode", "", new { @class = "form-control", id = "txtMemberCode", @readonly = "readonly" })
+                            @Html.HiddenFor(model => model.MemberCode)
+                            @Html.HiddenFor(model => model.MemberId)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MemberName, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.MemberName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+}
+
+<fieldset id="fldNomineeList">
+    <legend class="text-info">Nominee List</legend>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="gridNominee"></div>
+        </div>
+    </div>
+</fieldset>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+}

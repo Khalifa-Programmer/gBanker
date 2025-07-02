@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - gBanker Web</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <style type="text/css">
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: rgba( 255, 255, 255, .8 ) url(../images/ajax-loading.gif) 50% 50% no-repeat;
+        }
+        .success {
+            display: block;
+            background-color: rgb(249, 255, 0);
+            color: rgb(21, 21, 21);            
+            padding: 10px;
+            font-weight: bold;
+        }
+        .failed {
+            display: block;
+            background-color: red;
+            color: white;
+            text-decoration: initial;
+            padding: 10px;
+        }
+    </style >
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/themes/base/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+   
+    
+    @RenderSection("scripts", required: false)
+    <link href="~/Content/akono/styles/style.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/akono/styles/skin.css" rel="stylesheet" type="text/css" />
+    <!--[if IE 6]>
+    <script src="../content/akono/js/ie6-transparency.js"></script>
+    <script>DD_belatedPNG.fix('#header img, #featured-section h2, #circles img, #frontpage-sidebar .read-more, .blue-bullets li, #sidebar .sidebar-button, #project-content .read-more, .more-link, #contact-form .submit, .jcarousel-skin-tango .jcarousel-next-horizontal, .jcarousel-skin-tango .jcarousel-prev-horizontal, #commentform .submit');</script>
+    <style>body { behavior: url("../content/akono/styles/ie6-hover-fix.htc"); }</style>
+    <link rel="stylesheet" href="../content/akono/styles/ie6.css" />
+    <![endif]-->
+    <!--[if IE 7]><link rel="stylesheet" href="styles/ie7.css" /><![endif]-->
+    <!--[if IE 8]><link rel="stylesheet" href="styles/ie8.css" /><![endif]-->
+
+    <link href="~/content/ui-libs/font-awesome-4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="~/content/gbanker-custom.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="content/ui-libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="content/ui-libs/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="content/ui-libs/google-chart/jsapi"></script>
+</head>
+<body class="home">
+    <div id="loading" style="display:none" class="modal">
+       
+    </div>
+    <div id="wrap">
+        @if (Request.IsAuthenticated)
+        {
+            var parentModules = gBanker.Web.Helpers.SessionHelper.AllPrentModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+            var userModules = gBanker.Web.Helpers.SessionHelper.UserSecurityModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+            <div id="header">
+                <div id="nav">
+                    <ul class="menu">
+                        <li class="current_page_item">@Html.ActionLink("Home", "Index", "Home")</li>
+                        @foreach (var module in parentModules)
+                        {
+                            if (module.AspNetSecurityModuleId != 1)
+                            {
+                                var securityModules = userModules.Where(w => w.ParentModuleId == module.AspNetSecurityModuleId).ToList();
+                                if (securityModules.Count > 0)
+                                {
+                                    <li>
+                                        <a href="#">@module.LinkText</a>
+                                        <ul class="sub-menu">
+                                            @foreach (var securityModule in securityModules)
+                                            {
+                                                <li>@Html.ActionLink(securityModule.LinkText, securityModule.ActionName, securityModule.ControllerName)</li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            }
+                        }
+                        <li><a href="#">Help</a></li>
+                    </ul>
+
+                </div>
+                <!--end nav-->
+            </div>
+        }
+        <div id="featured-section">
+            @RenderSection("featured", required: false)
+            <section id="login">
+                @Html.Partial("_LoginPartial")
+            </section>
+        </div>
+        <div id="frontpage-main">
+        <div id="dvMessage">
+
+        </div>
+          <section class="content-wrapper main-content clear-fix">
+                @RenderBody()
+            </section>
+        </div>
+        <div id="footer">
+            <p class="copyright">Copyright &copy; @gBanker.Web.Helpers.ApplicationSettings.OrganiztionName</p>
+        </div>
+        <!--end footer-->
+    </div>   
+
+    <script type="text/javascript">
+        function clearAllControls(url) {
+            var splits = url.split("/");
+            var edit = false;
+            for (var i = 0; i < splits.length; i++) {
+                if (splits[i] == "Edit") {
+                    edit = true;
+                    break;
+                }
+            }
+            if (!edit)
+                $('input[type="text"]').val('');
+        }
+        $(document).ready(function () {
+
+            $('input[type="text"]').bind('focus',function (e)
+            {
+                $("#dvMessage").hide();
+            });
+            // Handle the form submit event, and make the Ajax request:
+            $("form").on("submit", function (event) {
+                event.preventDefault();
+                $("#loading").show();
+                var url = $(this).attr("action");
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    success: function (resp) {
+                        $("#loading").hide();
+                        var result = resp.Result;
+                        var msg = resp.Message;
+                        var css = "failed";
+                        if (result == "OK")
+                            css = "success";
+                        $("#dvMessage").attr('class',css);
+                        $("#dvMessage").html(msg);
+                        $("#dvMessage").show();
+                        if (result == "OK") {
+                            $("#dvMessage").toggle('fade', 1500);
+
+                            clearAllControls(url);
+                        }
+                    },
+                    error: function (err) { 
+                        $("#loading").hide();
+                        var msg = err.responseText;
+                        var css = "failed";                      
+                        $("#dvMessage").attr('class', css);
+                        $("#dvMessage").html(msg);
+                        $("#dvMessage").show();
+                        //$("#dvMessage").toggle('fade',1500);
+
+                    }
+
+                })
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1204 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Asset Opening Entry";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+
+    $(document).ready(function () {
+
+        $("#PurchaseDate").change(function () {
+            var trxDate = $("#trxDate").val();
+            var transactionDate = new Date(trxDate);
+
+            var PurchaseDate = $("#PurchaseDate").val();
+            var PrDate = new Date(PurchaseDate);
+
+            if (transactionDate >= PrDate) {
+            } else {
+                alert("Purchase Date must be same or less than Transaction Date");
+                $("#PurchaseDate").val("");
+            }
+        });
+        $("#OperationDate").change(function () {
+            var trxDate = $("#trxDate").val();
+            var transactionDate = new Date(trxDate);
+
+            var OperationDate = $("#OperationDate").val();
+            var opDate = new Date(OperationDate);
+
+            if (transactionDate <= opDate) {
+            } else {
+                alert("Operation Date must be same or greater than Transaction Date");
+                $("#OperationDate").val("");
+            }
+        });
+        $("#PurchaseOrderDate").change(function () {
+            var PurchaseDate = $("#PurchaseDate").val();
+            var PrDate = new Date(PurchaseDate);
+
+            var PurchaseOrderDate = $("#PurchaseOrderDate").val();
+            var poDate = new Date(PurchaseOrderDate);
+
+            if (PrDate >= poDate) {
+            } else {
+                alert("Purchase Order Date must be same or less than Purchase Date");
+                $("#PurchaseOrderDate").val("");
+            }
+        });
+
+        $("#DepriciationClosingDate").change(function () {
+            var entryDate = $("#trxDate").val();
+            var entDt = new Date(entryDate);
+
+            var deprClsDate = $("#DepriciationClosingDate").val();
+            var dprDate = new Date(deprClsDate);
+
+            if (entDt >= dprDate) {
+
+            } else {
+                $.alert.open("Depriciation Closing Date must be same or less than Entry Date");
+                $("#DepriciationClosingDate").val("");
+            }
+        });
+
+
+        //confirmDayInitiated();
+        //if (confirmDayInitiated()) {
+        //    $("#dayInitialDependent").show();
+        //} else {
+        //    $("#dayInitialDependent").hide();
+        //}
+        GetFixedAssetUpdates();
+        $("#TransactionValue").val('');
+        $("#UnitPrice").val('');
+        $("#AccumulatedDepri").val('');
+        $("#CurrentDepri").val('');
+        $("#TransactionDate").val('');
+        //$("#DepCalcDate").val('');
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+        $("#PurchaseDate").val('');
+        $("#trxDate").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+               changeMonth: true,
+               changeYear: true,
+               yearRange: '-15:+0'
+           });
+
+        $("#DepCalcDate").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+              changeMonth: true,
+              changeYear: true,
+              yearRange: '-15:+0'
+          });
+
+        $("#PurchaseDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: '-15:+0'
+         });
+
+        $("#OperationDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: '-15:+0'
+         });
+        $("#InsuranceExpDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: '-15:+15'
+         });
+        $("#PurchaseOrderDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: '-15:+0'
+            });
+        $("#DepriciationClosingDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '-15:+0'
+            });
+        $("#btnReset").click(function () {
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+            ClearForm();
+        });
+        $("#AssetGroupID").change(function () {
+            var groupId = $("#AssetGroupID").val();
+            var ddlAssetName = $("#AssetCode");
+            var depRate = $("#Deprate");
+            if (groupId != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetGroupWiseAssetInfo", "FixedAsset", "http")',
+                    data: { GroupId: groupId },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        debugger;
+                        if (data.viewAssetNameList.length > 0) {
+                            ddlAssetName.empty('');
+                            depRate.empty('');
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                            $.each(data.viewAssetNameList, function (id, option) {
+                                ddlAssetName.append($('<option></option>').val(option.Value).html(option.Text));
+                            });
+                            $("#Deprate").val(data.depRate);
+                            $("#DepriciationMethod").val(data.depMethod);
+                        } else {
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                        }
+                    }
+                });
+            }
+            else {
+                $("#AssetCode").html("<option value=''>Please Select</option>");
+            }
+        });
+        $("#AssetCode").change(function () {
+            var assetID = $("#AssetCode").val();
+            var assetSerial = $("#AssetSerial").val();
+            if (assetID != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '/FixedAsset/GetCodeWiseAssetSerialForOpeningEntry',
+                    data: { assetID: assetID },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        debugger;
+                        if (data > 0) {
+                            $("#AssetSerial").empty('');
+                            $("#AssetSerial").val(data);
+                        } else {
+                            $("#AssetSerial").val('');
+                        }
+                    }
+                });
+            } else {
+                $("#AssetSerial").val('');
+            }
+        });
+
+
+        $("#AssetQuantity").blur(function () {
+             var assetID = $("#AssetCode").val();
+             var assetQuantity = $("#AssetQuantity").val();
+             if (assetID != "" && assetQuantity!= "") {
+                 $.ajax({
+                     type: 'GET',
+                     contentType: "application/json; charset=utf-8",
+                     url: '@Url.Action("GetCodeWiseAssetSerialForOpeningEntry", "FixedAsset", "http")',
+                     data: { assetID: assetID, assetQuantity: assetQuantity },
+                     dataType: 'json',
+                     async: false,
+                     success: function (data) {
+                         debugger;
+                         if (data > 0) {
+                             $("#AssetSerial").empty('');
+                             $("#AssetSerial").val(data);
+                         } else {
+                             $("#AssetSerial").val('');
+                         }
+                     }
+                 });
+             } else {
+                 $("#AssetSerial").val('');
+             }
+         });
+
+
+
+        $("#UnitPrice").blur(function () {
+            CalBookValue();
+        });
+
+        $("#AccumulatedDepri").blur(function () {
+            CalBookValue();
+        });
+
+        $("#CurrentDepri").blur(function () {
+            CalBookValue();
+        });
+
+        $("#UnitPrice").blur(function () {
+            CalTotalCost();
+        });
+        $("#InstallationCost").blur(function () {
+            CalTotalCost();
+        });
+        $("#CarringCost").blur(function () {
+            CalTotalCost();
+        });
+        $("#OtherCost").blur(function () {
+            CalTotalCost();
+        });
+
+        $("#IsOpeningBalanceCostSameAsTotalCost").change(function () {
+            if ($("#IsOpeningBalanceCostSameAsTotalCost").is(':checked') == 1) {
+                var totalCost = $("#TotalCost").val();
+                $("#TotalOpeningBalanceCost").val(totalCost).attr('readonly', true);
+            } else {
+                $("#TotalOpeningBalanceCost").val('');
+            }
+        });
+
+
+
+
+    });
+    function CalTotalCost() {
+        var unitPrice = parseInt($("#UnitPrice").val());
+        var installationCost = $("#InstallationCost").val() == "" ? 0 : parseInt($("#InstallationCost").val());
+        var carringCost = $("#CarringCost").val() == "" ? 0 : parseInt($("#CarringCost").val());
+        var otherCost = $("#OtherCost").val() == "" ? 0 : parseInt($("#OtherCost").val());
+        if (unitPrice != "") {
+            var totalCost = (unitPrice + installationCost + carringCost + otherCost);
+            $("#TotalCost").val(totalCost).attr('readonly', true);
+        } else {
+            $("#TotalCost").val('');
+        }
+    }
+    function CalBookValue() {
+        var unitPrice = parseInt($("#UnitPrice").val());
+        var accumulatedDepri = $("#AccumulatedDepri").val() == "" ? 0 : parseInt($("#AccumulatedDepri").val());
+        var currentDepri = $("#CurrentDepri").val() == "" ? 0 : parseInt($("#CurrentDepri").val());
+        if (unitPrice != "") {
+            var bookValue = (unitPrice - (accumulatedDepri + currentDepri));
+            $("#BookValue").val(bookValue).attr('readonly', true);
+        }
+        else {
+            $("#BookValue").val('');
+        }
+    }
+    //function CheckPurchaseDate() {
+    //    var trxDate =  $("#trxDate").val();
+    //    var transactionDate = date(trxDate);
+    //    alert(trxDate);
+    //    alert(transactionDate);
+    //}
+
+    function SaveFixedAssetUpdates() {
+        debugger;
+        var transactionDate = $("#trxDate").val();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetCode = $("#AssetCode").val();
+        var assetQuantity = $("#AssetQuantity").val();
+        var assetSerial = $("#AssetSerial").val();
+        var voucherNo = $("#VoucherNo").val();
+        var unitPrice = $("#UnitPrice").val();
+        //var transactionValue = $("#TransactionValue").val();
+        var accumulatedDepri = $("#AccumulatedDepri").val();
+        var currentDepri = $("#CurrentDepri").val();
+        var bookValue = $("#BookValue").val();
+        var assetClientCode = $("#AssetClientCode").val();
+        var tranType = $("#TransactionType").val();
+        var assetUser = $("#AssetUser").val();
+        var usable = $("#Usable").val() == 1 ? true : false;
+        //var depCalcDate = $("#DepCalcDate").val();
+
+        var purchaseDate = $("#PurchaseDate").val();
+        var operationDate = $("#OperationDate").val();
+        var installationCost = $("#InstallationCost").val();
+        var carringCost = $("#CarringCost").val();
+        var otherCost = $("#OtherCost").val();
+        var totalCost = $("#TotalCost").val();
+        var totalOpeningBalanceCost = $("#TotalOpeningBalanceCost").val();
+        var projectID = $("#ProjectID").val();
+        var deprate = $("#Deprate").val();
+        var deprMethod = $("#DepriciationMethod").val();
+
+        var IsCapitalizedAsset = $('#IsCapitalizedAsset').is(':checked') ? 1 : 0;
+        //var IsInstallmentAsset = $("#IsInstallmentAsset").is(':checked') ? 1 : 0;
+
+        var openingDepriciationBalance = $("#OpeningDepriciationBalance").val();
+        var openingBookValue = $("#OpeningBookValue").val();
+        var insuranceValue = $("#InsuranceValue").val();
+        var warrantyGurantee = $("#WarrantyGurantee").val();
+        var usefulLifeYear = $("#UsefulLifeYear").val();
+        var purchaseOrderNo = $("#PurchaseOrderNo").val();
+        var purchaseOrderDate = $("#PurchaseOrderDate").val();
+        var depriciationClosingDate = $("#DepriciationClosingDate").val();
+        if (transactionDate != "" && assetGroupID != "" && assetCode != "" && assetQuantity != "" && assetSerial != "" && unitPrice != "" && usable != "" && purchaseDate!="") {
+            var FixedAssetUpdates = {
+                TransactionDate: transactionDate,
+                AssetGroupID: assetGroupID,
+                AssetCode: assetCode,
+                AssetSerial: assetSerial,
+                VoucherNo: voucherNo,
+                UnitPrice: unitPrice,
+                //TransactionValue: transactionValue,
+                AccumulatedDepri: accumulatedDepri,
+                CurrentDepri: currentDepri,
+                BookValue: bookValue,
+                AssetClientCode: assetClientCode,
+                TransactionType: tranType,
+                AssetUser: assetUser,
+                Usable: usable,
+                //DepCalcDate: depCalcDate,
+                PurchaseDate: purchaseDate,
+                OperationDate: operationDate,
+                InstallationCost: installationCost,
+                CarringCost: carringCost,
+                OtherCost: otherCost,
+                TotalCost: totalCost,
+                ProjectID: projectID,
+                TotalOpeningBalanceCost: totalOpeningBalanceCost,
+                Deprate: deprate,
+                DepriciationMethod: deprMethod,
+                IsCapitalizedAsset: IsCapitalizedAsset,
+                //IsInstallmentAsset:IsInstallmentAsset,
+                OpeningDepriciationBalance: openingDepriciationBalance,
+                OpeningBookValue: openingBookValue,
+                InsuranceValue: insuranceValue,
+                WarrantyGurantee: warrantyGurantee,
+                UsefulLifeYear: usefulLifeYear,
+                PurchaseOrderNo: purchaseOrderNo,
+                PurchaseOrderDate: purchaseOrderDate,
+                DepriciationClosingDate: depriciationClosingDate
+            };
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveFixedAssetUpdates", "FixedAsset", "http")',
+                data: JSON.stringify({ fixedAssetUpdates: FixedAssetUpdates }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetFixedAssetUpdates();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        }
+        else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function GetFixedAssetUpdates() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FixedAsset/GetFixedAssetUpdates?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                FixAssetUpdateID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionDate: {
+                    width: '10%',
+                    title: 'TransactionDate'
+                },
+                AssetGroupID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GroupName: {
+                    width: '10%',
+                    title: 'GroupName'
+                },
+                AssetID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetName: {
+                    width: '10%',
+                    title: 'AssetName'
+                },
+                AssetSerial: {
+                    width: '10%',
+                    title: 'AssetSerial',
+                },
+                VoucherNo: {
+                    width: '10%',
+                    title: 'VoucherNo',
+                },
+                UnitPrice: {
+                    width: '10%',
+                    title: 'UnitPrice',
+                },
+                //TransactionValue: {
+                //    width: '10%',
+                //    title: 'TransactionValue',
+                //},
+                AccumulatedDepri: {
+                    width: '10%',
+                    title: 'AccumulatedDepri',
+                },
+                CurrentDepri: {
+                    width: '10%',
+                    title: 'CurrentDepri',
+                },
+                BookValue: {
+                    width: '10%',
+                    title: 'BookValue',
+                },
+                ClientCode: {
+                    width: '10%',
+                    title: 'ClientId',
+                },
+                TransactionType: {
+                    width: '10%',
+                    title: 'TransactionType',
+                },
+                AssetUser: {
+                    width: '10%',
+                    title: 'AssetUser',
+                },
+                Usable: {
+                    width: '5%',
+                    title: 'Usable',
+                    display: function (data) {
+                        if (data.record.Usable == true) {
+                            return 'Yes';
+                        }
+                        else {
+                            return 'No';
+                        }
+                    },
+                },
+                //DepCalcDate: {
+                //    width: '5%',
+                //    title: 'DepCalcDate',
+                //},
+                PurchaseDate: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OperationDate: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InstallationCost: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CarringCost: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OtherCost: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TotalOpeningBalanceCost: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                Deprate: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OpeningDepriciationBalance: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OpeningBookValue: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InsuranceValue: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InsuranceExpDate: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                WarrantyGurantee: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                UsefulLifeYear: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                PurchaseOrderNo: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                PurchaseOrderDate: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                DepriciationClosingDate: {
+                    width: '10%',
+                    title: 'DepriciationClosingDate'
+                },
+                //EditLink: {
+                //    title: "Edit",
+                //    width: '5%',
+                //    sorting: false,
+                //    display: function (data) {
+                //        return '<div class="text-center"><a href="#" OnClick="EditDailyTransactionInfo( ' + data.record.FixAssetUpdateID + ',' + "'" + data.record.TransactionDate + "'" + ',' + "'" + data.record.AssetGroupID + "'" + ',' + "'" + data.record.AssetID + "'" + ',' + "'" + data.record.AssetSerial + "'" + ',' + "'" + data.record.VoucherNo + "'" + ',' + "'" + data.record.UnitPrice + "'" +
+                //            ',' + "'" + data.record.AccumulatedDepri + "'" + ',' + "'" + data.record.CurrentDepri + "'" + ',' + "'" + data.record.BookValue + "'" + ',' + "'" + data.record.ClientCode + "'" + ',' + "'" + data.record.TransactionType + "'" + ',' + "'" + data.record.AssetUser + "'" + ',' + "'" + data.record.Usable + "'" +
+                //            ',' + "'" + data.record.PurchaseDate + "'" + ',' + "'" + data.record.OperationDate + "'" + ',' + "'" + data.record.InstallationCost + "'" + ',' + "'" + data.record.CarringCost + "'" + ',' + "'" + data.record.OtherCost + "'" + ',' + "'" + data.record.TotalOpeningBalanceCost + "'" + ',' + "'" + data.record.DepriciationRate + "'" + ',' + "'" + data.record.OpeningDepriciationBalance + "'" + ',' + "'" + data.record.OpeningBookValue + "'" +
+                //            ',' + "'" + data.record.InsuranceValue + "'" + ',' + "'" + data.record.InsuranceExpDate + "'" + ',' + "'" + data.record.WarrantyGurantee + "'" + ',' + "'" + data.record.UsefulLifeYear + "'" + ',' + "'" + data.record.PurchaseOrderNo + "'" + ',' + "'" + data.record.PurchaseOrderDate + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                //    }
+                //},
+                //Delete: {
+                //    title: "Delete",
+                //    width: '5%',
+                //    display: function (data) {
+                //        return '<div class="text-center"><a href="#" OnClick="DeleteFixedAssetUpdates(' + data.record.FixAssetUpdateID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                //    }
+                //}
+            }
+
+        });
+        $('#grid').jtable('load');
+    }
+
+    function EditDailyTransactionInfo(FixAssetUpdateID, TransactionDate, AssetGroupID, AssetID, AssetSerial, VoucherNo, UnitPrice, AccumulatedDepri,
+        CurrentDepri, BookValue, ClientCode, TransactionType, AssetUser, Usable, PurchaseDate, OperationDate, InstallationCost, CarringCost,
+        OtherCost, TotalOpeningBalanceCost, DepriciationRate, OpeningDepriciationBalance, OpeningBookValue, InsuranceValue, InsuranceExpDate, WarrantyGurantee, UsefulLifeYear, PurchaseOrderNo, PurchaseOrderDate, DepriciationClosingDate) {
+
+        $("#FixAssetUpdateID").val(FixAssetUpdateID);
+        $("#trxDate").val(TransactionDate);
+        $("#AssetGroupID").val(AssetGroupID).trigger('change');
+        $("#AssetCode").val(AssetID);
+        $("#AssetSerial").val(AssetSerial);
+        $("#VoucherNo").val(VoucherNo);
+        $("#UnitPrice").val(UnitPrice);
+        //$("#TransactionValue").val(TransactionValue);
+        $("#AccumulatedDepri").val(AccumulatedDepri);
+        $("#CurrentDepri").val(CurrentDepri);
+        $("#BookValue").val(BookValue).attr('readonly', true);
+        $("#AssetClientCode").val(ClientCode);
+        $("#TransactionType").val(TransactionType);
+        $("#AssetUser").val(AssetUser);
+        $("#Usable").val(Usable == 'true' ? 1 : 0);
+        //$("#DepCalcDate").val(DepCalcDate);
+
+        $("#PurchaseDate").val(PurchaseDate);
+        $("#OperationDate").val(OperationDate);
+        $("#InstallationCost").val(InstallationCost);
+        $("#CarringCost").val(CarringCost);
+        $("#OtherCost").val(OtherCost);
+        $("#TotalOpeningBalanceCost").val(TotalOpeningBalanceCost);
+        $("#Deprate").val(DepriciationRate);
+        $("#OpeningDepriciationBalance").val(OpeningDepriciationBalance);
+        $("#OpeningBookValue").val(OpeningBookValue);
+        $("#InsuranceValue").val(InsuranceValue);
+        $("#InsuranceExpDate").val(InsuranceExpDate);
+        $("#WarrantyGurantee").val(WarrantyGurantee);
+        $("#UsefulLifeYear").val(UsefulLifeYear);
+        $("#PurchaseOrderNo").val(PurchaseOrderNo);
+        $("#PurchaseOrderDate").val(PurchaseOrderDate);
+        $("#DepriciationClosingDate").val(DepriciationClosingDate);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+        $("#btnRegister").hide();
+    }
+
+    function UpdateFixedAssetUpdatedInfo() {
+        debugger;
+        var FixAssetUpdateID = $("#FixAssetUpdateID").val();
+        var transactionDate = $("#trxDate").val();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetCode = $("#AssetCode").val();
+        var assetSerial = $("#AssetSerial").val();
+        var voucherNo = $("#VoucherNo").val();
+        var unitPrice = $("#UnitPrice").val();
+        //var transactionValue = $("#TransactionValue").val();
+        var accumulatedDepri = $("#AccumulatedDepri").val();
+        var currentDepri = $("#CurrentDepri").val();
+        var bookValue = $("#BookValue").val();
+        var assetClientCode = $("#AssetClientCode").val();
+        var tranType = $("#TransactionType").val();
+        var assetUser = $("#AssetUser").val();
+        var usable = $("#Usable").val() == 1 ? true : false;
+        // var depCalcDate = $("#DepCalcDate").val();
+
+        var purchaseDate = $("#PurchaseDate").val();
+        var operationDate = $("#OperationDate").val();
+        var installationCost = $("#InstallationCost").val();
+        var carringCost = $("#CarringCost").val();
+        var otherCost = $("#OtherCost").val();
+        var totalOpeningBalanceCost = $("#TotalOpeningBalanceCost").val();
+        var deprate = $("#Deprate").val();
+        var openingDepriciationBalance = $("#OpeningDepriciationBalance").val();
+        var openingBookValue = $("#OpeningBookValue").val();
+        var insuranceValue = $("#InsuranceValue").val();
+        var warrantyGurantee = $("#WarrantyGurantee").val();
+        var usefulLifeYear = $("#UsefulLifeYear").val();
+        var purchaseOrderNo = $("#PurchaseOrderNo").val();
+        var purchaseOrderDate = $("#PurchaseOrderDate").val();
+        var depriciationClosingDate = $("#DepriciationClosingDate").val();
+
+        var totalCost = $("#TotalCost").val();
+        var projectID = $("#ProjectID").val();
+        var deprMethod = $("#DepriciationMethod").val();
+        var IsCapitalizedAsset = $('#IsCapitalizedAsset').is(':checked') ? 1 : 0;
+        //var IsInstallmentAsset = $("#IsInstallmentAsset").is(':checked') ? 1 : 0;
+
+        if (transactionDate != "" && assetGroupID != "" && assetCode != "" && assetSerial != "" && voucherNo != "" && unitPrice != "" && assetClientCode != "" && tranType != "" && usable != "") {
+            var FixedAssetUpdates = {
+                FixAssetUpdateID: FixAssetUpdateID,
+                TransactionDate: transactionDate,
+                AssetGroupID: assetGroupID,
+                AssetCode: assetCode,
+                AssetSerial: assetSerial,
+                VoucherNo: voucherNo,
+                UnitPrice: unitPrice,
+                //TransactionValue: transactionValue,
+                AccumulatedDepri: accumulatedDepri,
+                CurrentDepri: currentDepri,
+                BookValue: bookValue,
+                AssetClientCode: assetClientCode,
+                TransactionType: tranType,
+                AssetUser: assetUser,
+                Usable: usable,
+                //DepCalcDate: depCalcDate,
+                PurchaseDate: purchaseDate,
+                OperationDate: operationDate,
+                InstallationCost: installationCost,
+                CarringCost: carringCost,
+                OtherCost: otherCost,
+                TotalOpeningBalanceCost: totalOpeningBalanceCost,
+                Deprate: deprate,
+                OpeningDepriciationBalance: openingDepriciationBalance,
+                OpeningBookValue: openingBookValue,
+                InsuranceValue: insuranceValue,
+                WarrantyGurantee: warrantyGurantee,
+                UsefulLifeYear: usefulLifeYear,
+                PurchaseOrderNo: purchaseOrderNo,
+                PurchaseOrderDate: purchaseOrderDate,
+                DepriciationClosingDate: depriciationClosingDate,
+                TotalCost: totalCost,
+                ProjectID: projectID,
+                DepriciationMethod: deprMethod,
+                IsCapitalizedAsset: IsCapitalizedAsset,
+                //IsInstallmentAsset: IsInstallmentAsset
+            };
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateFixedAssetUpdatedInfo", "FixedAsset", "http")',
+                data: JSON.stringify({ fixedAssetUpdates: FixedAssetUpdates }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetFixedAssetUpdates();
+                        ClearForm();
+                        $("#btnUpdate").hide();
+                        $("#btnReset").hide();
+                        $("#btnSave").show();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        }
+        else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function ClearForm() {
+        $("#AssetGroupID").val('');
+        $("#AssetCode").val('');
+        $("#AssetSerial").val('');
+        $("#VoucherNo").val('');
+        $("#UnitPrice").val('');
+        //$("#TransactionValue").val('');
+        $("#AccumulatedDepri").val('');
+        $("#CurrentDepri").val('');
+        $("#BookValue").val('');
+        $("#AssetClientCode").val('');
+        $("#TransactionType").val('');
+        $("#AssetUser").val('');
+        $("#Usable").val('');
+        //$("#DepCalcDate").val('');
+
+        $("#PurchaseDate").val('');
+        $("#OperationDate").val('');
+        $("#InstallationCost").val('');
+        $("#CarringCost").val('');
+        $("#OtherCost").val('');
+        $("#TotalOpeningBalanceCost").val('');
+        $("#Deprate").val('');
+        $("#OpeningDepriciationBalance").val('');
+        $("#OpeningBookValue").val('');
+        $("#InsuranceValue").val('');
+        $("#InsuranceExpDate").val('');
+        $("#WarrantyGurantee").val('');
+        $("#UsefulLifeYear").val('');
+        $("#PurchaseOrderNo").val('');
+        $("#PurchaseOrderDate").val('');
+        $("#DepriciationClosingDate").val('');
+    }
+    function DeleteFixedAssetUpdates(FixAssetUpdateID) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteFixedAssetUpdates", "FixedAsset", "http")',
+                    data: { FixAssetUpdateID: FixAssetUpdateID },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            $('#grid').jtable('load');
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+
+
+</script>
+
+<h2 class="page-title">Asset Opening Entry</h2>
+<div class="form-horizontal" id="dayInitialDependent">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.FixAssetUpdateID)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Entry Date <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "trxDate", @class = "form-control" })
+                    @Html.HiddenFor(model => model.TransactionDate)
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Group <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetGroupID, Model.AssetGroupIdList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Asset Code </label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetCode, Model.AssetCodeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Quantity <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AssetQuantity, new { @class = "form-control"})
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Serial <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AssetSerial, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>       
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost of Purchase <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.UnitPrice, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Voucher No <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.VoucherNo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>       
+    </div>
+    <div class="row">        
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Accumulated Depriciation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AccumulatedDepri, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Current Depriciation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CurrentDepri, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Opening Book Value</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.BookValue, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Supplier<span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetClientCode, Model.ClientList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Transaction Type</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.TransactionType, Model.TransactionTypeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">AssetUser</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetUser, Model.EmployeeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Usable <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.Usable, Model.UsableList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        @*<div class="col-sm-6">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">Dep. Calculation Date <span style="color:red; font-size:15px;">*</span></label>
+                    <div class="col-sm-7">
+                        @Html.TextBoxFor(model => model.DepCalcDate, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>*@
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Purchase Date <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.PurchaseDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Operation Date</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OperationDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Installation Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.InstallationCost, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Carring Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CarringCost, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Other Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OtherCost, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Total Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.TotalCost, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Is Opening Balance of Cost same as Total Cost?</label>
+                <div class="col-sm-7">
+                    <input type="checkbox" id="IsOpeningBalanceCostSameAsTotalCost" style="margin-top:12px;" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Opening Balance Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.TotalOpeningBalanceCost, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Project/Fund</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.ProjectID, Model.ProjectList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Depriciation Rate (%) <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.Deprate, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Depriciation Method <span style="color:red; font-size:15px;">*</span></label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.DepriciationMethod, Model.DepriciationMethodList, new { @class = "form-control", @disabled = "true" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Is Capitalized Asset? </label>
+                <div class="col-sm-7">
+                    <input type="checkbox" id="IsCapitalizedAsset" style="margin-top:12px;" />
+                </div>
+            </div>
+        </div>
+        @*<div class="col-sm-6">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">Is Installment Asset? </label>
+                    <div class="col-sm-7">
+                        <input type="checkbox" id="IsInstallmentAsset" style="margin-top:12px;" />
+                    </div>
+                </div>
+            </div>*@
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Insurance Value</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.InsuranceValue, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Insurance Expired Date</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.InsuranceExpDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Warranty/Gurantee (Year)</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.WarrantyGurantee, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Useful Life <span style="color:black; font-size:12px;">(Months)</span></label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.UsefulLifeYear, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Purchase Order No</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.PurchaseOrderNo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Purchase Order Date</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.PurchaseOrderDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Depriciation Closing Date</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DepriciationClosingDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">
+                <input type="button" value="Save" id="btnSave" class="btn btn-primary" onclick="SaveFixedAssetUpdates()" />
+                <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateFixedAssetUpdatedInfo()" />
+                <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+
+}
+

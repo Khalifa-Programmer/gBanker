@@ -1,0 +1,59 @@
+﻿@{
+    var parentModules = gBanker.Web.Helpers.SessionHelper.AllPrentModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+    var userModules = gBanker.Web.Helpers.SessionHelper.UserSecurityModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+}
+<!-- left menu starts -->
+<div class="col-sm-2 col-lg-2">
+    <div class="sidebar-nav">
+        <div class="nav-canvas">
+            <div class="nav-sm nav nav-stacked"></div>
+            <ul class="nav nav-pills nav-stacked main-menu">
+                @foreach (var module in parentModules)
+                {
+                    var securityModules = userModules.Where(w => w.ParentModuleId == module.AspNetSecurityModuleId && w.IsActive == true && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+
+                    if (securityModules.Count > 0)
+                    {
+                        <li class="accordion">
+                            <a href="#@module.AspNetSecurityModuleId">
+                                <i class="fa fa-plus-circle"></i>
+                                <span> @module.LinkText</span>
+                            </a>
+                            <ul class="nav nav-pills nav-stacked">
+                                @foreach (var childModule in securityModules)
+                                {
+                                    var level3 = userModules.Where(w => w.ParentModuleId == childModule.AspNetSecurityModuleId && w.IsActive == true && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+                                    if (level3.Count > 0)
+                                    {
+                                        <li class="accordion">
+                                            <a href="#@childModule.AspNetSecurityModuleId">
+                                                <i class="fa fa-plus-circle"></i>
+                                                <span> @childModule.LinkText</span>
+                                            </a>
+                                            <ul class="nav nav-pills nav-stacked">
+                                                @foreach (var lblLevel3 in level3)
+                                                {
+                                                    <li><a href="~/@lblLevel3.ControllerName/@lblLevel3.ActionName"><span> @lblLevel3.LinkText</span> </a></li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li><a href="~/@childModule.ControllerName/@childModule.ActionName"><span> @childModule.LinkText</span> </a></li>
+                                    }
+                                }
+                            </ul>
+                        </li>
+                    }
+                    else if (module.ControllerName != "#")
+                    {
+                        <li><a href="~/@module.ControllerName/@module.ActionName"><span> @module.LinkText</span></a></li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<!--/span-->
+<!-- left menu ends -->

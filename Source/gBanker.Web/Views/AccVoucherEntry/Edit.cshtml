@@ -1,0 +1,1051 @@
+﻿@model gBanker.Web.ViewModels.AccVoucherEntryViewModel
+
+@{
+    ViewBag.Title = "Voucher Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var Vtype = Model == null ? null : Model.VoucherTypeList;
+    var TrxType = Model == null ? null : Model.TransactionTypeList;
+}
+
+<style type="text/css">
+   
+    /*th
+    {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+    body.loading {
+         overflow: hidden;
+     }
+    body.loading .modal {
+        display: block;
+    }*/
+
+
+    .tHead {
+        /*background-color: #D8D8D8;*/
+        font-family: Calibri;
+        color: Black;
+        font-weight: bold;
+        font-size: 15px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+        background: -webkit-linear-gradient(top, #FFFFFF, #ACACAC);
+        margin: 50px;
+        /*vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;*/
+    }
+
+    .tFoot {
+        background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+        border-color: #2b5177;
+        font-family: Arial;
+        color: #fff;
+        font-weight: bold;
+        font-size: 12px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+    }
+
+    #tableRow {
+        font-family: Arial;
+        color: Black;
+        font-size: 12px;
+        /*height:25px;*/
+    }
+
+        #tableRow:nth-child(odd) {
+            background-color: #E2E4FF;
+        }
+
+        #tableRow:nth-child(even) {
+            background-color: white;
+        }
+</style>
+<script type="text/javascript">
+    function CheckVoucherType() {
+        var vType = $("#VoucherType").val();
+        if (vType == "Dr") {
+            $("#Debit").prop("readonly", false);
+            $("#Credit").prop("readonly", true);
+            $("#Credit").val = 0;
+        }
+        else if (vType == "Cr") {
+            $("#Debit").prop("readonly", true);
+            $("#Credit").prop("readonly", false);
+            $("#Debit").val = 0;
+        }
+        //else if (vType == "Jr") {
+        //    $("#Debit").prop("readonly", false);
+        //    $("#Credit").prop("readonly", false);
+        //}
+    }
+    function CheckVoucherTypeBank() {
+        var vType = $("#TransactionType").val();
+        if (vType == "Ba") {
+            $("#txtBAccCode").prop("disabled", false)
+
+        }
+        else {
+            $("#txtBAccCode").prop("disabled", true)
+        }
+        //else if (vType == "Jr") {
+        //    $("#Debit").prop("readonly", false);
+        //    $("#Credit").prop("readonly", false);
+        //}
+    }
+    function ViewTrxDetail() {
+        var trxMasterId = $('#TrxMasterID').val();
+        var autoVoucher = $('#AutoVoucher').val();
+
+
+        CheckVoucherTypeBank();
+        //alert(autoVoucher);
+        var dtTable = $('#tblTrxDetails');
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("ViewTrxDetail", "AccVoucherEntry", "http")',
+            dataType: 'json',
+            data: { trxMasterId: trxMasterId },
+            async: true,
+            success: function (List_AccVoucherEntryViewModel) {
+                var tableBody = dtTable.find('tbody');
+                var TotDebit = 0;
+                var TotCredit = 0;
+                tableBody.empty();
+                $.each(List_AccVoucherEntryViewModel, function (index, acc) {
+                    var sl = index + 1;
+                    if (autoVoucher == '0') {
+                        //alert(0);
+                        tableBody.append('<tr id="tableRow">' +
+                                             '<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                             '<td>' + acc.AccFullName + '<input type="text" value="' + acc.AccFullName + '" style="display:none;" name="AccFullName" id="txtAccFullNameId' + sl + '" /></td>' +
+                                             '<td>' + acc.Narration + ' <input type="text" value="' + acc.Narration + '" style="display:none;" name="Narration" id="txtNarrationId' + sl + '" /></td>' +
+                                             '<td style="text-align:right;">' + acc.Debit + '<input type="text" value="' + acc.Debit + '" style="display:none;" name="Debit" id="txtDebitId' + sl + '" /></td>' +
+                                             '<td style="text-align:right;">' + acc.Credit + '<input type="text" value="' + acc.Credit + '" style="display:none;" name="Credit" id="txtCreditId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.AccID + '" style="display:none;" name="AccID" id="txtAccId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.AccMode + '" style="display:none;" name="AccMode" id="txtAccModeId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.TrxDetailsID + '" style="display:none;" name="TrxDetailsID" id="txtTrxDetailsID' + sl + '" />' +
+                                                                '<input type="hidden" value="' + sl + '" /></td>' +
+                                             '<td style="text-align:center;"><a href="javascript:;" onclick="delete_row(' + sl + ')"><img alt="Delete" src="../../Scripts/jtable/themes/basic/delete.png")"/></a></td>' +
+                                             '</tr>')
+                    }
+                    else if (autoVoucher == '1') {
+                        //alert(1);
+                        tableBody.append('<tr id="tableRow">' +
+                                         '<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                         '<td>' + acc.AccFullName + '<input type="text" value="' + acc.AccFullName + '" style="display:none;" name="AccFullName" id="txtAccFullNameId' + sl + '" /></td>' +
+                                         '<td>' + acc.Narration + ' <input type="text" value="' + acc.Narration + '" style="display:none;" name="Narration" id="txtNarrationId' + sl + '" /></td>' +
+                                         '<td style="text-align:right;">' + acc.Debit + '<input type="text" value="' + acc.Debit + '" style="display:none;" name="Debit" id="txtDebitId' + sl + '" /></td>' +
+                                         '<td style="text-align:right;">' + acc.Credit + '<input type="text" value="' + acc.Credit + '" style="display:none;" name="Credit" id="txtCreditId' + sl + '" />' +
+                                                            '<input type="text" value="' + acc.AccID + '" style="display:none;" name="AccID" id="txtAccId' + sl + '" />' +
+                                                            '<input type="text" value="' + acc.AccMode + '" style="display:none;" name="AccMode" id="txtAccModeId' + sl + '" />' +
+                                                            '<input type="text" value="' + acc.TrxDetailsID + '" style="display:none;" name="TrxDetailsID" id="txtTrxDetailsID' + sl + '" />' +
+                                                            '<input type="hidden" value="' + sl + '" /></td>' +
+                                         '<td style="text-align:center;"></td>' +
+                                         '</tr>')
+                    }
+                    TotDebit = TotDebit + acc.Debit;
+                    TotCredit = TotCredit + acc.Credit;
+                })
+                $('label[for=TotDebit]').html(TotDebit);
+                $('label[for=TotCredit]').html(TotCredit);
+                $("#DivTableView").show();
+            },
+            error: function (request, status, error) {
+                alert('Voucher Detail Error');
+            }
+        });
+    }
+    function SaveVoucherDetail(Trx_Master_ID) {
+
+        var allDetails = new Array();
+        var $allInputs = $('input[type="text"]');
+        //var $allSelect = $('select');
+        //var $allLabels = $('label');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allDetails[allDetails.length] = obj;
+        });
+        //$allLabels.each(function () {
+        //    var value = $(this).text();
+        //    var id = $(this).attr('id');
+        //    var obj = new Object();
+        //    obj.Key = id;
+        //    obj.Value = value;
+        //    allDetails[allDetails.length] = obj;
+        //});
+
+        var $allId = $('input[type="hidden"]');
+
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        //$allSelect.each(function () {
+        //    var value = $(this).val();
+        //    allIds[allIds.length] = value;
+        //});
+
+        var allTrx = new Object();
+        allTrx.allTrx = allDetails;
+        allTrx.allVoucherId = allIds;
+        allTrx.MasterId = Trx_Master_ID;
+
+        var json = JSON.stringify(allTrx);
+
+        //$body.addClass("loading");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveVoucherDetails", "AccVoucherEntry", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (Result) {                             
+                $("#loading").hide();
+                //field clear                
+                var msg;
+                if (Result != '') {
+                    msg = Result;
+                    $("#VoucherNo").val('');
+                    $("#Narration").val('');
+                    $("#Reference").val('');
+                    $("#VoucherDesc").val('');
+                    $('#tblTrxDetails').find('tbody').empty();
+                    $("#DivTableView").hide();
+                }
+                else {
+                    msg = 'Fail to save';
+                }
+
+                $("#dialog-message").html('<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>' + msg + '</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+                alert('Failed')
+            }
+        });
+    }
+    function UpdateCashVoucher() {
+
+        var trx_dt = $("#TrxDate").val();
+        var offc_id = $("#OfficeID").val();
+        var voucher_type = $("#VoucherType").val();
+        var transaction_type = $("#TransactionType").val();
+        var reference = $("#Reference").val();
+        var voucher_desc = $("#VoucherDesc").val();
+        var rectify = $("#IsRectify").is(":checked") ? "true" : "false";
+
+
+        var allDetails = new Array();
+        var $allInputs = $('input[type="text"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allDetails[allDetails.length] = obj;
+        });
+
+        var $allId = $('input[type="hidden"]');
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        var allTrx = new Object();
+        allTrx.allTrx = allDetails;
+        allTrx.allVoucherId = allIds;
+
+        allTrx.trx_dt = trx_dt;
+        allTrx.offc_id = offc_id;
+        allTrx.transaction_type = transaction_type;
+        allTrx.reference = reference;
+        allTrx.voucher_desc = voucher_desc;
+        allTrx.rectify = rectify;
+
+        var json = JSON.stringify(allTrx);
+
+        //$body.addClass("loading");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateCashVoucher", "AccVoucherEntry", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (Result) {
+                $("#loading").hide();
+
+                var msg;
+                if (Result != '') {
+                    msg = Result;
+                    //field clear
+                    $("#Reference").val('');
+                    $("#VoucherDesc").val('');
+                    $('#tblTrxDetails').find('tbody').empty();
+                    $("#DivTableView").hide();
+                }
+                else {
+                    msg = 'Fail to save';
+                }
+
+                $("#dialog-message").html('<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>' + msg + '</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+
+
+
+                //var msg, css;
+                //if (Result == "OK") {
+                //    var msg = "Voucher Saved Successfully";
+                //    var css = "success";
+                //}
+                //else {
+                //    var msg = "Failed to create Voucher";
+                //    var css = "failed";
+                //}
+                //$("#dvMessage").attr('class', css);
+                //$("#dvMessage").html(msg);
+                //$("#dvMessage").show();
+                //if (data.Message == null)
+                //    $("#dvMessage").toggle('fade', 1500);
+            },
+            error: function (err) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    function delete_row(row_index) {
+        //e.preventDefault();
+        var x = confirm("Are you sure you want to delete?");
+        if (x == true) {
+            var dtTable = $('#tblTrxDetails');
+            var allDetails = new Array();
+            var $allInputs = $('input[type="text"]');
+            $allInputs.each(function () {
+                var value = $(this).val();
+                var id = $(this).attr('id');
+                var obj = new Object();
+                obj.Key = id;
+                obj.Value = value;
+                allDetails[allDetails.length] = obj;
+            });
+            var $allId = $('input[type="hidden"]');
+            var allIds = new Array();
+            $allId.each(function () {
+                var value = $(this).val();
+                allIds[allIds.length] = value;
+            });
+
+            var allTrx = new Object();
+            allTrx.allTrx = allDetails;
+            allTrx.allVoucherId = allIds;
+            allTrx.row_index = row_index;
+
+            var json = JSON.stringify(allTrx);
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteTrxDetail", "AccVoucherEntry", "http")',
+                data: json,
+                dataType: 'json',
+                async: true,
+                success: function (List_AccVoucherEntryViewModel) {
+                    var tableBody = dtTable.find('tbody');
+                    var TotDebit = 0;
+                    var TotCredit = 0;
+                    tableBody.empty();
+                    $.each(List_AccVoucherEntryViewModel, function (index, acc) {
+                        var sl = index + 1;
+                        tableBody.append('<tr id="tableRow">' +
+                                             '<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                             '<td>' + acc.AccFullName + '<input type="text" value="' + acc.AccFullName + '" style="display:none;" name="AccFullName" id="txtAccFullNameId' + sl + '" /></td>' +
+                                             '<td>' + acc.Narration + ' <input type="text" value="' + acc.Narration + '" style="display:none;" name="Narration" id="txtNarrationId' + sl + '" /></td>' +
+                                             '<td style="text-align:right;">' + acc.Debit + '<input type="text" value="' + acc.Debit + '" style="display:none;" name="Debit" id="txtDebitId' + sl + '" /></td>' +
+                                             '<td style="text-align:right;">' + acc.Credit + '<input type="text" value="' + acc.Credit + '" style="display:none;" name="Credit" id="txtCreditId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.AccID + '" style="display:none;" name="AccID" id="txtAccId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.AccMode + '" style="display:none;" name="AccMode" id="txtAccModeId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.TrxDetailsID + '" style="display:none;" name="TrxDetailsID" id="txtTrxDetailsID' + sl + '" />' +
+                                                                '<input type="hidden" value="' + sl + '" /></td>' +
+                                             '<td style="text-align:center;"><a href="javascript:;" onclick="delete_row(' + sl + ')"><img alt="Delete" src="../../Scripts/jtable/themes/basic/delete.png")"/></a></td>' +
+                                             '</tr>')
+                        TotDebit = TotDebit + acc.Debit;
+                        TotCredit = TotCredit + acc.Credit;
+                    })
+                    $('label[for=TotDebit]').html(TotDebit);
+                    $('label[for=TotCredit]').html(TotCredit);
+                    $("#DivTableView").show();
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        }
+        else {
+            return false;
+        }
+
+    }
+
+    $(document).ready(function () {
+        $("#DivTableView").hide();
+        CheckVoucherType();
+        $("#VoucherNo").prop("readonly", true);
+        $("#TransactionType").prop("disabled", true);
+        $("#VoucherType").change(function () {
+            CheckVoucherType();
+        });
+        $('#TransactionType').change(function () {
+            CheckVoucherTypeBank();
+        });
+        ViewTrxDetail();
+        $("#txtBAccCode").autocomplete({
+
+            source: function (request, response) {
+
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetBankAccCode", "AccVoucherEntry", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { acc_code: request.term, OfficeLevel: $("#OfficeLevel").val(), TransactionType: $("#TransactionType").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.AccID,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtBAccCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtBAccCode").val(ui.item.label);
+                $("#BAccID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#txtBAccCode").val(ui.item.label);
+                $("#BAccID").val(ui.item.value);
+                return false;
+            }
+        });
+        $("#txtAccCode").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccCode", "AccVoucherEntry", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { acc_code: request.term, OfficeLevel: $("#OfficeLevel").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.AccID,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            }
+        });
+        $('#btnAdd').click(function (e) {
+            e.preventDefault();
+            $('#TransactionType').prop("disabled", true)
+
+            var dr, cr;
+            if ($('#Debit').val() != '')
+                dr = $('#Debit').val();
+            else
+                dr = '0';
+            if ($('#Credit').val() != '')
+                cr = $('#Credit').val();
+            else
+                cr = '0';
+            var accCode = $("#txtAccCode").val();
+            var narration = $("#Narration").val();
+            var debit = $("#Debit").val();
+            var credit = $("#Credit").val();
+            var accId = $("#AccID").val();
+            var BaccId = $("#BAccID").val();
+            var voucher_type = $("#VoucherType").val();
+            var transaction_type = $("#TransactionType").val();
+            var voucher_Desc = $("#Narration").val();
+            if (voucher_Desc == "") {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html('Voucher Description Can not be Empty');
+                $("#dvMessage").show();
+
+            }
+            var dtTable = $('#tblTrxDetails');
+            if ($('#VoucherNo').val() != "") {
+
+
+                if (transaction_type == "Ba") {
+                    if (BaccId == "") {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html('Please select account code');
+                        $("#dvMessage").show();
+
+                    }
+                    else {
+
+                        if (accCode != "" && voucher_Desc != ""  && accId > 0) {
+                            if (dr > 0 || cr > 0) {
+                                //var voucher_type = $("#VoucherType").val();
+                                //$("#VoucherType").prop("disabled", true);
+                                var allDetails = new Array();
+                                var $allInputs = $('input[type="text"]');
+                                $allInputs.each(function () {
+                                    var value = $(this).val();
+                                    var id = $(this).attr('id');
+                                    var obj = new Object();
+                                    obj.Key = id;
+                                    obj.Value = value;
+                                    allDetails[allDetails.length] = obj;
+                                });
+                                var $allId = $('input[type="hidden"]');
+                                var allIds = new Array();
+                                $allId.each(function () {
+                                    var value = $(this).val();
+                                    allIds[allIds.length] = value;
+                                });
+
+                                var allTrx = new Object();
+                                allTrx.allTrx = allDetails;
+                                allTrx.allVoucherId = allIds;
+                                allTrx.NewAccFullName = accCode;
+                                allTrx.NewNarration = narration;
+                                allTrx.NewDebit = dr;
+                                allTrx.NewCredit = cr;
+                                allTrx.NewAccID = accId;
+                                allTrx.VoucherType = voucher_type;
+                                allTrx.TransactionType = transaction_type;
+                                allTrx.BAccid = BaccId;
+                                var json = JSON.stringify(allTrx);
+
+                                $.ajax({
+                                    type: 'POST',
+                                    contentType: "application/json; charset=utf-8",
+                                    url: '@Url.Action("AddVoucherItem", "AccVoucherEntry", "http")',
+                                    data: json,
+                                    dataType: 'json',
+                                    async: true,
+                                    success: function (List_AccVoucherEntryViewModel) {
+                                        $("#loading").hide();
+                                        var tableBody = dtTable.find('tbody');
+                                        var TotDebit = 0;
+                                        var TotCredit = 0;
+                                        tableBody.empty();
+                                        $.each(List_AccVoucherEntryViewModel, function (index, acc) {
+                                            var sl = index + 1;
+                                            tableBody.append('<tr id="tableRow">' +
+                                                         '<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                                         '<td>' + acc.AccFullName + '<input type="text" value="' + acc.AccFullName + '" style="display:none;" name="AccFullName" id="txtAccFullNameId' + sl + '" /></td>' +
+                                                         '<td>' + acc.Narration + ' <input type="text" value="' + acc.Narration + '" style="display:none;" name="Narration" id="txtNarrationId' + sl + '" /></td>' +
+                                                         '<td style="text-align:right;">' + acc.Debit + '<input type="text" value="' + acc.Debit + '" style="display:none;" name="Debit" id="txtDebitId' + sl + '" /></td>' +
+                                                         '<td style="text-align:right;">' + acc.Credit + '<input type="text" value="' + acc.Credit + '" style="display:none;" name="Credit" id="txtCreditId' + sl + '" />' +
+                                                                            '<input type="text" value="' + acc.AccID + '" style="display:none;" name="AccID" id="txtAccId' + sl + '" />' +
+                                                                            '<input type="text" value="' + acc.AccMode + '" style="display:none;" name="AccMode" id="txtAccModeId' + sl + '" />' +
+                                                                            '<input type="text" value="' + acc.TrxDetailsID + '" style="display:none;" name="TrxDetailsID" id="txtTrxDetailsID' + sl + '" />' +
+                                                                            '<input type="hidden" value="' + sl + '" /></td>' +
+                                                         '<td style="text-align:center;"><a href="javascript:;" onclick="delete_row(' + sl + ')"><img alt="Delete" src="../../Scripts/jtable/themes/basic/delete.png")"/></a></td>' +
+                                                         '</tr>')
+                                            TotDebit = TotDebit + acc.Debit;
+                                            TotCredit = TotCredit + acc.Credit;
+                                        })
+
+                                        $('label[for=TotDebit]').html(TotDebit);
+                                        $('label[for=TotCredit]').html(TotCredit);
+                                        $("#DivTableView").show();
+                                        //field clear
+                                        $("#txtAccCode").val('');
+                                        $("#AccID").val('');
+                                        $("#Narration").val('');
+                                        $("#Debit").val('');
+                                        $("#Credit").val('');
+                                        $("#BAccID").val('');
+                                        $("#txtBAccCode").val('');
+
+                                    },
+                                    error: function (request, status, error) {
+                                        $("#loading").hide();
+                                        $("#dvMessage").attr('class', 'failed');
+                                        $("#dvMessage").html(request.statusText);
+                                        $("#dvMessage").show();
+                                    }
+                                });
+                            }
+                            else {
+                                $("#loading").hide();
+                                $("#dvMessage").attr('class', 'failed');
+                                $("#dvMessage").html('Both Debit and Credit amount cannot be 0.00');
+                                $("#dvMessage").show();
+                            }
+                        }
+                        else {
+                            $("#loading").hide();
+                            $("#dvMessage").attr('class', 'failed');
+                            $("#dvMessage").html('Please check accountcode/Description ');
+                            $("#dvMessage").show();
+                        }
+                    }
+
+
+                }
+
+
+                else
+                {
+
+
+                    if (accCode != "" && voucher_Desc!=""  && accId > 0) {
+                        if (dr > 0 || cr > 0) {
+                            var allDetails = new Array();
+                            var $allInputs = $('input[type="text"]');
+                            $allInputs.each(function () {
+                                var value = $(this).val();
+                                var id = $(this).attr('id');
+                                var obj = new Object();
+                                obj.Key = id;
+                                obj.Value = value;
+                                allDetails[allDetails.length] = obj;
+                            });
+                            var $allId = $('input[type="hidden"]');
+                            var allIds = new Array();
+                            $allId.each(function () {
+                                var value = $(this).val();
+                                allIds[allIds.length] = value;
+                            });
+
+                            var allTrx = new Object();
+                            allTrx.allTrx = allDetails;
+                            allTrx.allVoucherId = allIds;
+                            allTrx.NewAccFullName = accCode;
+                            allTrx.NewNarration = narration;
+                            allTrx.NewDebit = dr;
+                            allTrx.NewCredit = cr;
+                            allTrx.NewAccID = accId;
+                            var json = JSON.stringify(allTrx);
+
+                            $.ajax({
+                                type: 'POST',
+                                contentType: "application/json; charset=utf-8",
+                                url: '@Url.Action("AddVoucherItem", "AccVoucherEntry", "http")',
+                                data: json,
+                                dataType: 'json',
+                                async: true,
+                                success: function (List_AccVoucherEntryViewModel) {
+                                    var tableBody = dtTable.find('tbody');
+                                    var TotDebit = 0;
+                                    var TotCredit = 0;
+                                    tableBody.empty();
+                                    $.each(List_AccVoucherEntryViewModel, function (index, acc) {
+                                        var sl = index + 1;
+                                        tableBody.append('<tr id="tableRow">' +
+                                                     '<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                                     '<td>' + acc.AccFullName + '<input type="text" value="' + acc.AccFullName + '" style="display:none;" name="AccFullName" id="txtAccFullNameId' + sl + '" /></td>' +
+                                                     '<td>' + acc.Narration + ' <input type="text" value="' + acc.Narration + '" style="display:none;" name="Narration" id="txtNarrationId' + sl + '" /></td>' +
+                                                     '<td style="text-align:right;">' + acc.Debit + '<input type="text" value="' + acc.Debit + '" style="display:none;" name="Debit" id="txtDebitId' + sl + '" /></td>' +
+                                                     '<td style="text-align:right;">' + acc.Credit + '<input type="text" value="' + acc.Credit + '" style="display:none;" name="Credit" id="txtCreditId' + sl + '" />' +
+                                                                        '<input type="text" value="' + acc.AccID + '" style="display:none;" name="AccID" id="txtAccId' + sl + '" />' +
+                                                                        '<input type="text" value="' + acc.AccMode + '" style="display:none;" name="AccMode" id="txtAccModeId' + sl + '" />' +
+                                                                        '<input type="text" value="' + acc.TrxDetailsID + '" style="display:none;" name="TrxDetailsID" id="txtTrxDetailsID' + sl + '" />' +
+                                                                        '<input type="hidden" value="' + sl + '" /></td>' +
+                                                     '<td style="text-align:center;"><a href="javascript:;" onclick="delete_row(' + sl + ')"><img alt="Delete" src="../../Scripts/jtable/themes/basic/delete.png")"/></a></td>' +
+                                                     '</tr>')
+                                        TotDebit = TotDebit + acc.Debit;
+                                        TotCredit = TotCredit + acc.Credit;
+                                    })
+
+                                    $('label[for=TotDebit]').html(TotDebit);
+                                    $('label[for=TotCredit]').html(TotCredit);
+                                    $("#DivTableView").show();
+                                    //field clear
+                                    $("#txtAccCode").val('');
+                                    $("#AccID").val('');
+                                    $("#Narration").val('');
+                                    $("#Debit").val('');
+                                    $("#Credit").val('');
+
+                                },
+                                error: function (request, status, error) {
+                                    alert(request.statusText + "/" + request.status + "/" + error);
+                                }
+                            });
+                        }
+                        else {
+                            alert('Both Debit and Credit amount cannot be 0.00');
+                        }
+                    }
+
+
+
+                    else {
+                        alert('Please select account code');
+                    }
+                }
+
+            
+            }
+            else {
+                alert('Voucher No field cannot be empty');
+            }
+        });
+
+
+        $("#btnCreate").click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+            var trx_dt = $("#TrxDate").val();
+            var offc_id = $("#OfficeID").val();            
+            var transaction_type = $("#TransactionType").val();
+            var voucher_type = $("#VoucherType").val();
+            var voucher_no = $("#VoucherNo").val();
+            var reference = $("#Reference").val();
+            var voucher_desc = $("#VoucherDesc").val();
+            var Master_ID = $("#TrxMasterID").val();
+            var rectify = $("#IsRectify").is(":checked") ? "true" : "false";
+            var tot_debit = $('label[for=TotDebit]').html();
+            var tot_credit = $('label[for=TotCredit]').html();
+            if (trx_dt != null && offc_id != null && offc_id > 0 && voucher_no != null && transaction_type != 'Ca') { // if bank and Journal voucher
+                if (tot_debit == tot_credit) {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("UpdateVoucherMaster", "AccVoucherEntry", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { trxMasterId: Master_ID, trx_dt: trx_dt, offc_id: offc_id, voucher_type: voucher_type, voucher_no: voucher_no, reference: reference, voucher_desc: voucher_desc, rectify: rectify },
+                        success: function (Trx_Master_ID) {
+                            if (Trx_Master_ID > 0)
+                                SaveVoucherDetail(Master_ID);
+                            else {
+
+                                $("#dvMessage").attr('class', 'failed');
+                                $("#dvMessage").html('Fail to Update.');
+                                $("#dvMessage").show();
+                            }
+                        },
+                        error: function (request, status, error) {
+                            $("#dvMessage").attr('class', 'failed');
+                            $("#dvMessage").html('Fail to Update.');
+                            $("#dvMessage").show();
+                        }
+                    });
+                }
+                else {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html('Debit and Credit is not equal');
+                    $("#dvMessage").show();
+                }
+            }
+            else if (trx_dt != null && offc_id != null && offc_id > 0 && voucher_no != null && transaction_type == 'Ca') { // if Cash Vucher
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("UpdateVoucherMaster", "AccVoucherEntry", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { trxMasterId: Master_ID, trx_dt: trx_dt, offc_id: offc_id, voucher_type: voucher_type, voucher_no: voucher_no, reference: reference, voucher_desc: voucher_desc, rectify: rectify },
+                    success: function (Trx_Master_ID) {
+                        if (Trx_Master_ID > 0)
+                            SaveVoucherDetail(Master_ID);
+                        else {
+
+                            $("#dvMessage").attr('class', 'failed');
+                            $("#dvMessage").html('Fail to Update.');
+                            $("#dvMessage").show();
+                        }
+                    },
+                    error: function (request, status, error) {
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html('Fail to Update.');
+                        $("#dvMessage").show();
+                    }
+                });
+                //UpdateCashVoucher();
+            }
+            else {
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html('Fail to Update.');
+                $("#dvMessage").show();
+            }
+            $("#loading").hide();
+
+        });
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+<h2 class="page-title">Voucher Edit</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div id="dialog-message" title="Message" style="display:none;">
+        <p>
+            <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+        </p>
+    </div>
+    <div class="">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TrxDate, htmlAttributes: new { @class = "control-label" })
+                    @Html.Label("" + ViewData["TransactionDate"], new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.TrxDate, "", new { @class = "text-danger" })
+                    @Html.TextBoxFor(model => model.OfficeID, new { style = "display:none;" })
+                    @Html.TextBoxFor(model => model.TrxDate, new { style = "display:none;" })
+                    @Html.TextBoxFor(model => model.TrxMasterID, new { style = "display:none;" })
+                    @Html.TextBoxFor(model => model.AutoVoucher, new { style = "display:none;" })
+                    @Html.TextBoxFor(model => model.OfficeLevel, new { style = "display:none;" })
+                    @Html.HiddenFor(model => model.VoucherDesc)
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Rectify Voucher @Html.CheckBoxFor(model => model.IsRectify)</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Transaction Type</label>
+                    @Html.DropDownListFor(model => model.TransactionType, TrxType, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.TransactionType, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VoucherNo, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.VoucherNo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.VoucherNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            
+
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.BAccID, htmlAttributes: new { @class = "control-label", @disabled = true })
+                    @Html.TextBox("txtBAccCode", "", new { @class = "form-control", @disabled = true })
+                    @Html.TextBoxFor(model => model.BAccID, new { style = "display:none;" })
+                    @Html.ValidationMessageFor(model => model.BAccID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="control-label">Description</label><span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.Narration, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Narration, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VoucherType, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.VoucherType, Vtype, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.VoucherType, "", new { @class = "text-danger" })
+                </div>
+            </div>            
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AccID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("txtAccCode", "", new { @class = "form-control" })
+                    @*@Html.HiddenFor(model => model.AccID)*@
+                    @Html.TextBoxFor(model => model.AccID, new { style = "display:none;" })
+                    @Html.ValidationMessageFor(model => model.AccID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>              
+        <div class="row">
+            
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Debit, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Debit, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Debit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Credit, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Credit, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Credit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Reference, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Reference, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Reference, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="submit" value="Add" id="btnAdd" class="btn btn-primary" />
+                        &nbsp;
+                        <input type="submit" value="Save" id="btnCreate" class="btn btn-primary" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        @*<div id="grid"></div>*@
+                        <div id="DivTableView">
+
+
+                            <div style="background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+                                            border-color: #2b5177; height:35px;">
+                                <div style="text-shadow: 0 1px 0 #666; color:#fff; font-weight:bold; padding-top:6px; padding-left:5px;">Transaction List</div>
+
+                            </div>
+
+                            <table id="tblTrxDetails" cellpadding="5" cellspacing="0" width="100%">
+                                <thead class="tHead">
+                                    <tr>
+                                        <th style="width: 5%; height:35px; vertical-align:middle; text-align:center;">
+                                            Sl
+                                        </th>
+                                        <th style="width: 20%; vertical-align:middle;">
+                                            Account Code
+                                        </th>
+
+                                        <th style="width: 40%; vertical-align:middle;">
+                                            Description
+                                        </th>
+                                        <th style="width: 15%; vertical-align:middle; text-align:right;">
+                                            Debit
+                                        </th>
+                                        <th style="width: 15%; vertical-align:middle; text-align:right;">
+                                            Credit
+                                        </th>
+                                        <th style="width: 5%; vertical-align:middle; text-align:center;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot>
+                                    <tr class="tFoot">
+                                        <td>
+                                            &nbsp;
+                                        </td>
+                                        <td>
+                                            &nbsp;
+                                        </td>
+                                        <td style="text-align:right;">
+                                            Total Amount
+                                        </td>
+                                        <td style="text-align:right;">
+                                            @Html.Label("TotDebit", " ")
+                                        </td>
+                                        <td style="text-align:right;">
+                                            @Html.Label("TotCredit", " ")
+                                        </td>
+                                        <td>
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

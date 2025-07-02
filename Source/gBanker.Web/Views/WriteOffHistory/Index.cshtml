@@ -1,0 +1,1101 @@
+﻿@model gBanker.Web.ViewModels.WriteOffHistoryViewModel
+
+@{
+    ViewBag.Title = "WriteOff History";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+
+    .required:after {
+        content: " *";
+        color: red;
+    }
+</style>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#btnPost').click(function (e) {
+            e.preventDefault();
+            //alert('sfdf');
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("LedgerPostWriteOff", "WriteOffHistory", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                //data: { memberid: member, centerId: $("#CenterID").val() },
+                //minLength: 1,
+                success: function (data) {
+
+                    if (data.length == data.length) {
+                        alert("Data Transferred to Ledger.");
+
+                    }
+                    else if (data.length == 0) {
+                        alert("No Records Found");
+                    }
+                }
+            });
+        });
+
+
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "WriteOffHistory", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    //data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    //data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    data: { memberid: request.term},
+                    //data: { memberid: request.term, centerId: 0 },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                var memberid = $("#MemberID").val();
+
+
+
+                $.ajax({
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("WriteOffOldMemberCodeSearch", "WriteOffHistory", "http")',
+                    data: { memberid: memberid },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        //alert(data.OfficeID);
+                        //alert(data.CenterID);
+                        //alert(data.MemberID);
+                        //alert(data.MotherName);
+                        //alert(data.FatherName);
+                        //alert(data.MemberName);
+                        //alert(data.MemberCode);
+                        //alert(data.SpouseName);
+                        //alert(data.PhoneNo);
+                        //alert(data.NationalID);
+                        //alert(data.Address);
+                        //alert(data.DisburseDate);
+                        //alert(data.DisburseAmount);
+                        //alert(data.WriteOffDate);
+                        //alert(data.WriteOffAmount);
+                        //alert(data.WriteOffReceovery);
+                        $("#OldMemberName").val(data.MemberName);
+                        $("#CenterID").val(data.CenterID);
+                        $("#MotherName").val(data.MotherName);
+                        $("#FatherName").val(data.FatherName);
+                        $("#MemberCode").val(data.MemberCode);
+                        $("#SpouseName").val(data.SpouseName);
+                        $("#PhoneNo").val(data.PhoneNo);
+                        $("#NationalID").val(data.NationalID);
+                        $("#Address").val(data.Address);
+                        $("#DisburseDate").val(data.DisburseDate);
+                        $("#DisburseAmount").val(data.DisburseAmount);
+                        $("#WriteOffDate").val(data.WriteOffDate);
+                        $("#WriteOffAmount").val(data.WriteOffAmount);
+                        $("#WriteOffReceovery").val(data.WriteOffReceovery);
+                        $("#OldMemberCodeOld").val(data.MemberCode);
+                        $("#loading").hide();
+                        if (cnt_status == 'Yes') {
+                            $.alert.open('Info', 'Get member info');
+                            $("#PhoneNo").val('');
+                        }
+                        else if (cnt_status == 'No') {
+                        }
+                    },
+                    error: function (request, status, error) {
+                        $("#loading").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                        $("#PhoneNo").focus();
+                    }
+                });
+
+
+
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+
+        $("#PhoneNo").blur(function (e) {
+            var PhoneNo = $("#PhoneNo").val();
+            if (PhoneNo != "") {
+                $("#loading").show();
+                $.ajax({
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("CheckPhoneNo", "Member", "http")',
+                    data: { PhoneNo: PhoneNo },
+                    dataType: 'json',
+                    async: true,
+                    success: function (cnt_status) {
+                        $("#loading").hide();
+                        if (cnt_status == 'Yes') {
+                            $.alert.open('Info', 'Phone No already exists');
+                            //alert('Phone No already exists');
+                            $("#PhoneNo").val('');
+                        }
+                        else if (cnt_status == 'No') {
+                        }
+                    },
+                    error: function (request, status, error) {
+                        $("#loading").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                        $("#PhoneNo").focus();
+                    }
+                });
+
+            }
+        });
+
+
+
+        $("#NationalID").blur(function (e) {
+            var nationalId = $("#NationalID").val();
+            if (nationalId != "") {
+                $("#loading").show();
+                $.ajax({
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("CheckNationalId", "Member", "http")',
+                    data: { nationalId: nationalId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (cnt_status) {
+                        $("#loading").hide();
+                        if (cnt_status == 'Yes') {
+                            $.alert.open('Info', 'National ID No already exists');
+                            //alert('Phone No already exists');
+                            $("#NationalID").val('');
+                        }
+                        else if (cnt_status == 'No') {
+                        }
+                    },
+                    error: function (request, status, error) {
+                        $("#loading").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                        $("#NationalID").focus();
+                    }
+                });
+
+            }
+        });
+
+
+
+        $("#DisburseAmount").blur(function (e) {
+            var DisburseAmount = $("#DisburseAmount").val();
+            if (DisburseAmount == 0) {
+                $.alert.open('Info', 'Disburse Amount can not set 0');
+                $("#DisburseAmount").val('');
+            }
+        });
+
+        $("#WriteOffAmount").blur(function (e) {
+            var WriteOffAmount = $("#WriteOffAmount").val();
+            if (WriteOffAmount == 0) {
+                $.alert.open('Info', 'WriteOff Amount can not set 0');
+                $("#WriteOffAmount").val('');
+            }
+        });
+
+
+        $("#DisburseDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeYear: true,
+            yearRange: "2000:2040",
+
+        });
+        //$('#DateFrom').datepicker("setDate", new Date(2019, 6, 01));
+        $("#WriteOffDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeYear: true,
+            yearRange: "2000:2040",
+
+        });
+
+        $("#OpeningDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeYear: true,
+            yearRange: "2000:2040",
+
+        });
+
+
+
+        loadWriteOffHistory();
+        $("#btnSearch").click(function () {
+            var OpeningDate = $("#OpeningDate").val();
+            loadWriteOffHistorySearch(OpeningDate);
+        });
+        $("#btnSave").click(function () {
+            SaveWriteOffHistory();
+        });
+        $("#btnUpdate").click(function () {
+            UpdateWriteOffHistory();
+        });
+        $("#btnReset").click(function () {
+            ResetWriteOffHistory();
+        });
+    });
+
+
+    var rowNumber = 0;
+    function loadWriteOffHistory() {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        var OpeningDate = $("#OpeningDate").val();
+        $('#AjaxLoader').show();
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            pageSize: 25,
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("ListWriteOffHistory", "WriteOffHistory", "http")',
+                    dataType: 'json',
+                    data: { OpeningDate: OpeningDate }
+                }
+            }, aggregate: [
+                        { field: "WriteOffBalance", aggregate: "sum" }
+            ]
+        });
+        $('#AjaxLoader').hide();
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            },
+            columns: [
+                 //{ title: "SL No", width: 50, template: "#= renderNumber(data) #" },
+                 {
+                     title: "SL",
+                     template: "#= ++record #",
+                     width: 40
+                 },
+                 {
+                     field: "WriteOffHistoryID",
+                     hidden: true,
+                     filterable: false
+                 },
+                 {
+                     width: "150px",
+                     field: "OldMemberName",
+                     filterable: true,
+                     title: "Member Name"
+                 },
+                 {
+                     width: "100px",
+                     field: "OldMemberCode",
+                     filterable: true,
+                     title: "Member Code"
+                 },
+                 {
+                     width: "100px",
+                     field: "OldMemberCodeOld",
+                     filterable: true,
+                     title: "Old Member Code"
+                 },
+                 {
+                     width: "200px",
+                     field: "centercodename",
+                     filterable: true,
+                     title: "Center"
+                 },
+                 {
+                     width: "120px",
+                     field: "PhoneNo",
+                     filterable: true,
+                     title: "PhoneNo"
+                 },
+                 {
+                     width: "100px",
+                     field: "DD",
+                     filterable: true,
+                     title: "DisburseDate"
+                 },
+                 {
+                     width: "100px",
+                     field: "WD",
+                     filterable: true,
+                     title: "WriteOffDate"
+                 },
+                 //{
+                 //    width: "100px",
+                 //    field: "WriteOffBalance",
+                 //    filterable: true,
+                 //    title: "Wr Balance"
+                 //},
+                 {
+                     width: "100px",
+                     field: "WriteOffBalance",
+                     filterable: true,
+                     title: "Wr Balance",
+                     aggregates: ["sum"], footerTemplate: "#=sum#",
+                     filterable: false
+
+                 },
+                 {
+                     width: "100px",
+                     field: "OD",
+                     filterable: true,
+                     title: "Opening Date"
+                 },
+                 {
+                     width: "50px",
+                     title: 'Edit',
+                     template: function (dataItem) {
+                         //return "<a href='#' OnClick='EditWriteOffHistory(" + dataItem.WriteOffHistoryID + ",\"" + dataItem.DivisionID + "\",\"" + dataItem.OfficeID + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                         return "<a href='#' OnClick='EditWriteOffHistory(" + dataItem.WriteOffHistoryID + ",\""
+                             + dataItem.OldMemberName + "\",\""
+                             + dataItem.OldMemberCodeOld + "\",\""
+                             + dataItem.OfficeID + "\",\""
+                             + dataItem.CenterID + "\",\""
+                             + dataItem.FatherName + "\",\""
+                             + dataItem.SpouseName + "\",\""
+                             + dataItem.MotherName + "\",\""
+                             + dataItem.PhoneNo + "\",\""
+                             + dataItem.NationalID + "\",\""
+                             + dataItem.Address + "\",\""
+                             + dataItem.DD + "\",\""
+                             + dataItem.DisburseAmount + "\",\""
+                             + dataItem.WD + "\",\""
+                             + dataItem.WriteOffAmount + "\",\""
+                             + dataItem.WriteOffReceovery + "\",\""
+                             + dataItem.OD + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                     }
+                 },
+                 {
+                     width: "50px",
+                     title: 'Delete (বাদ)',
+                     template: function (dataItem) {
+                         return "<a href='#' OnClick='InformationDelete(" + dataItem.WriteOffHistoryID + ");'><i class='fa fa-trash-o'></i></a>";
+                     }
+                 }
+            ]
+        });
+    }
+
+    //for opening date search
+
+    function loadWriteOffHistorySearch(OpeningDate) {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        $('#AjaxLoader').show();
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            pageSize: 25,
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("ListWriteOffHistory", "WriteOffHistory", "http")',
+                    dataType: 'json',
+                    data: { OpeningDate: OpeningDate }
+                }
+            }
+            , aggregate: [
+                        { field: "WriteOffBalance", aggregate: "sum" }
+            ]
+        });
+
+        $('#AjaxLoader').hide();
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            },
+            columns: [
+                 //{ title: "SL No", width: 50, template: "#= renderNumber(data) #" },
+                 {
+                     title: "SL",
+                     template: "#= ++record #",
+                     width: 40
+                 },
+                 {
+                     field: "WriteOffHistoryID",
+                     hidden: true,
+                     filterable: false
+                 },
+                 {
+                     width: "150px",
+                     field: "OldMemberName",
+                     filterable: true,
+                     title: "Member Name"
+                 },
+                 {
+                     width: "100px",
+                     field: "OldMemberCode",
+                     filterable: true,
+                     title: "Member Code"
+                 },
+                 {
+                     width: "100px",
+                     field: "OldMemberCodeOld",
+                     filterable: true,
+                     title: "Old Member Code"
+                 },
+                 {
+                     width: "200px",
+                     field: "centercodename",
+                     filterable: true,
+                     title: "Center"
+                 },
+                 {
+                     width: "150px",
+                     field: "PhoneNo",
+                     filterable: true,
+                     title: "PhoneNo"
+                 },
+                 {
+                     width: "100px",
+                     field: "DD",
+                     filterable: true,
+                     title: "DisburseDate"
+                 },
+                 {
+                     width: "100px",
+                     field: "WD",
+                     filterable: true,
+                     title: "WriteOffDate"
+                 },
+                 //{
+                 //    width: "100px",
+                 //    field: "WriteOffBalance",
+                 //    filterable: true,
+                 //    title: "Wr Balance"
+                 //},
+                 {
+                     width: "80px",
+                     field: "WriteOffBalance",
+                     filterable: true,
+                     title: "Wr Balance",
+                     aggregates: ["sum"], footerTemplate: "Total: #=sum#",
+                     filterable: false
+
+                 },
+                 {
+                     width: "100px",
+                     field: "OD",
+                     filterable: true,
+                     title: "Opening Date"
+                 },
+                 {
+                     width: "50px",
+                     title: 'Edit',
+                     template: function (dataItem) {
+                         //return "<a href='#' OnClick='EditWriteOffHistory(" + dataItem.WriteOffHistoryID + ",\"" + dataItem.DivisionID + "\",\"" + dataItem.OfficeID + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                         return "<a href='#' OnClick='EditWriteOffHistory(" + dataItem.WriteOffHistoryID + ",\""
+                             + dataItem.OldMemberName + "\",\""
+                             + dataItem.OldMemberCodeOld + "\",\""
+                             + dataItem.OfficeID + "\",\""
+                             + dataItem.CenterID + "\",\""
+                             + dataItem.FatherName + "\",\""
+                             + dataItem.SpouseName + "\",\""
+                             + dataItem.MotherName + "\",\""
+                             + dataItem.PhoneNo + "\",\""
+                             + dataItem.NationalID + "\",\""
+                             + dataItem.Address + "\",\""
+                             + dataItem.DD + "\",\""
+                             + dataItem.DisburseAmount + "\",\""
+                             + dataItem.WD + "\",\""
+                             + dataItem.WriteOffAmount + "\",\""
+                             + dataItem.WriteOffReceovery + "\",\""
+                             + dataItem.OD + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                     }
+                 },
+                 {
+                     width: "50px",
+                     title: 'Delete (বাদ)',
+                     template: function (dataItem) {
+                         return "<a href='#' OnClick='InformationDelete(" + dataItem.WriteOffHistoryID + ");'><i class='fa fa-trash-o'></i></a>";
+                     }
+                 }
+            ]
+        });
+    }
+
+
+    //create
+    function GenerateWriteOffHistory() {
+        var item = {};
+        item.OldMemberName = $("#OldMemberName").val();
+        item.OldMemberCodeOld = $("#OldMemberCodeOld").val();
+        item.OfficeID = $("#OfficeID").val();
+        item.CenterID = $("#CenterID").val();
+        item.FatherName = $("#FatherName").val();
+        item.SpouseName = $("#SpouseName").val();
+        item.MotherName = $("#MotherName").val();
+        item.PhoneNo = $("#PhoneNo").val();
+        item.NationalID = $("#NationalID").val();
+        item.Address = $("#Address").val();
+        item.DisburseDate = $("#DisburseDate").val();
+        item.DisburseAmount = $("#DisburseAmount").val();
+        item.WriteOffDate = $("#WriteOffDate").val();
+        item.WriteOffAmount = $("#WriteOffAmount").val();
+        item.WriteOffReceovery = $("#WriteOffReceovery").val();
+        item.OpeningDate = $("#OpeningDate").val();
+        return item;
+    }
+
+    function GenerateUpdateWriteOffHistory() {
+        var item = {};
+        item.WriteOffHistoryID = $("#WriteOffHistoryID").val();
+        item.OldMemberName = $("#OldMemberName").val();
+        item.OldMemberCodeOld = $("#OldMemberCodeOld").val();
+        item.OfficeID = $("#OfficeID").val();
+        item.CenterID = $("#CenterID").val();
+        item.FatherName = $("#FatherName").val();
+        item.SpouseName = $("#SpouseName").val();
+        item.MotherName = $("#MotherName").val();
+        item.PhoneNo = $("#PhoneNo").val();
+        item.NationalID = $("#NationalID").val();
+        item.Address = $("#Address").val();
+        item.DisburseDate = $("#DisburseDate").val();
+        item.DisburseAmount = $("#DisburseAmount").val();
+        item.WriteOffDate = $("#WriteOffDate").val();
+        item.WriteOffAmount = $("#WriteOffAmount").val();
+        item.WriteOffReceovery = $("#WriteOffReceovery").val();
+        item.OpeningDate = $("#OpeningDate").val();
+        return item;
+    }
+
+    //edit using jtable
+    function ResetWriteOffHistory() {
+        $("#btnUpdate").hide();
+        $("#btnSave").show();
+        $("#btnReset").hide();
+        ClearControl();
+    }
+    function EditWriteOffHistory
+        (WriteOffHistoryID,
+            OldMemberName,
+            OldMemberCodeOld,
+            OfficeID,
+            CenterID,
+            FatherName,
+            SpouseName,
+            MotherName,
+            PhoneNo,
+            NationalID,
+            Address,
+            DD,
+            DisburseAmount,
+            WD,
+            WriteOffAmount,
+            WriteOffReceovery,
+            OD
+        ) {
+        $("#WriteOffHistoryID").val(WriteOffHistoryID);
+        $("#OldMemberName").val(OldMemberName);
+        $("#OldMemberCodeOld").val(OldMemberCodeOld);
+        $("#OfficeID").val(OfficeID);
+        $("#CenterID").val(CenterID);
+        $("#FatherName").val(FatherName);
+        $("#SpouseName").val(SpouseName);
+        $("#MotherName").val(MotherName);
+        $("#PhoneNo").val(PhoneNo);
+        $("#NationalID").val(NationalID);
+        $("#Address").val(Address);
+        $("#DisburseDate").val(DD);
+        $("#DisburseAmount").val(DisburseAmount);
+        $("#WriteOffDate").val(WD);
+        $("#WriteOffAmount").val(WriteOffAmount);
+        $("#WriteOffReceovery").val(WriteOffReceovery);
+        $("#OpeningDate").val(OD);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+
+    function ClearControl() {
+        $("#WriteOffHistoryID").val('');
+        $("#OldMemberName").val('');
+        $("#OfficeID").val('');
+        $("#CenterID").val('');
+        $("#FatherName").val('');
+        $("#SpouseName").val('');
+        $("#MotherName").val('');
+        $("#PhoneNo").val('');
+        $("#NationalID").val('');
+        $("#Address").val('');
+        $("#DisburseDate").val('');
+        $("#DisburseAmount").val('');
+        $("#WriteOffAmount").val('');
+        $("#WriteOffReceovery").val('');
+        $("#OldMemberCodeOld").val('');
+    }
+
+
+    function SaveWriteOffHistory() {
+        var WriteOffHistory = GenerateWriteOffHistory();
+
+        var OldMemberName = $("#OldMemberName").val();
+        var OldMemberCodeOld = $("#OldMemberCodeOld").val();
+        var OfficeID = $("#OfficeID").val();
+        var CenterID = $("#CenterID option:selected").val();
+        var FatherName = $("#FatherName").val();
+        var SpouseName = $("#SpouseName").val();
+        var MotherName = $("#MotherName").val();
+        var PhoneNo = $("#PhoneNo").val();
+        var NationalID = $("#NationalID").val();
+        var Address = $("#Address").val();
+        var DisburseDate = $("#DisburseDate").val();
+        var DisburseAmount = $("#DisburseAmount").val();
+        var WriteOffDate = $("#WriteOffDate").val();
+        var WriteOffAmount = $("#WriteOffAmount").val();
+        var WriteOffReceovery = $("#WriteOffReceovery").val();
+        var OpeningDate = $("#OpeningDate").val();
+
+        if (OldMemberName != "" && OldMemberCodeOld != "" && OfficeID != ""
+            && CenterID != "" && FatherName != ""
+            && SpouseName != "" && MotherName != ""
+            && PhoneNo != "" && NationalID != ""
+            && Address != "" && DisburseDate != ""
+            && DisburseAmount != "" && WriteOffDate != ""
+            && WriteOffAmount != "" && WriteOffReceovery != ""
+            && OpeningDate != "") {
+
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: true,
+                cache: false,
+                url: '@Url.Action("SaveWriteOffHistory", "WriteOffHistory")',
+                data: JSON.stringify({ WriteOffHistory: WriteOffHistory }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data.data.MemberCode != undefined) {
+                        $("#dialog-message").html('<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Member Saved Successfully, Member Code is ' + data.data.MemberCode + '.</p>');
+                        $("#dialog-message").dialog({
+                            modal: true,
+                            buttons: {
+                                Ok: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                        $.alert.open('Success', data.data.result);
+                        if (data.data.result == "Save Successfull") {
+                            ClearControl();
+                            //$('#grid').jtable('load');
+                            loadWriteOffHistory();
+                        }
+                    }
+                    $.alert.open('Info', data.data.result);
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        } else {
+            $.alert.open('Alert', 'Please Select Required Field');
+        }
+    }
+
+    function UpdateWriteOffHistory() {
+        var WriteOffHistorydd = GenerateUpdateWriteOffHistory();
+
+        var OldMemberName = $("#OldMemberName").val();
+        var OldMemberCodeOld = $("#OldMemberCodeOld").val();
+        var OfficeID = $("#OfficeID").val();
+        var CenterID = $("#CenterID option:selected").val();
+        var FatherName = $("#FatherName").val();
+        var SpouseName = $("#SpouseName").val();
+        var MotherName = $("#MotherName").val();
+        var PhoneNo = $("#PhoneNo").val();
+        var NationalID = $("#NationalID").val();
+        var Address = $("#Address").val();
+        var DisburseDate = $("#DisburseDate").val();
+        var DisburseAmount = $("#DisburseAmount").val();
+        var WriteOffDate = $("#WriteOffDate").val();
+        var WriteOffAmount = $("#WriteOffAmount").val();
+        var WriteOffReceovery = $("#WriteOffReceovery").val();
+        var OpeningDate = $("#OpeningDate").val();
+
+        if (OldMemberName != "" && OldMemberCodeOld != "" && OfficeID != ""
+            && CenterID != "" && FatherName != ""
+            && SpouseName != "" && MotherName != ""
+            && PhoneNo != "" && NationalID != ""
+            && Address != "" && DisburseDate != ""
+            && DisburseAmount != "" && WriteOffDate != ""
+            && WriteOffAmount != "" && WriteOffReceovery != ""
+            && OpeningDate != "") {
+
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: true,
+                cache: false,
+                url: '@Url.Action("UpdateWriteOffHistory", "WriteOffHistory")',
+                data: JSON.stringify({ WriteOffHistorydd: WriteOffHistorydd }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $.alert.open('Success', data.data.result);
+                    if (data.data.result == "Update Successfull") {
+                        ClearControl();
+                        loadWriteOffHistory();
+                        $("#btnSave").show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        } else {
+            $.alert.open('Alert', 'Please Select Required Field');
+        }
+    }
+
+    function InformationDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("InformationDeleteWriteOffHistory", "WriteOffHistory", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            //$('#grid').jtable('load');
+                            loadWriteOffHistory();
+                            $.alert.open("Error", data.message);
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+
+
+
+    function checkNumeric(event) {
+        var key = window.event ? event.keyCode : event.which;
+        if (event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 46
+         || event.keyCode == 37 || event.keyCode == 39) {
+            return true;
+        }
+        if (event.which === 13) {
+            $(this).next().focus();
+        }
+        else if (key < 48 || key > 57) {
+            return false;
+        }
+        else return true;
+    }
+
+
+
+</script>
+
+
+<h2 class="page-title">WriteOff History</h2>
+@using (Html.BeginForm("SaveWriteOffHistory", "WriteOffHistory", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="col-sm-12">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Opening Date</label>
+                <div class="col-sm-8">
+                    @Html.TextBoxFor(model => model.OpeningDate, new { @class = "form-control required" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <input type="button" value="Search" id="btnSearch" class="btn btn-info" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.Label("Member Search", htmlAttributes: new { @class = "control-label col-sm-4" })
+                <div class="col-sm-8">
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <hr />
+    <hr />
+    <br /><br /><br /><br /><br /><br /><br />
+    <div id="dialog-message" title="Message" style="display:none;">
+    </div>
+    @*<div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Center Name</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.CenterID, Model.CenterList, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>*@
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required"> Old MemberCode </label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.OldMemberCodeOld, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Center Name</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.CenterID, Model.CenterList, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Member Name</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.OldMemberName, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Address</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.Address, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Father Name</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.FatherName, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Mother Name</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.MotherName, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Spouse Name</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.SpouseName, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Phone No</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.PhoneNo, new { @class = "form-control required", @onkeypress = "return checkNumeric(event);" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">National ID</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.NationalID, new { @class = "form-control required", @onkeypress = "return checkNumeric(event);" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Disburse Amount</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.DisburseAmount, new { @class = "form-control required", @onkeypress = "return checkNumeric(event);" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">WriteOff Amount</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.WriteOffAmount, new { @class = "form-control required", @onkeypress = "return checkNumeric(event);" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">WriteOff Receovery</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.WriteOffReceovery, new { @class = "form-control required", @onkeypress = "return checkNumeric(event);" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Disburse Date</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.DisburseDate, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">WriteOff Date</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.WriteOffDate, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6">
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <input type="button" value="Save" id="btnSave" class="btn btn-primary" />
+                    <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" />
+                    <input type="button" value="Reset" id="btnReset" style="margin-left: 20px" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            @Html.HiddenFor(model => model.WriteOffHistoryID)
+        </div>
+    </div>
+}
+
+<br />
+<h2 class="page-title">WriteOff History List</h2>
+<div id="grid"></div>
+
+
+
+
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+
+<br/>
+<input id="btnPost" type="submit" value="PostToLedger WriteOff" />
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,517 @@
+﻿@model gBanker.Web.ViewModels.InterestRateViewModel
+
+@{
+    ViewBag.Title = "Advance Information";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function Edit(EmployeeID, txtAdvanceDate, txtAdvanceAmount, AdvanceSectorId, txtRemarks, preparedBy, checkedBy, approvedBy, ShowInSalarySheet)
+    {
+
+       
+        // Assign Values
+
+
+        $("#ddlEmployee option[value='" + EmployeeID + "']").prop('selected', 'selected');
+        $("#txtAdvanceDate").val(txtAdvanceDate);
+        $("#txtAdvanceAmount").val(txtAdvanceAmount);
+
+        $("#ddlAdvanceSectorId option[value='" + AdvanceSectorId + "']").prop('selected', 'selected');
+        $("#txtRemarks").val(txtRemarks);
+
+        $("#ddlpreparedBy option[value='" + preparedBy + "']").prop('selected', 'selected');
+        $("#ddlcheckedBy option[value='" + checkedBy + "']").prop('selected', 'selected');
+        $("#ddlapprovedBy option[value='" + approvedBy + "']").prop('selected', 'selected');
+
+        $("#txtShowInSalarySheet").val(ShowInSalarySheet);  
+
+       // $("#ddlPaymentFrequency option[value='" + PaymentFrequency + "']").prop('selected', 'selected');
+
+        //POPUP Form
+        PopupForm();
+
+
+    }// END Edit
+
+    function PopupForm()
+    {
+
+        $('html, body').animate({ scrollTop: $('#AdvanceInfoDiv').offset().top }, 'slow');
+        $("#AdvanceInfoDiv").dialog({
+            autoOpen: false,
+            height: 350,
+            width: 700,
+            modal: true,
+            buttons: {
+
+                "Close": function () {
+
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#AdvanceInfoDiv").dialog('open');
+        }
+
+    }
+
+    function Clear()
+    {
+        $("#ddlEmployee").prop('selectedIndex', 0);
+
+        $("#hdnEmployeeID").val("");
+        $("#txtAdvanceDate").val("");
+        $("#txtAdvanceAmount").val("");
+        $("#ddlAdvanceSectorId").prop('selectedIndex', 0);
+        $("#txtRemarks").val("");
+
+        $("#ddlpreparedBy").prop('selectedIndex', 0);
+        $("#ddlcheckedBy").prop('selectedIndex', 0);
+        $("#ddlapprovedBy").prop('selectedIndex', 0);
+
+
+        $("#txtShowInSalarySheet").val("");
+
+    }
+
+    function PopulateDropdown() {
+
+        var ddlEmployee = $("#ddlEmployee");
+        var ddlpreparedBy = $("#ddlpreparedBy");
+        var ddlcheckedBy = $("#ddlcheckedBy");
+        var ddlapprovedBy = $("#ddlapprovedBy");
+
+        // var ddlZOOffice = $("#ddlZOOffice option:selected").text().split("-")[0];
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmployeeList", "AdvanceInfo", "http")', // Load Loan category
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmployee.html('');
+                ddlpreparedBy.html('');
+                ddlcheckedBy.html('');
+                ddlapprovedBy.html('');
+
+                $.each(data, function (id, option) {
+                    ddlEmployee.append($('<option></option>').val(option.Value).html(option.Text));
+
+                    ddlpreparedBy.append($('<option></option>').val(option.Value).html(option.Text));
+                    ddlcheckedBy.append($('<option></option>').val(option.Value).html(option.Text));
+                    ddlapprovedBy.append($('<option></option>').val(option.Value).html(option.Text));
+
+                });
+            },
+            error: function (request, status, error) {
+                $.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    
+    function PopulateSectorDropdown() {
+
+        var ddlAdvanceSectorId = $("#ddlAdvanceSectorId");
+       
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSectorList", "AdvanceInfo", "http")', // Load Loan category
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlAdvanceSectorId.html('');
+                $.each(data, function (id, option) {
+                    ddlAdvanceSectorId.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function SaveUpdate() {
+
+        var hdnEmployeeID = $("#ddlEmployee option:selected").val();
+        
+        var txtAdvanceDate = $("#txtAdvanceDate").val().trim();
+
+        var txtAdvanceAmount = $("#txtAdvanceAmount").val().trim();
+        if (txtAdvanceAmount == "") {
+            txtAdvanceAmount = 0;
+        }
+        var AdvanceSectorId = $("#ddlAdvanceSectorId option:selected").val();
+
+        var txtRemarks = $("#txtRemarks").val().trim();
+
+        var preparedBy = $("#ddlpreparedBy option:selected").val();
+
+        var checkedBy = $("#ddlcheckedBy option:selected").val();
+       
+        var approvedBy = $("#ddlapprovedBy option:selected").val();
+
+        var txtShowInSalarySheet = $("#txtShowInSalarySheet").val().trim();
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateUpdate", "AdvanceInfo",  "http")', //CreateWorkArea(string WorkAreaName)
+            data: {
+                  hdnEmployeeID             : hdnEmployeeID
+                , txtAdvanceDate            : txtAdvanceDate
+                , txtAdvanceAmount          : txtAdvanceAmount
+                , txtAdvanceSectorId        : AdvanceSectorId
+                , txtRemarks                : txtRemarks
+                , txtpreparedBy             : preparedBy
+                , txtcheckedBy              : checkedBy 
+                , txtapprovedBy             : approvedBy
+                , txtShowInSalarySheet      : txtShowInSalarySheet
+
+            },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                // clearProfession();
+                $.alert.open(data);
+                if (data == "Data Saved Successfully.") {
+                    reloadGrid();
+                    Clear();
+                }
+
+            },
+            error: function (request, status, error) {
+                $.alert.open("Data Not Saved");
+                reloadGrid();
+
+            }
+
+        });
+
+    }// End of Function
+
+
+
+    $(document).ready(function () {
+        PopulateDropdown();
+        PopulateSectorDropdown();
+
+        $("#txtAdvanceDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: "1920:2100"
+
+         });
+        $("#txtAdvanceDate").datepicker(
+        'setDate', new Date());
+         
+        $('#txtAdvanceAmount').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+
+        });
+
+        $("#btnAddNew").click(function () {
+            Clear();
+            PopupForm();
+
+        });
+
+        $("#btnAdvanceInfoSave").click(function () {
+
+            var txtAdvanceAmount = $("#txtAdvanceAmount").val();
+            var hdnEmployeeID = $("#ddlEmployee option:selected").val();
+
+            if (txtAdvanceAmount == '') {
+                $.alert.open("Please Give Advance Amount.");
+                return false;
+            }
+            if (hdnEmployeeID == '0')
+            {
+                $.alert.open("Please Select Employee.");
+                return false;
+            }
+            SaveUpdate();
+
+        });
+        //Save
+
+        //////////////////////////
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/AdvanceInfo/GenerateAdvanceInfoList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                EmployeeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EmployeeCode: {
+                    title: 'EmployeeCode',
+                    width: '3%'
+
+                },
+                EmployeeName: {
+                    title: 'EmployeeName',
+                    width: '3%'
+
+                },
+                AdvanceDateMSG: {
+                    title: 'AdvanceDate',
+                     width: '3%'
+
+                },
+                AdvanceAmount: {
+                    title: 'Advance Amount',
+                    width: '4%'
+
+                },
+                SectorName: {
+                    title: 'SectorName',
+                    width: '4%'
+
+                },
+                Remarks: {
+                    title: 'Remarks',
+                    width: '4%'
+
+                },
+                preparedBy: {
+                    title: 'preparedBy',
+                    width: '4%'
+
+                },
+                checkedBy: {
+                    title: 'checkedBy',
+                    width: '4%'
+
+                },
+                approvedBy: {
+                    title: 'approvedBy',
+                    width: '4%'
+
+                },
+                ShowInSalarySheet: {
+                    title: 'ShowInSalarySheet',
+                    width: '4%'
+
+                },
+                
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="javascript:void(0)" name="service"' + ' id = "button' + data.record.EmployeeID + '"  OnClick = "Edit(\'' + data.record.EmployeeID + '\',\'' + data.record.AdvanceDateMSG + '\',\'' + data.record.AdvanceAmount + '\',\'' + data.record.AdvanceSectorId + '\' ,\'' + data.record.Remarks + '\' ,\'' + data.record.preparedBy + '\' ,\'' + data.record.checkedBy + '\' ,\'' + data.record.approvedBy + '\' ,\'' + data.record.ShowInSalarySheet + '\')"><i ' + ' id = "select' + data.record.EmployeeID + '"  class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+
+
+            }
+        });
+
+        // Load Grid
+         reloadGrid();
+         //$('#grid').jtable('load');
+        //////////////////////////
+    }); // END Document Ready
+    function reloadGrid() {
+        $('#grid').jtable('load', { Duration: 0 });
+       // $('#grid').jtable('load', { DateFrom: $('#txtDateFrom').val(), MemberId: $('#MemberID').val()});
+    }
+    $('#btnSearch').click(function (e) {
+        e.preventDefault();
+        reloadGrid();
+     });
+</script>
+
+
+<h2 class="page-title"> Advance Info </h2>
+
+<input type="button" value="Add New" id="btnAddNew" class="btn btn-primary" />
+
+<div class="row" style="display:none;">
+    <div class="col-md-3" style="padding-top:20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+
+<div id="grid"></div>
+
+
+<!-- Popup Insurance Edit Insert Entry -->
+<div id="AdvanceInfoDiv" title="Employee Sal Info Entry & Edit" style="display:none">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Employee Code    </label>
+                <div class="col-sm-6">
+                    @Html.DropDownList("ddlList", null, new { @ID = "ddlEmployee", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Advance Date    </label>
+                <div class="col-sm-6">
+                    <input type="text" id="txtAdvanceDate" class="form-control"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required">  Advance Amount </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtAdvanceAmount" class="form-control" placeholder="Advance Amount" />
+
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Advance Sector </label>
+                <div class="col-sm-6">
+                     @Html.DropDownList("ddlList", null, new { @ID = "ddlAdvanceSectorId", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Remarks </label>
+                <div class="col-sm-6">
+                    <input type="text" id="txtRemarks" class="form-control" placeholder="Remarks" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Prepared By </label>
+                <div class="col-sm-6">
+                    @Html.DropDownList("ddlList", null, new { @ID = "ddlpreparedBy", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Checked By </label>
+                <div class="col-sm-6">
+                    @Html.DropDownList("ddlList", null, new { @ID = "ddlcheckedBy", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Approved By </label>
+                <div class="col-sm-6">
+                    @Html.DropDownList("ddlList", null, new { @ID = "ddlapprovedBy", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Show In Salary Sheet </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtShowInSalarySheet" class="form-control" placeholder="Show In Salary Sheet" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+   
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Save" id="btnAdvanceInfoSave" class="btn btn-success" />
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            &nbsp;
+        </div>
+    </div>
+
+
+</div>
+
+<!-- End Of Insurance Edit Insert Entry Div -->
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

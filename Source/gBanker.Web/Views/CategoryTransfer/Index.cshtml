@@ -1,0 +1,246 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.CategoryTransferViewModel>
+
+@{
+    ViewBag.Title = "CategoryTransfer List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+           // title: 'Category Transfer List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/CategoryTransfer/GetCategoryTransfer?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+             
+              //  updateAction: '/CategoryTransfer/Edit',
+
+              
+                //deleteAction: '@Url.Action("DeleteDisburse")',
+            },
+            fields: {
+                TransferHistoryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    //width: '10%',
+                    create: false,
+                    edit: false
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                   // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                MemberID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Info',
+                    //width: '15%',
+                    create: false,
+                    edit: true,
+                    display: function (data) {
+                        return data.record.MemberCode + ' - ' + data.record.MemberName;
+                    },
+                    input: function (data) {
+                        if (data.record) {
+                            return '<label>' + data.record.MemberCode + ' - ' + data.record.MemberName + '</label>';
+                            //return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.MemberCode + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+
+                ProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                   // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                TrProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TrProductCode: {
+                    title: 'Tr Product',
+                    // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                MemberCategoryID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCategoryCode: {
+                    title: 'MemberCategory Code',
+                    // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                TrMemberCategoryID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TrMemberCategoryCode: {
+                    title: 'TrMemberCategory Code',
+                    // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                Principal: {
+                  
+                   list: true,
+                   create: true,
+                   edit: true,
+                   title: 'Saving Balance',
+                   width: '10%',
+                   input: function (data) {
+                       var productId = '<input id="hdnProdId" type="hidden"' + ' value="' + data.record.ProductID + '" /> ';
+                       if (data.record) {
+                           return productId + '<input type="text" onkeypress="return checkNumberic(event);"  onkeyup="checkLoanInstallment(' + data.record.TransferHistoryID + ');"' + ' Id="Principal" name="LoanPaid" style="width:200px"  value="' + data.record.Principal + '" />';
+                       } else {
+                           return productId + '<input type="text" name="Principal" style="width:200px" value="" />';
+                       }
+                   }
+               }
+            }
+        });
+        $('#grid').jtable('load');
+        $('#EditDialogSaveButton').click(function () {
+            $("#Edit-DisburseStatus").val('Disbursed');
+        });
+
+
+        $('#btnPost').click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+          
+            var officeId = $("#OfficeID").val();
+          
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteProcess", "CategoryTransfer", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId},
+                //minLength: 1,
+                success: function (data) {
+
+                    $("#loading").hide();
+                    var msg = "Deleted successfully";
+                    var css = "success";
+                    if (data.Message != null) {
+                        msg = data.Message;
+                        css = "failed"
+                    }
+
+                    $("#dvMessage").attr('class', css);
+                    $("#dvMessage").html(msg);
+                    $("#dvMessage").show();
+                    if (data.Message == null)
+                        $("#dvMessage").toggle('fade', 1500);
+
+                },
+                error: function (request, status, error) {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html(request.statusText);
+                    $("#dvMessage").show();
+                }
+            });
+
+        });
+    });
+
+    
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Category Transfer</h2>
+
+
+
+
+<div id="grid"></div>
+
+
+
+<div class="row">
+
+    <div class="col-md-8" style="padding-right:20px;" align="right">
+        <input id="btnPost" type="submit" value="Refresh" class="btn btn-primary" />
+    </div>
+    
+
+</div>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

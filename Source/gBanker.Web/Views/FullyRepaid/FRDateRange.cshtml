@@ -1,0 +1,173 @@
+﻿
+@{
+    ViewBag.Title = "Paid off List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+
+
+<script type="text/javascript">
+
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "FullyRepaid", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetProduct();
+
+        $("#txtFromDt").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale"
+           });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+       
+
+
+          $("#btnView").click(function (e) {
+              e.preventDefault();
+              var details = $("#chkDetail:checked").val() ? true : false;
+              var Product = $("#ddlProd").val();
+              var Date1 = $("#txtFromDt").val();
+              var Date2 = $("#txtToDt").val();
+              var ExportType = $("#ExportType").val();
+
+              if (ExportType == "0") {
+                  $.alert.open("warning", "Please select export type");
+                  return false;
+              }
+              else {
+
+                  if (details == false) {
+                      if (Product == 0) {
+
+                          var url = '/FullyRepaid/GenerateFullyrepaid_DateRangeReport?Qtype=1&Date1=' + Date1 + '&Date2=' + Date2 + '&Product=0&ExportType=' + ExportType;
+                      }
+                      else {
+
+                          var url = '/FullyRepaid/GenerateFullyrepaid_DateRangeReport?Qtype=2&Date1=' + Date1 + '&Date2=' + Date2 + '&Product=' + Product + '&ExportType=' + ExportType;
+                      }
+                  }
+                  else {
+                      var url = '/FullyRepaid/GenerateFullyrepaidReport?ExportType=' + ExportType;
+                      //var url = '/FullyRepaid/GenerateFullyrepaidReport';
+                  }
+                  //window.open(url, 'target="_blank",', 'fullscreen=yes, scrollbars=auto');
+                  window.open(url, '_blank');
+              }
+          });
+          //  if (details == false) {
+          //      if (Product == 0) {
+
+          //          var url = '/FullyRepaid/GenerateFullyrepaid_DateRangeReport?Qtype=1&Date1=' + Date1 + '&Date2=' + Date2 + '&Product=0';
+          //      }
+          //      else {
+
+          //          var url = '/FullyRepaid/GenerateFullyrepaid_DateRangeReport?Qtype=2&Date1=' + Date1 + '&Date2=' + Date2 + '&Product=' + Product;
+          //      }
+          //  }
+          // else {
+          //          var url = '/FullyRepaid/GenerateFullyrepaidReport';
+          //    }
+          //  //window.open(url, 'target="_blank",', 'fullscreen=yes, scrollbars=auto');
+          //  window.open(url, '_blank');
+          //});
+    });
+</script>
+
+<h2 class="page-title">Paid off List</h2>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductList", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
+                        
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                @Html.CheckBox("View", false, new { @ID = "chkDetail" })
+                &nbsp;
+                @Html.Label("Paid Off Today", new { htmlAttributes = new { @class = "checkbox" } })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Export Type", new { @class = "control-label" })
+                    <select class="form-control" id="ExportType">
+                        <option value="0" selected>Please Select</option>
+                        <option value="pdf">View As PDF</option>
+                        <option value="excel">Export As Excel</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <h2 class="page-title"></h2>
+       <div class="">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group from-action">
+                        <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/jqueryui")
+    }
+

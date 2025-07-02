@@ -1,0 +1,182 @@
+﻿@*@{
+        ViewBag.Title = "Index";
+    }
+
+    <h2>Index</h2>*@
+
+@model gBanker.Web.ViewModels.BuroCustomerInfoViewModel
+@{
+    ViewBag.Title = "Excel Upload";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int sl = 1;
+    int sl1 = 1;
+    int sl2 = 1;
+
+    var result = ViewBag.result;
+
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var result ='@ViewBag.result';
+        if (result == "Success") {
+            var rs = confirm("Successfully Data uploaded.");
+            if (rs=true || rs==false) {
+                window.location.replace('/ExcelUpload/Index');
+            }
+
+        }
+    });
+</script>
+
+@using (Html.BeginForm("Index", "ExcelUpload", FormMethod.Post, new { enctype = "multipart/form-data", @role = "form" }))
+{
+    <div class="row">
+        <div class="col-md-12 col-sm-12">
+            <div class="box col-md-12">
+                <div class="box-inner">
+                    <div class="box-header well" style="padding:10px;">
+                        <h3 style="margin-top:10px;"><i class=" glyphicon glyphicon-edit"></i> Excel Upload</h3>
+                    </div>
+                    <div class="box-content well">
+
+                        <div class="row frmRow">
+                            <div class="col-md-4 col-sm-4">
+                                <div class="item form-group">
+                                    @Html.LabelFor(model => model.UploadFile, new { @class = "control-label col-md-12 input-sm" })
+                                    <div class=" col-md-12 col-sm-12">
+                                        <input type="file" id="UploadFile" class="file-actions" required="true" name="UploadFile" />
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row frmRow">
+                            <div class="col-md-4 col-sm-4">
+                                <div class="item form-group">
+                                    @*<label class="control-label col-md-12 input-sm">&nbsp;</label>*@
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-sm btn-success" id="btnUpdate">Upload File</button>
+                                    </div>
+                                </div>
+                            </div>
+                            @*@{ 
+                                if (ViewBag.result == "Success")
+                                {
+                                    <span id="showMsg" class="alert alert-success">Successfully Data uploaded.</span>
+
+                                }
+                            }*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@{
+    if (Model.WrongStaffInfoList != null && Model.WrongStaffInfoList.Count() > 0)
+    {
+        var staffHeader = Model.WrongStaffInfoList[0].SheetName;
+
+        <div class="row frmRow">
+            <div class="col-md-12">
+                <h2>Data error in sheet- @staffHeader </h2>
+                <table class="table table-bordered table-responsive">
+                    <thead class="alert alert-danger">
+                        <tr>
+                            <td>No</td>
+                            <td>Sheet Serial No.</td>
+                            <td>Header Column Name</td>
+                            <td>Message</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mod in Model.WrongStaffInfoList)
+                        {
+                            <tr class="alert alert-info">
+                                <td>@sl</td>
+                                <td>@mod.RowSl</td>
+                                <td>@mod.ColumnName</td>
+                                <td>@mod.Message</td>
+                            </tr>
+                            sl = sl + 1;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br />
+    }
+    if (Model.WrongCenterInfoList != null && Model.WrongCenterInfoList.Count() > 0)
+    {
+        var centerHeader = Model.WrongCenterInfoList[0].SheetName;
+
+        <div class="row frmRow">
+            <div class="col-md-12">
+                <h4>Data error in sheet - @centerHeader</h4>
+                <table class="table table-bordered table-responsive ">
+                    <thead class="alert alert-danger">
+                        <tr>
+                            <td>No</td>
+                            <td>Sheet Serial No.</td>
+                            <td>Header Column Name</td>
+                            <td>Message</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mod in Model.WrongCenterInfoList)
+                        {
+
+                            <tr class="alert alert-info">
+                                <td>@sl1</td>
+                                <td>@mod.RowSl</td>
+                                <td>@mod.ColumnName</td>
+                                <td>@mod.Message</td>
+                            </tr>
+                            sl1 = sl1 + 1;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br />
+    }
+    if (Model.WrongCustomerInfoList != null && Model.WrongCustomerInfoList.Count() > 0)
+    {
+        var customerHeader = Model.WrongCustomerInfoList[0].SheetName;
+
+        <div class="row frmRow">
+            <div class="col-md-12">
+                <h4>Data error in sheet: @customerHeader</h4>
+                <table class="table table-bordered table-responsive">
+                    <thead class="alert alert-danger">
+                        <tr>
+                            <td>No</td>
+                            <td>Sheet Serial No.</td>
+                            <td>Header Column Name</td>
+                            <td>Message</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mod in Model.WrongCustomerInfoList)
+                        {
+                            <tr class="alert alert-info">
+                                <td>@sl2</td>
+                                <td>@mod.RowSl</td>
+                                <td>@mod.ColumnName</td>
+                                <td>@mod.Message</td>
+                            </tr>
+                            sl2 = sl2 + 1;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br />
+    }
+}
+
+
+

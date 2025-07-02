@@ -1,0 +1,205 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.ExpireInfoViewModel>
+
+@{
+    ViewBag.Title = "ExpireInfo List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+    function displayEmployeeReport() {
+
+        //var startDate = $("#startDate").val();
+        //var endDate = $("#endDate").val();
+        //var reportParam = startDate + ',' + endDate;
+        var reportParam = '';
+        var url = '/Report/Print?reportId=Employee&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+    function deleteConfirm(status) {
+        if (status == "true") {
+            return confirm('Are you sure you want to delete this record');
+        }
+        else {
+            alert("You cannot delete this record because it is already disabled.");
+            return false;
+        }
+    }
+    $(document).ready(function () {
+        ////////
+        $('#grid').jtable({
+           // title: 'Employee List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/ExpireInfo/GetExpireInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+               // listAction: '/Employee/GetEmployee'
+                //updateAction: '/Product/Edit',
+                //deleteAction: '/Product/Delete'
+            },
+            fields: {
+                ExpireInfoID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '10%'
+
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '10%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '10%'
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    width: '10%'
+                },
+                ExpiryName: {
+                    title: 'Expiry Name',
+                    width: '10%'
+                },
+                Relation: {
+                    title: 'Relation',
+                    width: '10%'
+                },
+                ExpireDate: {
+                    title: 'Expire Date',
+                    type: 'date',
+                    displayFormat: 'dd-mm-yy',
+                    width: '12%'
+                },
+              
+                Remarks: {
+                    title: 'Cause Of Death',
+                    width: '8%'
+                }
+                ,
+
+                ExpireStatus: {
+                    title: 'Type Of Death',
+                    width: '8%'
+                }
+                ,
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/ExpireInfo/Edit/" + data.record.ExpireInfoID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<div class="text-center delete-link"><a href="/ExpireInfo/Delete/' + data.record.ExpireInfoID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                //       // return '<a href="/Employee/Delete/' + data.record.EmployeeID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //    }
+                //}
+            }
+        });
+        reloadGrid();
+        //$('#grid').jtable('load');
+        /////////////
+        $('#btnEmployee').click(function (e) {
+        e.preventDefault();
+        //var fromDate = $("#startDate").val();
+        //var toDate = $("#endDate").val();
+
+        //alert("sdsf");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GenerateReport", "Employee", "http")',
+            data: { fromDate: 'asd', toDate: 'gfh' },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //alert("success");
+                window.open('@Url.Action("Index", "ReportViewer", "http")', 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+
+            }
+        });
+        });
+
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    
+    }
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">ExpireInfo List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="MemberCode">Member Code</option>
+           
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+<br />
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+@* <input type="button" value="Employee" onclick="displayEmployeeReport();" />*@
+@*<input id="btnEmployee" type="submit" value="Employee Info" />*@

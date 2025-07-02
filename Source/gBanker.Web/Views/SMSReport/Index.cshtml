@@ -1,0 +1,43 @@
+﻿
+@{
+    ViewBag.Title = "SMS Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">SMS Report</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Summary</div>
+            <div class="panel-body text-center">
+                <h3 class="text-info">
+                    <a style="text-decoration:none" href="/SMSReport/SentLogSMSSummary"> <i class="fa fa-list" aria-hidden="true"></i> SMS Summary</a>
+                </h3>
+                <p>A sms summary about to view day wise </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Billing</div>
+            <div class="panel-body text-center">
+                <h3 class="text-info"> 
+                    <a style="text-decoration:none" href="/"> <i class="fa fa-cog" aria-hidden="true"></i> SMS Billing</a>
+                
+                </h3>
+                <p>Manage bill no wise sms billing </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+}

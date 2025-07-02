@@ -1,0 +1,210 @@
+﻿@{
+    ViewBag.Title = "Waitingforloan List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+
+    function GetEmployee() {
+        var ddlEmp = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmployeeList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function CategoryDropdown() {
+        var data = {
+
+            '2': '2',
+            '1': '1',
+            '3': '3',
+            '4': '4',
+            '5': '5',
+            '6': '6',
+        }
+
+
+        var s = $('<select class="form-control" id="ddMemberStatus" />');
+        var id = 0;
+        for (var val in data) {
+            id = id + 1;
+            $('<option></option>', { value: val, text: data[val] }).appendTo(s);
+        }
+
+        s.appendTo('#ddMemberStatusList');
+        $("#ddMemberStatus").val("2");
+    }
+
+
+    function ReportNameDropdown() {
+        var data = {
+
+            '1': 'Borrower Wise',
+            '2': 'Product Summary',
+
+        }
+
+
+        var s = $('<select class="form-control" id="ddReportType" />');
+        var id = 0;
+        for (var val in data) {
+            id = id + 1;
+            $('<option></option>', { value: val, text: data[val] }).appendTo(s);
+        }
+
+        s.appendTo('#ddReportTypeList');
+        $("#ddReportType").val("1");
+    }
+
+
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+
+        //ReportNameDropdown();
+        //CategoryDropdown();
+        /////////
+
+        GetEmployee();
+        $("#txtFromDt").val("");
+        $("#txtToDt").val("");
+
+        ///////
+
+        /////////
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        $("#txtToDt").datepicker(
+                {
+                    dateFormat: "dd-M-yy",
+                    showAnim: "scale"
+                });
+
+        //////////
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+
+            ////
+            var url;
+            var checkUpToDate = $("#chUpdatetoDate").is(":checked");
+            var FromDate = $("#txtFromDt").val();
+            var ToDate = $("#txtToDt").val();
+
+            var Employee = $("#ddlEmp").val();
+
+
+            var memberSt = $("#ddMemberStatus").find(":selected").val();
+            var ReportSt = $("#ddReportType").find(":selected").val();
+
+            url = '/LoanSavingLedger/GenerateWaitingForLoanList?DateTo=' + ToDate + '&EmployeeId=' + Employee;
+
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+        });
+    });
+</script>
+<h2 class="page-title">Waitingforloan List</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+<div class="">
+
+    @*<div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select ReportType", htmlAttributes: new { @class = "control-label" })
+                    <div id="ddReportTypeList">
+
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+    @*<div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Year", htmlAttributes: new { @class = "control-label" })
+                    <div id="ddMemberStatusList">
+
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+
+    @*<div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDateFrom"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>*@
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Employee", new { @class = "control-label" })
+                @Html.DropDownList("EmployeeList", null, new { @ID = "ddlEmp", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-8">&nbsp;</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDateTo"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+</div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

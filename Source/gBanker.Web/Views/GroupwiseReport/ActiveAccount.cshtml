@@ -1,0 +1,290 @@
+﻿@model gBanker.Web.ViewModels.ActiveAccountViewModel
+
+@{
+    ViewBag.Title = "Active Account";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+<link href="~/Content/jtable-custom.css" rel="stylesheet" />
+<link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+<link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var OfficeID = $('#lblOfficeID').html();
+       // alert(OfficeID);
+
+        $("#btnSearch").click(function () {
+            loadActiveAccount();
+        });
+
+        $("#DateFrom").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1950:2050"
+
+        });
+        $("#DateFrom").datepicker('setDate', new Date());
+
+        $("#DateTo").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1950:2050"
+
+        });
+        $("#DateTo").datepicker('setDate', new Date());
+
+    });
+
+    var rowNumber = 0;
+    function loadActiveAccount() {
+        debugger;
+
+        var OfficeID = $('#lblOfficeID').html();
+        var DateFrom = $("#DateFrom").val();
+        var DateTo = $("#DateTo").val();
+        var Type = $("input[name='LoanSavingType']:checked").val();
+
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            pageSize: 25,
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("loadActiveAccount", "GroupwiseReport", "http")',
+                    dataType: 'json',
+                    data: { OfficeID: OfficeID, DateFrom: DateFrom, DateTo: DateTo, Type: Type }
+                }
+            }
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            dataBinding: function() {
+                record = (this.dataSource.page() -1) * this.dataSource.pageSize();
+            },
+            columns: [
+                 //{ title: "SL No", width: 50, template: "#= renderNumber(data) #" },
+                 {
+                     title: "SL",
+                     template: "#= ++record #",
+                     width: 40
+                 },
+                 {
+                     width: "150px",
+                     field: "OfficeId",
+                     filterable: true,
+                     title: "Office Id"
+                 },
+                 {
+                     width: "150px",
+                     field: "OfficeCode",
+                     filterable: true,
+                     title: "Office Code"
+                 },
+                 {
+                     width: "150px",
+                     field: "MemberCode",
+                     filterable: true,
+                     title: "Member Code"
+                 },
+                 {
+                     width: "150px",
+                     field: "SamityCode",
+                     filterable: true,
+                     title: "Samity Code"
+                 },
+                 {
+                     width: "150px",
+                     field: "MemberName",
+                     filterable: true,
+                     title: "Member Name"
+                 },
+                 {
+                     width: "150px",
+                     field: "LoanAccountNo",
+                     filterable: true,
+                     title: "Loan\Saving AccountNo"
+                 },
+                 //{
+                 //    width: "50px",
+                 //    title: 'Edit',
+                 //    template: function (dataItem) {
+                 //        return "<a href='#' OnClick='EditDivision(" + dataItem.DivisionID + ",\"" + dataItem.DivisionCode + "\",\"" + dataItem.DivisionName + "\",\"" + dataItem.DivisionAddress + "\",\"" + dataItem.ContactNo + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                 //    }
+                 //},
+                 //{
+                 //    width: "50px",
+                 //    title: 'Delete (বাদ)',
+                 //    template: function (dataItem) {
+                 //        return "<a href='#' OnClick='InformationDelete(" + dataItem.DivisionID + ");'><i class='fa fa-trash-o'></i></a>";
+                 //    }
+                 //}
+            ]
+        });
+
+    }
+
+    //create
+    function GenerateDivision() {
+        var item = {};
+        item.DivisionCode = $("#DivisionCode").val();
+        item.DivisionName = $("#DivisionName").val();
+        item.DivisionAddress = $("#DivisionAddress").val();
+        item.ContactNo = $("#ContactNo").val();
+        return item;
+    }
+
+    //edit using jtable
+    function ResetDivision() {
+        $("#btnUpdate").hide();
+        $("#btnSave").show();
+        $("#btnReset").hide();
+        ClearControl();
+    }
+    function ClearControl() {
+        $("#DivisionCode").val('');
+        $("#DivisionName").val('');
+        $("#DivisionAddress").val('');
+        $("#ContactNo").val('');
+    }
+
+
+    function SaveDivision() {
+        var Division = GenerateDivision();
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            async: true,
+            cache: false,
+            url: '@Url.Action("SaveDivision", "Division")',
+            data: JSON.stringify({ Division: Division }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                $.alert.open('Success', data);
+                if (data == "Save Successfull") {
+                    ClearControl();
+                    //$('#grid').jtable('load');
+                    loadDivision();
+                }
+            },
+            error: function (xhr, status, error) {
+                alert(error);
+            }
+        });
+    }
+
+
+
+</script>
+
+
+<h2 class="page-title">Active Account</h2>
+@using (Html.BeginForm("SearchDivision", "GroupwiseReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+<br /><br />
+<div id="AjaxLoader" class="ajaxLoader"></div>
+
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-md-4"> Date From </label>
+            <div class="col-md-8">
+                @Html.EditorFor(model => model.DateFrom, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-md-4"> Date To </label>
+            <div class="col-md-8">
+                @Html.EditorFor(model => model.DateTo, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+
+            <input type="radio" name="LoanSavingType" value="L"> Loan
+            <input type="radio" name="LoanSavingType" value="S"> Saving
+
+            <label class="control-label col-sm-4 required">Type</label>
+            <div class="col-sm-8">
+                @Html.Label(ViewData["OfficeID"].ToString(), new { @ID = "lblOfficeID", style = "display:none;" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <div class="col-sm-12">
+                <input type="button" value="Search" id="btnSearch" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</div>
+@*<div class="row">
+    <div class="col-sm-8">
+        @Html.HiddenFor(model => model.DivisionID)
+    </div>
+</div>*@
+}
+
+<br />
+<h2 class="page-title">Active Account List</h2>
+<div id="grid"></div>
+
+@section Scripts {
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    @Scripts.Render("~/bundles/jqueryui")
+    @*@Scripts.Render("~/bundles/gbUtility")*@
+    @Scripts.Render("~/bundles/jtable")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+
+
+
+
+
+
+
+
+

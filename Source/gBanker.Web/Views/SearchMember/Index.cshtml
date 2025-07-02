@@ -1,0 +1,257 @@
+﻿ 
+@{
+    ViewBag.Title = "Search Member in Organaigzation";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<script type="text/javascript">
+
+    function SwitchServers() {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SwitchServers", "SearchMember", "http")',
+            data: { orgId: 0 },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                $.each(data, function (index, data) {
+                    if (data != "Error") {
+                         
+                    }
+                    else {
+
+                        // $("#EmployeeName").val('');
+                    }
+                });
+            },
+            error: function (request, status, error) {
+                $('#AjaxLoader').hide();
+
+                // $.alert.open("Employee Does Not Exist");
+            }
+        });
+
+    }
+
+
+
+    function reloadGrid() {
+
+        let txtPhoneNo                  = $("#txtPhoneNo").val();
+        let txtNationalId               = $("#txtNationalId").val();
+        let txtPassport                 = $("#txtPassport").val();
+        let txtDrivingLicense           = $("#txtDrivingLicense").val();
+        let txtBirthCertificateNo       = $("#txtBirthCertificateNo").val();
+        let txtOther                    = $("#txtOther").val();
+        let txtSmartCard                = $("#txtSmartCard").val();
+
+        if (txtPhoneNo == '')
+        {
+            txtPhoneNo = '0';
+        }
+        if (txtNationalId == '')
+        {
+            txtNationalId = '0';
+        }
+        if (txtPassport == '')
+        {
+            txtPassport = '0';
+        }
+        if (txtDrivingLicense == '')
+        {
+            txtDrivingLicense = '0';
+        }
+        if (txtBirthCertificateNo == '')
+        {
+            txtBirthCertificateNo = '0';
+        }
+        if (txtOther == '')
+        {
+            txtOther = '0';
+        }
+        if (txtSmartCard == '')
+        {
+            txtSmartCard = '0';
+        }
+
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#typeFilterColumn').val(), txtPhoneNo: txtPhoneNo, txtNationalId: txtNationalId, txtPassport: txtPassport, txtDrivingLicense: txtDrivingLicense, txtBirthCertificateNo: txtBirthCertificateNo, txtOther: txtOther, txtSmartCard: txtSmartCard });
+
+    }// END Reload Grid
+
+
+
+
+    $(document).ready(function () {
+        var LoggedInUser =  @Html.Raw(Json.Encode(ViewData["LoggedInUser"]));
+        $("#LoggedInUser").val(LoggedInUser);
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 1000,
+            sorting: true,
+            defaultSorting: 'MemberID ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/SearchMember/GetMemberLoanInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                Memberid: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+
+                },
+                //OrganaizationName: {
+                //    title: 'Organaization Name',
+                //    width: '15%'
+                //},
+                //MemberCode: {
+                //    title: 'Member Code',
+                //    width: '15%'
+                //},
+                MemberName: {
+                    title: 'Member Name',
+                    width: '15%'
+                },
+                RefereeName: {
+                    title: 'Referee Name',
+                    width: '12%'
+                },
+                DistrictName: {
+                    title: 'District Name',
+                    width: '12%'
+                },
+                DivisionName: {
+                    title: 'Division Name',
+                    width: '12%'
+                },
+                OrganaizationName: {
+                    title: 'Organaization',
+                    width: '12%'
+                },
+
+            }
+        });
+
+    });// End Document Ready
+</script>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <h2 class="page-title"></h2>
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Phone No", new { @class = "control-label" })
+                <input type="number" id="txtPhoneNo" placeholder="Phone No" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("National Id", new { @class = "control-label" })
+                <input type="number" id="txtNationalId" placeholder="National Id" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2" style="display:none;">
+            <div class="form-group">
+                @Html.Label("Passport", new { @class = "control-label" })
+                <input type="number" id="txtPassport" placeholder="Passport No" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2" style="display:none;">
+            <div class="form-group">
+                @Html.Label("Driving License", new { @class = "control-label" })
+                <input type="number" id="txtDrivingLicense" placeholder="Driving License No" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2" style="display:none;">
+            <div class="form-group">
+                @Html.Label("Birth Certificate No", new { @class = "control-label" })
+                <input type="number" id="txtBirthCertificateNo" placeholder="Birth Certificate No" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Other", new { @class = "control-label" })
+                <input type="number" id="txtOther" placeholder="Other" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Smart Card", new { @class = "control-label" })
+                <input type="number" id="txtSmartCard" placeholder="Smart Card" class="form-control" />
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <input type="button" id="btnSearch" value="Search For Other Org." class="btn btn-primary" onclick="reloadGrid();" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <div id="grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="page-title"></h2>
+
+    <div class="row"> 
+        <div class="col-md-2">
+            <div class="form-group">
+                <input type="button" id="btnProcessServer" value="Switch Servers" class="btn btn-primary" onclick="SwitchServers();" />
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div id="confirmDlg" style="display:none">
+        <div class="form-group">
+            <label id="lblMsg"></label>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

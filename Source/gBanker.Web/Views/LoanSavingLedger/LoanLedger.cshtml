@@ -1,0 +1,219 @@
+﻿
+@{
+    ViewBag.Title = "Loan Ledger";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+
+<script type="text/javascript">
+     function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+
+   function GetMember() {
+        var ddlMember = $("#ddlMember");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberList", "LoanSavingLedger", "http")',
+            data: { centerId: $("#ddlCenter option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductListByMember", "LoanSavingLedger", "http")',
+            data: { memberId: $("#ddlMember option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetLoanTerm() {
+        var ddlLoanTerm = $("#ddlLoanTerm");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLoanTermList", "LoanSavingLedger", "http")',
+            //data: { Member_id: Member_id, center_id: center_id },
+            data: { memberId: $("#ddlMember").val(), productId: $("#ddlProd").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlLoanTerm.html('');
+                $.each(data, function (id, option) {
+                    ddlLoanTerm.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+       // alert('test');
+        GetCenter();
+        $("#ddlCenter").change(function () {
+            var ddlCenter = $("#ddlCenter option:selected").val();
+            if (ddlCenter > 0) {
+                GetMember();
+            }
+            else {
+                $("#ddlMember").empty();
+            }
+        });
+        $("#ddlMember").change(function () {
+            // var ddlMember = $("#ddlMember option:selected").val();
+            var ddlMember = $("#ddlMember option:selected").val();
+           // var ddlMember = $("#ddlMember").val();
+
+            if (ddlMember > 0) {
+                GetProduct();
+            }
+            else {
+                $("#ddlProd").empty();
+            }
+        });
+        $("#ddlProd").change(function () {
+            var ddlProd = $("#ddlProd option:selected").val();
+            if (ddlProd > 0) {
+                GetLoanTerm();
+            }
+            else {
+                $("#ddlLoanTerm").empty();
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var url;
+            var center = $("#ddlCenter").val();
+            var member = $("#ddlMember").val();
+            var product = $("#ddlProd").val();
+            var loanterm = $("#ddlLoanTerm").val();
+            if (center > 0 && member > 0)
+            {
+                if (product > 0 && loanterm > 0)
+                    url = '/LoanSavingLedger/GenerateLoanLedgerReport?Qtype=4&Center=' + center + '&Member=' + member+ '&ProductID=' + product+ '&LoanTerm=' + loanterm ;
+                
+                else if (product > 0 && loanterm == 0)
+                    url = '/LoanSavingLedger/GenerateLoanLedgerReport?Qtype=3&Center=' + center + '&Member=' + member+ '&ProductID=' + product+ '&LoanTerm=0';
+                
+                else if (product == 0 && loanterm == 0)
+                    url = '/LoanSavingLedger/GenerateLoanLedgerReport?Qtype=2&Center=' + center + '&Member=' + member+ '&ProductID=0&LoanTerm=0' ;
+            }
+            else if (center > 0 && member == 0) {
+                url = '/LoanSavingLedger/GenerateLoanLedgerReport?Qtype=1&Center=' + center + '&Member=0&ProductID=0&LoanTerm=0';           
+
+               // window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            //if (center > 0 && member == 0) {
+        });
+    });
+</script>
+<h2 class="page-title">Loan Ledger</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control" })
+                   
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductListByMember", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select LoanTerm", new { @class = "control-label" })
+                    @Html.DropDownList("LoanTermList", null, new { @ID = "ddlLoanTerm", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+

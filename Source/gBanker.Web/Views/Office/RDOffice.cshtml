@@ -1,0 +1,448 @@
+﻿@model gBanker.Web.ViewModels.OfficeViewModel
+
+@{
+    ViewBag.Title = "Division & Program/Project Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var geo = Model == null ? null : Model.GeoLocationList;
+}
+<style type="text/css">
+    textarea {
+        resize: none;
+    }
+</style>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        function RegionList() {
+            $("#ddlRegion").html('')
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("RegionList", "Office", "http")',
+                dataType: 'json',
+                success: function (data) {
+                    $("#ddlRegion").append('<option value>Select</option>')
+                    for (var i = 0; i < data.length; i++) {
+                        $("#ddlRegion").append('<option value=' + data[i].RDID + '>' + data[i].RDCode + ' ' + data[i].RDName + '</option>')
+                    }
+                },
+                error: function (request, status, error) {
+
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            })
+        }
+        $("#dvRegion").hide();
+        $("input[type='radio']").on("change", function (e) {
+            if (e.target.id == "rdDivision" && e.target.checked) {
+                $("#dvRegion").show();
+                RegionList();
+            }
+            else {
+                $("#dvRegion").hide();
+                $("#ddlRegion").val("")
+            }
+        })
+        $("#btnSave").on("click", function () {
+            //debugger;
+            var status = true;
+            $(this).hide();
+            if ($("#rdDivision").is(':checked')) {
+                if (!$("#ddlRegion option:selected").val()) {
+                    status = false;
+                    $("#spRegion").text("Required Field");
+                }
+                else
+                    $("#spRegion").text("");
+            }
+            if (status) {
+                if (!$("#OfficeCode").val()) {
+                    $("span[data-valmsg-for='OfficeCode']").text("Required Field");
+                }
+                else if (!$("[name='OfficeName']").val()) {
+                    $("span[data-valmsg-for='OfficeName']").text("Required Field");
+                }
+                else {
+                    // if ($("#rdDivision").is(':checked'))
+                    //alert($("#ddlRegion option:selected").val())
+                    $("span[data-valmsg-for").each(function () {
+                        $(this).text("");
+                    });
+
+                    var request = {
+                        ParentID: ($("#ddlRegion").val() ? $("#ddlRegion").val() : 0)
+                    , RDCode: $("#OfficeCode").val()
+                    , RDName: $("[name='OfficeName']").val()
+                    , RDAddress: $("#OfficeAddress").val()
+                    , PostCode: $("#PostCode").val()
+                    , Email: $("#Email").val()
+                    , Phone: $("#Phone").val()
+                    };
+                    //alert()
+                    $.ajax({
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("RegionDivisionCreate", "Office", "http")',
+                        data: JSON.stringify({ obj: request }),
+                        dataType: 'json',
+                        async: true,
+                        success: function (data) {
+                            $.alert.open("Success", data);
+                            if (data == "Save Success") {
+                                RegionList();
+                                $("#ddlRegion").val('')
+                                $("#OfficeCode").val('')
+                                $("[name='OfficeName']").val('')
+                                $("#OfficeAddress").val('')
+                                $("#PostCode").val('')
+                                $("#Email").val('')
+                                $("#Phone").val('')
+                                LoadGrid();
+                            }
+                        },
+                        error: function (request, status, error) {
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                }
+            }
+            $("#btnSave").show()
+        });
+        LoadGrid();
+        function LoadGrid() {
+            $('#grid').jtable({
+                paging: true,
+                pageSize: 20,
+                sorting: true,
+                defaultSorting: 'RDID ASC',
+                actions: {
+                    listAction: '/Office/RegionGrid',
+                    //updateAction: '/Office/Edit',
+                    //deleteAction: '/Office/Delete'
+                },
+                fields: {
+                    RDID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    RegionCode: {
+                        title: 'Program/Project Code',
+                        width: '5%',
+                        create: false,
+                        edit: false
+                    },
+                    RegionName: {
+                        title: 'Program/Project Name',
+                        width: '10%',
+                        create: false,
+                        edit: true
+                    },
+                    DivisionCode: {
+                        title: 'Division/Region Code',
+                        width: '5%',
+                        create: false,
+                        edit: false
+                    },
+                    DivisionName: {
+                        title: 'Division/Region Name',
+                        width: '10%',
+                        create: false,
+                        edit: false
+                    },
+
+                    RDAddress: {
+                        title: 'Address',
+                        width: '10%',
+                        create: false,
+                        //edit: true
+                    },
+                    PostCode: {
+                        title: 'Post Code',
+                        width: '5%',
+                        create: false,
+                        //edit: true
+                    },
+
+                    Email: {
+                        title: 'Email',
+                        width: '10%',
+                        //create: false,
+                        //edit: true
+                    },
+                    Phone: {
+                        title: 'Phone',
+                        width: '5%',
+                        create: false,
+                        //edit: true
+                    },
+                    Command: {
+                        title: 'Command',
+                        list: true,
+                        width: '5%',
+                        create: false,
+                        display: function (data) {
+                            return '<Button type="button" style="padding:0;" onclick="EditORDelete(0,' + data.record.RDID + ')">Edit</Button> &nbsp;' +
+                                '<Button type="button" style="padding:0;" onclick="EditORDelete(1,' + data.record.RDID + ')">Delete</Button>';
+                        }
+                    },
+
+                    Mapping: {
+                        title: 'Mapping',
+                        list: true,
+                        width: '5%',
+                        create: false,
+                        display: function (data) {
+                            return (data.record.ParentID == 0 ? '' : '<Button type="button" style="padding:0;" onclick="Mapping(' + data.record.RDID + ')">Mapping</Button>');
+                        }
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+        $("#btnMapping").on("click", function () {
+            var allSecurityLevel = new Array();
+            var $allInputs = $('input[type="checkbox"]');
+            //alert($allInputs)
+            $allInputs.each(function () {
+                //console.log($(this).is(':checked'))
+                //var id = $(this).attr('name');
+                if ($(this).is(':checked')) {
+                    var arr = $(this).attr('name').split('_')
+                    var rdid = arr[1]
+                    var officeid = arr[2]
+                    var obj = new Object();
+                    obj.RDID = rdid;
+                    obj.OfficeID = officeid;
+                    allSecurityLevel[allSecurityLevel.length] = obj;
+                }
+            });
+            var allTrx = new Object();
+            allTrx.rdView = allSecurityLevel;
+            allTrx.RDID = $("#hdnRDID").val();
+            var json = JSON.stringify({ obj: allTrx })//JSON.stringify(allTrx);
+            console.log(json)
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("RDOfficeMappingCreate", "Office")',
+                type: "POST",
+                dataType: 'json',
+                async: true,
+                data: json,
+                success: function (data) {
+                    $("#loading").hide();
+                    if (data.Result == "Error") {
+                        $.alert.open("Error", data.Message);
+                        //$("#dvMessage").attr('class', "fail");
+                        //$("#dvMessage").html(data.Message);
+                    }
+                    else {
+                        $.alert.open("Success", data.Message);
+                        //$("#dvMessage").attr('class', "success");
+                        //$("#dvMessage").html("Role Security saved successfully.");
+                        $('#dvModelMapping').modal('hide');
+                    }
+
+                    $("#dvMessage").show();
+                    $("#dvMessage").toggle('fade', 1500);
+                },
+                error: function (err) {
+                    $("#loading").hide();
+                    var msg = err.responseText;
+                    var css = "failed";
+                    $("#dvMessage").attr('class', css);
+                    $("#dvMessage").html(msg);
+                    $("#dvMessage").show();
+                }
+            })
+            $('#OfficeGrid').jtable('load', { rdid: $("#hdnRDID").val() })
+        });
+    });
+    function EditORDelete(s, id) {
+        // edit
+        if (s == 0) { }
+            //delete
+        else if (s == 1) { }
+    }
+    function Mapping(id) {
+        $("#hdnRDID").val(id);
+        //alert(id)
+        $('#OfficeGrid').jtable({
+            //scroll: true,
+            //mi:13,
+            //defaultSorting: 'RDID ASC',
+            actions: {
+                listAction: '/Office/MappingGrid',
+            },
+            fields: {
+                RDID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                IsMapping: {
+                    title: 'Is Mapping',
+                    display: function (data) {
+                        return '<input type="checkbox" Name="isMaping_' + data.record.RDID + '_' + data.record.OfficeID + '" ' + (data.record.RDID > 0 ? "checked" : "") + '>'
+                    }
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office Name',
+                    width: '10%',
+                    create: false,
+                    edit: true
+                },
+                RDName: {
+                    title: 'Division/Region',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+            }
+        });
+        $('#OfficeGrid').jtable('load', { rdid: id });
+
+        $('#dvModelMapping').modal('show');
+        //$('#dvModelMapping').modal('hide');
+    }
+
+    function OfficeMappingGrid() {
+
+    }
+</script>
+<h2 class="page-title">Program/Project & Division/Region Create</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <input type="radio" id="rdRegion" name="under" checked="checked">
+                    <label for="male">Program/Project</label>
+                    &nbsp;&nbsp;&nbsp;
+                    <input type="radio" id="rdDivision" name="under">
+                    <label for="female">Division/Region</label><br>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="dvRegion">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="control-label">Region</label>
+                    <select id="ddlRegion" class="form-control"></select>
+                    <span class="field-validation-valid text-danger" id="spRegion"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.OfficeCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.OfficeCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeName, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.OfficeName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.OfficeName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeAddress, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextAreaFor(model => model.OfficeAddress, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeAddress, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PostCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.PostCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.PostCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Phone, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="button" id="btnSave" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div id="grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="dvModelMapping" tabindex="-1" role="dialog" aria-labelledby="dvModelMapping" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <input type="hidden" id="hdnRDID" />
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h4>Office Mapping</h4>
+                </div>
+                <div class="modal-body">
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="OfficeGrid"></div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                    <button type="button" class="btn btn-primary" id="btnMapping">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

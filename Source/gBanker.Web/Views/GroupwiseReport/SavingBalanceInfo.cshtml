@@ -1,0 +1,133 @@
+﻿
+@{
+    ViewBag.Title = "SavingBalanceInfo";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    function GetProduct() {
+
+        var ddlMainProduct = $("#ddlproduct");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSavingMainProductList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlMainProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlMainProduct.append($('<option></option>').val(option.MainProductCode).html(option.MainItemName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    @*function GetProduct() {
+        var ddlProd = $("#ddlproduct");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSavingMainProductList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }*@
+    $(document).ready(function () {
+        GetProduct();
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        $("#txtToDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var ddlMainProduct = $("#ddlproduct");
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var url;
+            if (DateFrom != '' && DateTo != '') {
+                var url = '/GroupwiseReport/GenerateSavingBalanceInfoReport?Product=' + ddlMainProduct + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+            else {
+                alert('Date field cannot be blank')
+            }
+        });
+    });
+</script>
+<h2 class="page-title">Loan & Savings Coll. Statement (Samity Wise)</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Select Product", new { @class = "control-label" })
+                @Html.DropDownList("ProductList", null, new { @ID = "ddlproduct", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-8">&nbsp;</div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+
+
+

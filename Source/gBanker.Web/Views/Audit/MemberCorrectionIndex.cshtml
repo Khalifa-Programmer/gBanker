@@ -1,0 +1,309 @@
+﻿@model IEnumerable<gBanker.Data.CodeFirstMigration.AccCorrection>
+
+@{
+    ViewBag.Title = "MemberCorrectionIndex";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<script type="text/javascript">
+
+    function filterChanged()
+    {
+        var filterColumn = $("#filterColumn").val();
+        if (filterColumn == "CreateDate") {
+            $("#filterValue").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                buttonImage: '/images/calendar_icon.png'
+            });
+        }
+        else {
+            $("#filterValue").datepicker("destroy");
+        }
+        $("#filterValue").val('');
+    }
+    function GetEmpListMember() {
+        var ddlProd = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmpListMember", "Audit", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (List_MemberwiseProduct) {
+                console.log(List_MemberwiseProduct);
+                ddlProd.html('');
+                $.each(List_MemberwiseProduct, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.CreateUser).html(option.EmpName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+   
+    function GetOffListMember() {
+        var ddlEmp = $("#ddlOff");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOffListMember", "Audit", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.OfficeCode).html(option.OfficeName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        GetEmpListMember();
+        GetOffListMember();
+        $("#txtFromDt").datepicker(
+      {
+          dateFormat: "dd-M-yy",
+          showAnim: "scale"
+      });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $('#txtFromDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+        //$('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+        $('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+
+        ////////////////////////
+        $('#grid').jtable({
+           // title: 'LoanSummary List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Audit/GetLogRecordsMember?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+
+            },
+            fields: {
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '10%'
+                },
+                EmployeeCode: {
+                    title: 'User Code',
+                    width: '10%'
+                },
+                EmpName: {
+                    title: 'User Name',
+                    width: '10%'
+                },
+                CreateDate: {
+                    title: 'Create. Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '8%'
+                },
+                CenterName: {
+                    title: 'Samity Name',
+                    width: '18%'
+                },
+                NewCenterCode: {
+                    title: 'NewSamity Code',
+                    width: '8%'
+                },
+                NewCenterName: {
+                    title: 'NewSamity Name',
+                    width: '18%'
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '18%'
+                },
+                MemName: {
+                    title: 'Member Name',
+                    width: '18%'
+                },
+                NewMemName: {
+                    title: 'NewMember Name',
+                    width: '18%'
+                },
+                Address: {
+                    title: 'Address',
+                    width: '18%'
+                },
+                NewAddress: {
+                    title: 'NewAddress',
+                    width: '18%'
+                },
+                MemberCategoryCode: {
+                    title: 'Cate.Code',
+                    width: '18%'
+                },
+                NewMemberCategory: {
+                    title: 'NewCate.Code',
+                    width: '18%'
+                },
+                Gender: {
+                    title: 'Gender',
+                    width: '18%'
+                },
+                NewGender: {
+                    title: 'NewGender',
+                    width: '18%'
+                },
+                RefereeName: {
+                    title: 'RefereeName',
+                    width: '18%'
+                },
+                NewRef: {
+                    title: 'NewRef.',
+                    width: '18%'
+                },
+                NationalID: {
+                    title: 'NationalID',
+                    width: '18%'
+                },
+                NewNationalID: {
+                    title: 'NewNationalID',
+                    width: '18%'
+                },
+                BirthDate: {
+                    title: 'Birth Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                },
+                NewBirthDate: {
+                    title: 'NewBirth Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                },
+                JoinDate: {
+                    title: 'Join Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                },
+                NewJoinDate: {
+                    title: 'NewJoin Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                },
+                PhoneNo: {
+                    title: 'PhoneNo',
+                    width: '8%'
+                },
+                NewPhoneNo: {
+                    title: 'NewPhoneNo',
+                    width: '8%'
+                },
+               
+                //EditLink: {
+                //    title: "Detail",
+                //    display: function (data) {
+                //        return "<div class='text-center'><a href='/Audit/Detail/" + data.record.ApplicationLogId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                //     }
+                //}
+            }
+        });
+        reloadGrid();
+        ////////////////////////
+
+    });
+
+    function reloadGrid() {
+        //$('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        $('#grid').jtable('load', { dateFrom: $('#txtFromDt').val(), dateTo: $('#txtToDt').val(), Office: $('#ddlOff').val(), user: $('#ddlEmp').val() });
+    }
+</script>
+
+
+<h2 class="page-title">Member Audit Trail</h2>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date From</label>
+            @Html.TextBox(" ", null, new { @ID = "txtFromDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date To</label>
+            @Html.TextBox(" ", null, new { @ID = "txtToDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">User</label>
+
+            @Html.DropDownList("EmpList", null, new { @ID = "ddlEmp", @style = "width:170px; height:35px;" })
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Office</label>
+
+            @Html.DropDownList("OffList", null, new { @ID = "ddlOff", @style = "width:175px; height:35px;" })
+        </div>
+    </div>
+
+    <div class="col-md-2" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+
+<br />
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+

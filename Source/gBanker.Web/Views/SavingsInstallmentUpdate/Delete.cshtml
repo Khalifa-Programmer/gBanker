@@ -1,0 +1,178 @@
+﻿@model gBanker.Web.ViewModels.SavingSummaryViewModel
+
+@{
+    ViewBag.Title = "SavingAccount Delete";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Savings Account</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateUser)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateUser)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsActive)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsActive)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InActiveDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InActiveDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SavingSummaryID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SavingSummaryID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OfficeID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OfficeID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OfficeCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OfficeCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CenterID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CenterID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CenterCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CenterCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.NoOfAccount)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.NoOfAccount)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InterestRate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InterestRate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SavingInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SavingInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OpeningDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OpeningDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaturedDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaturedDate)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

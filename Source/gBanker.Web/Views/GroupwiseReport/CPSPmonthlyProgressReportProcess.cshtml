@@ -1,0 +1,114 @@
+﻿
+@{
+    ViewBag.Title = "CPSP monthly process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2>CPSP Monthly Progress Process </h2>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnProcess").click(function (e) {
+            e.preventDefault();
+            var DateTo = $("#txtToDt").val();
+            var Qtype = 0;
+            var OfficeId = 0;
+            var ZoneID = 0; 
+            var AreaID = 0;
+            var BranchID = 0;
+            var EmployeeID = 0;
+            var memberID = 0;
+            var centerID = 0;
+            var url;
+            $("#btnProcess").val("Processing.........please wait untill finish! .......");
+            $("#btnProcess").text("Processing.........please wait untill finish! .......");
+            $("#btnProcess").html("Processing.........please wait untill finish! .......");
+            $('#btnProcess').attr('disabled', 'disabled');
+
+            if (DateTo != '') {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GenerateCPSPmonthlyProgressReportProcess_New", "GroupwiseReport", "http")',
+                    type: "GET",
+                    dataType: "json",
+                    async: true,
+                    data:
+                    {
+                        Qtype: Qtype,
+                        OfficeId:OfficeId,
+                        DateTo:DateTo,
+                        ZoneID: ZoneID,
+                        AreaID: AreaID,
+                        BranchID: BranchID,
+                        EmployeeID: EmployeeID,
+                        memberID: memberID,
+                        centerID: centerID
+                    },
+                    success: function (result) {
+                        if (result.Result == "SUCCESS") {
+                            $("#btnProcess").html("Process");
+                            $("#btnProcess").val("Process");
+                            $("#btnProcess").text("Process");
+                            $('#btnProcess').removeAttr('disabled');
+                            $.alert.open("Success", "Process Success!");
+                          //  $('#btnView').show();
+                            // $("#lbl1").css("color:green;width:20px;font-size:x-large");
+                        }
+                    },
+                    failure: function () {
+                        $.alert.open("error", "Failed!");
+                    }
+                });
+            }
+            else {
+                $.alert.open('Date field cannot be blank');
+            }
+        });
+    });
+          
+</script>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Process Date", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="Process" class="btn btn-primary" id="btnProcess" />
+            </div>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+
+
+
+
+

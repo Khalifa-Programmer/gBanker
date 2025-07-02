@@ -1,0 +1,392 @@
+﻿@model gBanker.Web.ViewModels.MFIInfoViewModel
+
+@{
+    ViewBag.Title = "MFI Info";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        GetMFIInfo();
+    });
+    function GetMFIInfo() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MRAReport/GetMFIInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                MFIId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },                
+                MFIName: {
+                    width: '5%',
+                    title: 'MFIName',
+                },
+                LicenseNo: {
+                    width: '5%',
+                    title: 'LicenseNo',
+                },
+                DateTo: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HOMailingAddress: {
+                    width: '5%',
+                    title: 'HOAddress',
+                },
+                HODistrict: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HOThana: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HOUnion: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HOEmail: {
+                    width: '5%',
+                    title: 'HOEmail',
+                },
+                HOWebAddress: {
+                    width: '5%',
+                    title: 'HOWebAddress',
+                },
+                HOPhone: {
+                    width: '5%',
+                    title: 'HOPhone',
+                },
+                HOMobile: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HOFax: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LOAddress: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LOTelephone: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LOMobile: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LOFax: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LOEmail: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                PrimaryRegistrationID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GBNoOfMaleMember: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GBNoOfFemaleMember: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GBNoOfYearlyMeetingsHeld: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GBDateOfLastMeeting: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GBNoOfParticipantsInTheLastMeeting: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EBExpiryDate: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EBNoOfMaleMember: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EBNoOfFemaleMember: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EBNoOfYearlyMeetingsHeld: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EBDateOfLastMeeting: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EBNoOfParticipantsInTheLastMeeting: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ServiceRules: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FinancialPolicy: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                SavingsAndCreditPolicy: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                NISAndAntiMoneyLaunderingGuideline: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CitizenCharter: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MaleMicroCreditProgramBranch: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FemaleMicroCreditProgramBranch: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MaleMicroCreditProgramArea: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FemaleMicroCreditProgramArea: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MaleMicroCreditProgramHO: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FemaleMicroCreditProgramHO: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MaleOrganizationBranch: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FemaleOrganizationBranch: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MaleOrganizationArea: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FemaleOrganizationArea: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MaleOrganizationHO: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FemaleOrganizationHO: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HighestMonthlySalary: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                HighestMonthlySalaryDesignation: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LowestMonthlySalary: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LowestMonthlySalaryDesignation: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OtherInformation: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },              
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        debugger;
+                        return "<div class='text-center'><a href='/MRAReport/EditMFIInfo?MFIId=" + data.record.MFIId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteMFIInfo(' + data.record.MFIId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    }
+    function DeleteMFIInfo(MFIId) {
+        if (confirm("Are you sure you want to delete this record?") == true) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteMFIInfo", "MRAReport", "http")',
+                data: { MFIId: MFIId },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    $('#grid').jtable('load');
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+            return true;
+        }
+        else {
+            hiddenField.value = 'false';
+            return false;
+        }
+    }
+</script>
+@Html.ActionLink("Add New", "CreateMFIInfo", null, new { @class = "pull-right" })
+<h2 class="page-title">MFI Info</h2>
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

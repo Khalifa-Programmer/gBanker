@@ -1,0 +1,68 @@
+﻿
+@model ManageOrgViewModel
+
+@{
+    ViewBag.Title = "Manage Organization";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">@ViewBag.Title</h2>
+@using (Html.BeginForm("Manage", "Company", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.Hidden("DoNotClearFormData", "DoNotClearFormData")
+
+    <div class="">
+        <div class="raw">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OrganaizationCode, htmlAttributes: new { @class = "control-label required" })
+                    @Html.TextBoxFor(model => model.OrganaizationCode, new { @class = "form-control", @readonly = "readonly" })
+                    @Html.ValidationMessageFor(model => model.OrganaizationCode)
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OrganaizationName, htmlAttributes: new { @class = "control-label required" })
+                    @Html.TextBoxFor(model => model.OrganaizationName, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OrganaizationName)
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OrganaizationAddress, htmlAttributes: new { @class = "control-label required" })
+                    @Html.TextAreaFor(model => model.OrganaizationAddress, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OrganaizationAddress)
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PKSFPOCode, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.PKSFPOCode, Model.POCodeList, new { @class = "form-control chosen" })
+                    @Html.ValidationMessageFor(model => model.PKSFPOCode)
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <div class="form-group form-action">
+                        <button type="submit" class="btn btn-sm btn-primary" id="btnSave"> Submit </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/organiztionManager.js"></script>
+}

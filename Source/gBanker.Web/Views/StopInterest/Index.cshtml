@@ -1,0 +1,103 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.StopInterestViewModel>
+
+@{
+    ViewBag.Title = "Stop Interest Member List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 5,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/StopInterest/GetStopInterestDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                StopInterestID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office Name',
+                    width: '20%'
+
+                },
+                CenterName: {
+                    title: 'Center Name',
+                    width: '10%'
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    width: '25%'
+
+                },
+                ProductName: {
+                    title: 'Product Name',
+                    width: '20%'
+
+                },
+                StopInterestDateView: {
+                    title: 'Stop Interest Date',
+                    width: '10%'
+
+                },
+                Remarks: {
+                    title: 'Remarks',
+                    width: '20%'
+
+                },
+            }
+        });
+        reloadGrid();
+
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Stop Interest Member List</h2>
+<div id="grid"></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

@@ -1,0 +1,304 @@
+﻿@model gBanker.Web.ViewModels.ProductViewModel
+
+@{
+    ViewBag.Title = "Product Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    //var investors = (System.Collections.Generic.IEnumerable<SelectListItem>)ViewBag.investorList;
+    var investor = Model == null ? null : Model.PInvestorListItems;
+    var frequency = Model == null ? null : Model.PFrequencyListItems;
+    var calcMethod = Model == null ? null : Model.PCalcuationMethodListItems;
+    }
+
+
+<script type="text/javascript">
+   
+   
+    $(document).ready(function () {
+        //$("#CreateDate").datepicker();
+        gBankerDatePicker("CreateDate");
+        //$("#ProductType").on('change', 'label.control input', function (event) {
+        //    alert('I am pretty sure the text box changed');
+        //    $("SavingsInstallment").prop('disabled', true);
+        //    event.preventDefault();
+        //});
+        //$("#ProductType").blur(function () {
+        //    if (this.value == "Loan")
+        //        $("#SavingsInstallment").attr("disabled", "").val("0");
+        //});
+ 
+        @*$("#ProductType").blur(function () {
+            var vType = $("#ProductType").val();
+            
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("setType", "Product")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { productType: vType },
+
+                success: function (result) {
+                    $("#LoanInstallment").val(result.loan);
+                    $("#IntInstallment").val(result.interest);
+                    $("#Duration").val(result.duration);
+                    $("#InterestRate").val(result.intrestRate);
+                },
+                error: function (error) {
+                    alert('Test');
+                }
+            });
+        });*@
+
+    });
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Product Create</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group" style="display:none">
+            @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProductID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductCode, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ProductCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ProductCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ProductName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ProductName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductFullNameEng, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ProductFullNameEng, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ProductFullNameEng, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductShortNameBng, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ProductShortNameBng, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ProductShortNameBng, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductFullNameBng, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ProductFullNameBng, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ProductFullNameBng, "", new { @class = "text-danger" })
+                </div>
+            </div>
+           
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductType, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.ProductType, investor,new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ProductType, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InterestRate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.InterestRate, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.InterestRate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Duration, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Duration, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.Duration, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MainProductCode, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MainProductCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.MainProductCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MainItemName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MainItemName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.MainItemName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanInstallment, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0"} })
+                    @Html.ValidationMessageFor(model => model.LoanInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InterestInstallment, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.InterestInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.InterestInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SavingsInstallment, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.SavingsInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.SavingsInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MinLimit, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MinLimit, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.MinLimit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MaxLimit, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MaxLimit, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.MaxLimit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InterestCalculationMethod, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.EditorFor(model => model.InterestCalculationMethod, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.DropDownListFor(model => model.InterestCalculationMethod, calcMethod, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.InterestCalculationMethod, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.PaymentFrequency, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.PaymentFrequency, frequency, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.PaymentFrequency, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InsuranceItemCode, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.InsuranceItemCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.InsuranceItemCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InsuranceItemRate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.InsuranceItemRate, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.InsuranceItemRate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GracePeriod, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.GracePeriod, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.GracePeriod, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SubMainCategory, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.SubMainCategory, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.SubMainCategory, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LateFeePercentage, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LateFeePercentage, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LateFeePercentage, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            @*<div class="form-group">
+                @for (int item = 0; item < Model.MemberCategoryList.Count; item++)
+                {
+                    <div class="col-md-10">
+                        @Html.CheckBoxFor(m => m.MemberCategoryList[item].IsSelected)
+                        @Html.Label(Model.MemberCategoryList[item].DisplayName)
+                        @Html.HiddenFor(m => m.MemberCategoryList[item].Id)
+                        @Html.HiddenFor(m => m.MemberCategoryList[item].Code)
+                    </div>
+
+                }
+            </div>*@
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+
+        </div>
+        </div>
+            }
+
+           
+
+            @section Scripts {
+                @Scripts.Render("~/bundles/jqueryval")
+                @Scripts.Render("~/bundles/jqueryui")
+                @Scripts.Render("~/bundles/gbUtility")
+            }
+
+

@@ -1,0 +1,645 @@
+﻿@model gBanker.Web.ViewModels.MFIInfoViewModel
+
+@{
+    ViewBag.Title = "MFI Info";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+        $("#GBDateOfLastMeeting").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+          });
+        $("#DateTo").val('');
+        $("#DateTo").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+            });
+        $("#EBExpiryDate").datepicker(
+             {
+                 dateFormat: "dd-M-yy",
+                 showAnim: "scale",
+             });
+        $("#EBDateOfLastMeeting").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+            });
+    });
+    function SaveMFIInfo() {
+        debugger;
+        var MFIName = $("#MFIName").val();
+        var LicenseNo = $("#LicenseNo").val();
+        var DateTo = $("#DateTo").val();
+        var HOMailingAddress = $("#HOMailingAddress").val();
+        var HODistrict = $("#HODistrict").val();
+        var HOThana = $("#HOThana").val();
+        var HOUnion = $("#HOUnion").val();
+        var HOEmail = $("#HOEmail").val();
+        var HOWebAddress = $("#HOWebAddress").val();
+        var HOPhone = $("#HOPhone").val();
+        var HOMobile = $("#HOMobile").val();
+        var HOFax = $("#HOFax").val();
+        var LOAddress = $("#LOAddress").val();
+        var LOTelephone = $("#LOTelephone").val();
+        var LOMobile = $("#LOMobile").val();
+        var LOFax = $("#LOFax").val();
+        var LOEmail = $("#LOEmail").val();
+        var PrimaryRegistrationID = $("#PrimaryRegistrationID").val();
+        var GBNoOfMaleMember = $("#GBNoOfMaleMember").val();
+        var GBNoOfFemaleMember = $("#GBNoOfFemaleMember").val();
+        var GBNoOfYearlyMeetingsHeld = $("#GBNoOfYearlyMeetingsHeld").val();
+        var GBDateOfLastMeeting = $("#GBDateOfLastMeeting").val();
+        var GBNoOfParticipantsInTheLastMeeting = $("#GBNoOfParticipantsInTheLastMeeting").val();
+        var EBExpiryDate = $("#EBExpiryDate").val();
+        var EBNoOfMaleMember = $("#EBNoOfMaleMember").val();
+        var EBNoOfFemaleMember = $("#EBNoOfFemaleMember").val();
+        var EBNoOfYearlyMeetingsHeld = $("#EBNoOfYearlyMeetingsHeld").val();
+        var EBDateOfLastMeeting = $("#EBDateOfLastMeeting").val();
+        var EBNoOfParticipantsInTheLastMeeting = $("#EBNoOfParticipantsInTheLastMeeting").val();
+        var ServiceRules = $("#ServiceRules").val();
+        var FinancialPolicy = $("#FinancialPolicy").val();
+        var SavingsAndCreditPolicy = $("#SavingsAndCreditPolicy").val();
+        var NISAndAntiMoneyLaunderingGuideline = $("#NISAndAntiMoneyLaunderingGuideline").val();
+        var CitizenCharter = $("#CitizenCharter").val();
+        var MaleMicroCreditProgramBranch = $("#MaleMicroCreditProgramBranch").val();
+        var FemaleMicroCreditProgramBranch = $("#FemaleMicroCreditProgramBranch").val();
+        var MaleMicroCreditProgramArea = $("#MaleMicroCreditProgramArea").val();
+        var FemaleMicroCreditProgramArea = $("#FemaleMicroCreditProgramArea").val();
+        var MaleMicroCreditProgramHO = $("#MaleMicroCreditProgramHO").val();
+        var FemaleMicroCreditProgramHO = $("#FemaleMicroCreditProgramHO").val();
+        var MaleOrganizationBranch = $("#MaleOrganizationBranch").val();
+        var FemaleOrganizationBranch = $("#FemaleOrganizationBranch").val();
+        var MaleOrganizationArea = $("#MaleOrganizationArea").val();
+        var FemaleOrganizationArea = $("#FemaleOrganizationArea").val();
+        var MaleOrganizationHO = $("#MaleOrganizationHO").val();
+        var FemaleOrganizationHO = $("#FemaleOrganizationHO").val();
+        var HighestMonthlySalary = $("#HighestMonthlySalary").val();
+        var HighestMonthlySalaryDesignation = $("#HighestMonthlySalaryDesignation").val();
+        var LowestMonthlySalary = $("#LowestMonthlySalary").val();
+        var LowestMonthlySalaryDesignation = $("#LowestMonthlySalaryDesignation").val();
+        var OtherInformation = $("#OtherInformation").val();
+
+        var MFIInfoObject = {
+            'MFIName': MFIName,
+            'LicenseNo': LicenseNo,
+            'DateTo':DateTo,
+            'HOMailingAddress': HOMailingAddress,
+            'HODistrict': HODistrict,
+            'HOThana': HOThana,
+            'HOUnion': HOUnion,
+            'HOEmail': HOEmail,
+            'HOWebAddress': HOWebAddress,
+            'HOPhone': HOPhone,
+            'HOMobile': HOMobile,
+            'HOFax': HOFax,
+            'LOAddress': LOAddress,
+            'LOTelephone': LOTelephone,
+            'LOMobile': LOMobile,
+            'LOFax': LOFax,
+            'LOEmail': LOEmail,
+            'PrimaryRegistrationID': PrimaryRegistrationID,
+            'GBNoOfMaleMember': GBNoOfMaleMember,
+            'GBNoOfFemaleMember': GBNoOfFemaleMember,
+            'GBNoOfYearlyMeetingsHeld': GBNoOfYearlyMeetingsHeld,
+            'GBDateOfLastMeeting': GBDateOfLastMeeting,
+            'GBNoOfParticipantsInTheLastMeeting': GBNoOfParticipantsInTheLastMeeting,
+            'EBExpiryDate': EBExpiryDate,
+            'EBNoOfMaleMember': EBNoOfMaleMember,
+            'EBNoOfFemaleMember': EBNoOfFemaleMember,
+            'EBNoOfYearlyMeetingsHeld': EBNoOfYearlyMeetingsHeld,
+            'EBDateOfLastMeeting': EBDateOfLastMeeting,
+            'ServiceRules': ServiceRules,
+            'FinancialPolicy': FinancialPolicy,
+            'SavingsAndCreditPolicy': SavingsAndCreditPolicy,
+            'NISAndAntiMoneyLaunderingGuideline': NISAndAntiMoneyLaunderingGuideline,
+            'CitizenCharter': CitizenCharter,
+            'MaleMicroCreditProgramBranch': MaleMicroCreditProgramBranch,
+            'FemaleMicroCreditProgramBranch': FemaleMicroCreditProgramBranch,
+            'MaleMicroCreditProgramArea': MaleMicroCreditProgramArea,
+            'FemaleMicroCreditProgramArea': FemaleMicroCreditProgramArea,
+            'MaleMicroCreditProgramHO': MaleMicroCreditProgramHO,
+            'FemaleMicroCreditProgramHO': FemaleMicroCreditProgramHO,
+            'MaleOrganizationBranch': MaleOrganizationBranch,
+            'FemaleOrganizationBranch': FemaleOrganizationBranch,
+            'MaleOrganizationArea': MaleOrganizationArea,
+            'FemaleOrganizationArea': FemaleOrganizationArea,
+            'MaleOrganizationHO': MaleOrganizationHO,
+            'FemaleOrganizationHO': FemaleOrganizationHO,
+            'HighestMonthlySalary': HighestMonthlySalary,
+            'HighestMonthlySalaryDesignation': HighestMonthlySalaryDesignation,
+            'LowestMonthlySalary': LowestMonthlySalary,
+            'LowestMonthlySalaryDesignation': LowestMonthlySalaryDesignation,
+            'OtherInformation': OtherInformation
+        };
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveMFIInfo", "MRAReport", "http")',
+            data: JSON.stringify({ 'MFIInfoObject': MFIInfoObject }),
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);
+                    //GetFixedAssetUpdates();
+                    // Clearform();
+                } else {
+                    $.alert.open("Error", data.message);
+                    ClearForm();
+                }
+            }
+
+        });
+    }
+   
+
+
+</script>
+@Html.ActionLink("Back to List", "IndexMFIInfo", null, new { @class = "pull-right" })
+<h2 class="page-title">MFI Info</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.MFIId)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MFI Name</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MFIName, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">License No</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LicenseNo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">As on</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DateTo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Mailing Address</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOMailingAddress, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO District</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HODistrict, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Thana</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOThana, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Union</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOUnion, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Email</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOEmail, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Web Address</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOWebAddress, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Phone</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOPhone, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Mobile</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOMobile, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HO Fax</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HOFax, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LO Address</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LOAddress, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LO Telephone</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LOTelephone, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LO Mobile</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LOMobile, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LO Fax</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LOFax, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LO Email</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LOEmail, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">PrimaryRegistration</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.PrimaryRegistrationID, Model.PrimaryRegistrationList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">GBNoOfMaleMember</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GBNoOfMaleMember, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">GBNoOfFemaleMember</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GBNoOfFemaleMember, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">GB No Of Yearly Meetings Held</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GBNoOfYearlyMeetingsHeld, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">GB Date Of Last Meeting</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GBDateOfLastMeeting, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">GBNoOfParticipantsLastMeeting</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GBNoOfParticipantsInTheLastMeeting, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">EBExpiryDate</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EBExpiryDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">EBNoOfMaleMember</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EBNoOfMaleMember, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">EBNoOfFemaleMember</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EBNoOfFemaleMember, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">EBNoOfYearlyMeetingsHeld</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EBNoOfYearlyMeetingsHeld, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">EBDateOfLastMeeting</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EBDateOfLastMeeting, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">EBNoOfParticipantsLastMeeting</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EBNoOfParticipantsInTheLastMeeting, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Service Rules</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.ServiceRules, Model.ServiceRulesList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Financial Policy</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.FinancialPolicy, Model.ServiceRulesList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">SavingsAndCreditPolicy</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.SavingsAndCreditPolicy, Model.SavingsAndCreditPolicyList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">NISAndAntiMoneyLaunderingGuideline</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.NISAndAntiMoneyLaunderingGuideline, Model.NISAndAntiMoneyLaunderingGuidelineList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">CitizenCharter</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.CitizenCharter, Model.CitizenCharterList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MaleMCProgramBranch</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MaleMicroCreditProgramBranch, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">FemaleMCProgramBranch</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FemaleMicroCreditProgramBranch, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MaleMCProgramArea</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MaleMicroCreditProgramArea, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">FemaleMCProgramArea</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FemaleMicroCreditProgramArea, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MaleMCProgramHO</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MaleMicroCreditProgramHO, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">FemaleMCProgramHO</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FemaleMicroCreditProgramHO, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MaleOrganizationBranch</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MaleOrganizationBranch, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">FemaleOrganizationBranch</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FemaleOrganizationBranch, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MaleOrganizationArea</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MaleOrganizationArea, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">FemaleOrganizationArea</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FemaleOrganizationArea, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">MaleOrganizationHO</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.MaleOrganizationHO, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">FemaleOrganizationHO</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FemaleOrganizationHO, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HighestMonthlySalary</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HighestMonthlySalary, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">HighestMonthlySalaryDesignation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.HighestMonthlySalaryDesignation, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LowestMonthlySalary</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LowestMonthlySalary, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">LowestMonthlySalaryDesignation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LowestMonthlySalaryDesignation, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">OtherInformation</label>
+                <div class="col-sm-7">
+                    @Html.TextAreaFor(model => model.OtherInformation, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">
+                <input type="button" value="Save" id="btnSave" class="btn btn-primary" onclick="SaveMFIInfo()" />                
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,272 @@
+﻿@model gBanker.Web.ViewModels.ExpireInfoViewModel
+
+@{
+    ViewBag.Title = "ExpireInfo Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var investor = Model == null ? null : Model.investorListItems;
+    var gen = Model == null ? null : Model.ExpireList;
+
+}
+<style type="text/css">
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+<script type="text/javascript">
+    $body = $("body");
+
+
+    $(document).ready(function () {
+
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "ExpireInfo", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            if ($("#CenterID").val() > 0
+                                && data[0].MemberID > 0
+                                && $("#ExpireStatus").val() == 0) {
+                                GetProductList(data[0].MemberID, $("#CenterID").val());
+                            }
+                            else {
+                                $("#ProductID").html('');
+                            }
+                        }
+                        else if (data.length == 0) {
+                            alert("No member found.");
+                            $("#MemberID").val("");
+                            $("#ProductID").html('');
+                        }
+                        else {
+                            alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                            $("#ProductID").html('');
+                        }
+                    }
+                });
+            }
+        });
+        function GetProductList(Member_id, center_id) {
+            var ddlproduct = $("#ProductID");
+            $("#loading").show();
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetProductList", "SpecialLoanCollection", "http")',
+                data: { Member_id: Member_id, center_id: center_id },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    $("#loading").hide();
+                    ddlproduct.html('');
+                    $.each(data, function (id, option) {
+                        ddlproduct.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+                },
+                error: function (request, status, error) {
+                    $("#loading").hide();
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "ExpireInfo", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+        $("#ExpireStatus").val() == 0 ? $("#dvProduct").show() : $("#dvProduct").hide();
+        $("#ExpireStatus").on('change', function (e) {
+            if (e.target.value == 0) {
+                $("#dvProduct").show();
+                $("#Relation").val('')
+                $("#ExpiryName").val('')
+            }
+            else {
+                $("#ProductID").html('');
+                $("#dvProduct").hide();
+                $("#Relation").val('n/a')
+                $("#ExpiryName").val('n/a')
+            }
+        })
+    });
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //  $("#ApproveDate").datepicker();
+        gBankerDatePicker("ExpireDate");
+
+    });
+</script>
+
+
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Add Expire Info</h2>
+
+@using (Html.BeginForm("Create", "ExpireInfo", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ExpireStatus, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.ExpireStatus, gen, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ExpireStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row" id="dvProduct" style="display:none">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Product</label>
+                    <select class="form-control" id="ProductID" name="ProductID"></select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Relation, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Relation, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Relation, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ExpiryName, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.ExpiryName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ExpiryName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ExpireDate, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.ExpireDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ExpireDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Remarks, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

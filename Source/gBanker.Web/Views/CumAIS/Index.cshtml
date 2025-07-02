@@ -1,0 +1,160 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.LoanApprovalViewModel>
+
+@{
+    ViewBag.Title = "Cum. MIS List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        confirmDayInitiated();
+        $('#grid').jtable({
+            // title: 'Approved  List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/CumAIS/GetCumAISInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+                //listAction: '/LoanApproval/GetLoanApprovals'
+
+            },
+            fields: {
+
+
+                CumAisID: {
+
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '10%'
+
+                },
+                AccCode: {
+                    title: 'Acc Code',
+                    width: '10%'
+                },
+
+                VoucherNo: {
+                    title: 'Voucher No',
+                    width: '10%'
+                },
+                AISDate: {
+                    title: 'Entry Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '12%'
+                },
+
+                ReconPurposeCode: {
+                    title: 'ReconPurpose Code',
+                    width: '10%'
+                },
+                Debit: {
+                    title: 'Debit',
+                    width: '10%'
+                },
+                Credit: {
+                    title: 'Credit',
+                    width: '10%'
+                },
+                VoucherType: {
+                    title: 'VoucherType',
+                    width: '5%'
+                },
+               
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        // return '<a href="/LoanApproval/Edit/' + data.record.LoanSummaryID + '">Edit</a>';
+                        //return "<a href='/LoanApproval/Edit/" + data.record.LoanSummaryID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                        return "<div class='text-center'><a href='/CumAIS/Edit/" + data.record.CumAisID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        //return '<a href="/LoanApproval/Delete/' + data.record.LoanSummaryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                        //return '<div class="text-center delete-link"><a href="/LoanApproval/Delete/' + data.record.LoanSummaryID + '" ' + 'onclick="return confirm(' + '"' + 'Are you sure you want to delete this item?' + '"' + ');"><i class="fa fa-trash-o"></i></a></div>';
+                        return '<div class="text-center delete-link"><a href="/CumAIS/Delete/' + data.record.CumAisID + '" ' + ' OnClick="return confirm(' + "'" + 'Are you sure you want to delete this item?' + "'" + ');"' + '><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+
+
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Cummulative AIS List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="AccCode">Acc Code</option>
+            <option value="VoucherNo">Voucher No</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+
+
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

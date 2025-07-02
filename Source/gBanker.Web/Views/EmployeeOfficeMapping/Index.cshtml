@@ -1,0 +1,233 @@
+﻿@model gBanker.Web.ViewModels.EmployeeOfficeMappingViewModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var HeadList = (ViewBag.HeadList as List<SelectListItem>) ?? new List<SelectListItem>();
+    HeadList.Insert(0, new SelectListItem() { Text = "Select Office", Value = "0", Selected = true });
+    var zoneList = (ViewBag.ZoneList as List<SelectListItem>)?? new List<SelectListItem>();
+    zoneList.Insert(0, new SelectListItem() { Text = "Select Zone", Value = "0", Selected = true });
+    var areaList = new List<SelectListItem>();
+    areaList.Insert(0, new SelectListItem()
+    {
+        Text = "Select Area",
+        Value = "0",
+        Selected = 
+        true });
+    }
+
+
+    <script type="text/javascript">
+    $(document).ready(function () {
+        $("#ZoneCode").change(function () {
+            loadArea();
+            loadOffice();
+        });
+        $("#AreaCode").change(function () {
+            loadOffice();
+        });
+
+    });
+    function loadArea() {
+        var zoneCode = $("#ZoneCode").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "EmployeeOfficeMapping")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { zoneCode: zoneCode },
+            success: function (data) {
+                var d = data.Options;
+
+                var mySelect = $("#AreaCode");
+                mySelect.empty();
+                mySelect.append(
+                       $('<option></option>').val("0").html("Select Area")
+                   );
+                $.each(d, function (i, item) {
+                    mySelect.append(
+                        $('<option></option>').val(item.Value).html(item.Text)
+                    );item
+                });
+            },
+            error: function(err)
+            {
+                alert(err);
+            }
+        });
+    }
+    function loadOffice() {
+
+        var employeeCode = $("#EmployeeCode").val();
+
+        var zoneCode = $("#ZoneCode").val();
+        var areaCode = $("#AreaCode").val();
+
+        var div = $("#officeContainer");
+        div.empty();
+
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LoadOffice", "EmployeeOfficeMapping")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { zoneCode: zoneCode, areaCode: areaCode, employeeCode:employeeCode },
+            success: function (data) {
+                var d = data.Options;
+                $.each(d, function (i, item) {
+                    var checked = item.Selected == true ? "checked='checked'" : "";
+                    div.append(
+                        $('<span><input type="checkbox" id="chk_' + item.Value + '" ' + checked +  '" />' +  item.Text + '<span><br/>')
+                    );
+                });
+            },
+            error: function (err) {
+                alert(err);
+            }
+        });
+
+    }
+
+        function Save() {
+          
+        var employeeCode = $("#EmployeeCode").val();
+        if (employeeCode == "") {
+           
+            var css = "failed";
+            $("#dvMessage").attr('class', css);
+            $("#dvMessage").html("Please enter an employee code.");
+            $("#dvMessage").show();
+            return;
+        }
+
+        $("#loading").show();
+        var allCollection = new Array();
+        var $allInputs = $('input[type="checkbox"]');
+        $allInputs.each(function () {
+            var id = $(this).attr('id');
+            var value = $('#' + id).is(':checked')
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allCollection[allCollection.length] = obj;
+        });
+
+        var allTrx = new Object();
+        allTrx.SelectedList = allCollection;
+        allTrx.EmployeeCode = employeeCode;
+
+
+        var json = JSON.stringify(allTrx);
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Create", "EmployeeOfficeMapping")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+            success: function (result) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', "success");
+                $("#dvMessage").html("New office mapped sucessfully.");
+                $("#dvMessage").show();
+                $("#dvMessage").toggle('fade', 1500);
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    </script>
+    <h2 class="page-title">Employee Office Mapping</h2>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="">
+
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.HeadOfficeCode, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.DropDownListFor(model => model.HeadOfficeCode, HeadList, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.HeadOfficeCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.EmployeeCode, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.EditorFor(model => model.EmployeeCode, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.EmployeeCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ZoneCode, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.DropDownListFor(model => model.ZoneCode, zoneList, new { @class = "form-control"  })
+                        @Html.ValidationMessageFor(model => model.ZoneCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.AreaCode, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.DropDownListFor(model => model.AreaCode, areaList, new { @class = "form-control"  })
+                        @Html.ValidationMessageFor(model => model.AreaCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    @Html.Label("Assigned Office List: ", htmlAttributes: new { @class = "control-label" })
+
+                    <div class="form-group">
+                        <div id="officeContainer"></div>
+                    </div>
+                </div>
+                </div>
+            
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="form-group form-action">
+                        <input type="submit" value="Create" class="btn btn-primary" onclick="Save(); return false;" />
+                    </div>
+                </div>
+
+            </div>          
+        </div>
+    }
+
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/jqueryui")
+    }

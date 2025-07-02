@@ -1,0 +1,48 @@
+﻿
+@model gBanker.Web.ViewModels.IndicatorMappingViewModel
+
+@{
+    ViewBag.Title = "Mapping Indicator With Associated Acc Code";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">Mapping Indicator With Associated Acc Code </h2>
+
+@using (Html.BeginForm("Map", "IndXAccCodeMap", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <table class="table table-hover" id="tblAvailableProduct">
+            <thead class="thead-dark">
+                <tr>
+                    <th class="column-title">SL</th>
+                    <th class="column-title">Indicator Name</th>
+                    <th class="column-title">Indicator Code</th>
+                    <th class="column-title"> Associated Account Code </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center">
+                    <td colspan="5" class="text-center">
+                        <img src="~/Content/charisma-master/bower_components/colorbox/example4/images/loading.gif" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <button type="submit" class="btn btn-primary" id="btnSave"> Submit </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+
+    <script src="~/Assets/js/olrs/indicatorWiseAccCodeDataManager.js"></script>
+}
+

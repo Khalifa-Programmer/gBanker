@@ -1,0 +1,294 @@
+﻿@* 
+Author  : Mostak Ahammed
+Date    : 30 Apr 2024
+Desc    : Employee Change for Individual Member only for 0000 Center
+*@
+
+@model gBanker.Web.ViewModels.MemberViewModel
+
+@{
+    ViewBag.Title = "Individual Member Employee Change";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model == null ? null : Model.CenterList;
+}
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#loading").hide();
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Member/GetMemberInfoForEmployeeChange?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                MemberID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office',
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Samity',
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Code',
+                    create: false,
+                    edit: false
+                },
+                FullName: {
+                    title: 'Member',
+                    create: false,
+                    edit: false
+                },
+                EmployeeID: {
+                    title: 'New Employee',
+                    list: true,
+                    display: function (data) {
+                        var ddl = '<select onchange="selectRow(' + data.record.MemberID + ')" class="employeeDDL" style="width:180px" ' + 'id="NewEmployeeID' + data.record.MemberID + '"></select>';
+                        var currentEmployeeID = data.record.EmployeeID;
+                        loadEmployeeDropdown('NewEmployeeID' + data.record.MemberID, currentEmployeeID);
+                        return ddl;
+                    }
+                }
+            }
+        });
+
+    });
+
+
+    function selectRow(memberId) {
+        var row = $("#NewEmployeeID" + memberId).closest("tr");
+        row.attr('id', 'selected_row');
+        row.attr('style', 'background-color: #D0FFD5 !important;');
+    }
+
+    function LoadMember()
+    {
+        $("#loading").show();
+        var centerId = $("#CenterID").val();
+        //var groupId = $("#GroupID").val();
+        $.ajax({
+            type: "POST",
+            url: "/Member/GetMemberListDDL?centerId=" + centerId,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //data: { centerId: centerId, groupId: groupId },
+            async: true,
+            success: function (data) {
+
+                $("#ddlMember").empty();
+                $("#ddlMember").append($("<option     />").val('0').text('Select Member'));
+                $.each(data.Options, function () {
+                    //alert(data.FullName);
+
+
+                    $("#ddlMember").append($("<option     />").val(this.Value).text(this.Text));
+                });
+
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+        $('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+        $("#loading").hide();
+    }
+
+    function MemberChange()
+    {
+        $("#loading").show();
+        $('#grid').jtable('load', { CenterId: $("#CenterID").val(), MemberId: $("#ddlMember").val() });
+        $("#loading").hide();
+    }
+
+    function loadEmployeeDropdown(dropdownid, currentEmployeeID) {
+        $("#loading").show();
+        $.ajax({
+            type: "POST",
+            url: "/Member/GetEmployeeListDDL",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+                $("#" + dropdownid).append($("<option />").val('0').text('Select Employee'));
+                $.each(data.Options, function () {
+                    var option = $("<option />").val(this.Value).text(this.DisplayText);
+
+                    // Check if the current option's value matches the currentEmployeeID
+                    if (this.Value == currentEmployeeID) {
+                        option.prop('selected', true); // Set the option as selected
+                    }
+
+                    $("#" + dropdownid).append(option);
+                });
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+    }
+
+
+    function loadCenter(officeid, LoanSummaryID) {
+        $("#loading").show();
+        var dropdownid = "NewCenterID" + LoanSummaryID;
+        $.ajax({
+            type: "POST",
+            url: "/LoaneeTransfer/GetCenterList?officeid=" + officeid,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //data: { officeid: officeid },
+            async: true,
+            success: function (data) {
+                $("#" + dropdownid).empty();
+                if (officeid > 0) {
+                    $("#" + dropdownid).append($("<option     />").val('0').text('Select Center'));
+                    $.each(data.Options, function () {
+                        $("#" + dropdownid).append($("<option     />").val(this.Value).text(this.DisplayText));
+                    });
+                }
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+    }
+
+
+
+    function SaveMemberEmployeeSelected() {
+        $("#loading").show();
+        var allCollection = [];
+
+        // Iterate over select elements
+        $('select').each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+
+            // Check if value is greater than 0 and exclude "CenterID"
+            if (parseInt(value) > 0 && id !== "CenterID" && id !== "ddlMember") {
+                var obj = {
+                    Key: id,
+                    Value: value
+                };
+                allCollection.push(obj);
+            }
+        });
+
+        var allIds = [];
+
+        // Iterate over hidden input elements
+        $('input[type="hidden"]').each(function () {
+            var value = $(this).val();
+            allIds.push(value);
+        });
+
+        var allTrx = {
+            allTrx: allCollection,
+            allLoanTrxId: allIds
+        };
+
+        var json = JSON.stringify(allTrx);
+
+        console.log(json);
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '/Member/SaveMemberEmployeeSelected',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+                $('#grid').jtable('load', { CenterId: $("#CenterID").val(), MemberId: $("#ddlMember").val() });
+                $("#loading").hide();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+
+
+</script>
+
+@using (Html.BeginForm())
+{
+    <h2 class="page-title">Individual Member Employee Change</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.CenterName, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control", @onchange = "LoadMember();" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.MemberName, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control", @onchange = "MemberChange();" })
+            </div>
+        </div>
+    </div>
+    <div id="grid"></div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group form-action">
+
+                <input type="button" value="Save" class="btn btn-primary" onclick="SaveMemberEmployeeSelected();" />
+
+            </div>
+        </div>
+    </div>
+
+
+}
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

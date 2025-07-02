@@ -1,0 +1,82 @@
+﻿@model gBanker.Web.ViewModels.PurposeViewModel
+
+@{
+    ViewBag.Title = "Purpose Delete";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to discontinue this?</h3>
+<div>
+    <h4>Purpose</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.PurposeID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PurposeID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PurposeCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PurposeCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PurposeName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PurposeName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsActive)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsActive)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InActiveDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InActiveDate)
+        </dd>
+
+        @*<dt>
+            @Html.DisplayNameFor(model => model.CreateUser)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateUser)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateDate)
+        </dd>*@
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>
+

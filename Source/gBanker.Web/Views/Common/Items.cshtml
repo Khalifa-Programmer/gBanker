@@ -1,0 +1,555 @@
+﻿@{
+    ViewBag.Title = "Items Setup";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    function GetPopUp(vmodel) {
+        $('#' + vmodel + '').modal('show');
+        if (vmodel == 'dvItemModel') {
+            $("#hdItem").text("Item Add");
+        }
+
+    }
+
+    function GetByID(ids, iName, status) {
+
+        if (status == 3) {
+            $('#hdnUPitemID').val(ids)
+            $('#hUnitPrice').text(iName + ' Unit Price Add')
+            //alert($('#hdnUPitemID').val())
+            $('#dvUnitPriceModel').modal('show');
+        }
+        else {
+            var data = GenerateAjaxRequist('/Common/GetByItemID?itemID=' + ids + '&status=' + (status == 1 ? 'u' : 'd')
+                , null, "POST");
+            if (status == 1) {
+                $('#ddlCatagory').val(data.Records.CategoryID)
+                $('#ddlCatagory').change();
+                $('#txtItemName').val(data.Records.ItemName);
+                $('#txtItemNameInBangla').val(data.Records.ItemNameInBangle);
+                $('#txtItemShortName').val(data.Records.ItemShortName);
+                $('#txtItemCode').val(data.Records.ItemCode)
+                $('#ddlUnit').val(data.Records.Unit);
+                $('#txtDiscription').val(data.Records.ItemDetails);
+                $("#hdnItemID").val(ids);
+                $("#btnItemSave").text('Update');
+                $('#dvItemModel').modal('show');
+                $("#hdItem").text("Item Update");
+                $("#txtItemCode").prop("disabled", true)
+                $("#chkAutoGenerate").prop("disabled", true)
+                $('#ddlSubCatagory').val(data.Records.SubCatagoryID);
+                $('#txtMinimumStock').val(data.Records.MinStockLevel)
+            }
+            else if (status == 2) {
+                $.alert.open("Success", data.message);
+                reloadGrid();
+            }
+        }
+    }
+
+    function fDataSave(modelName) {
+        // Item Add
+        var dataObject = Object;
+        var vUrl = "", status = true, mess = "";
+        if (modelName.id == 'btnItemSave') {
+
+            if (!$('#txtItemName').val()) {
+                status = false;
+                mess = "Item Name Required";
+            }
+                //else if()
+            else {
+                vUrl = '/Common/AddUpdateItem?isAutoGenerate=' + $("#chkAutoGenerate").is(':checked');
+                dataObject = {
+                    ItemID: $("#hdnItemID").val(),
+                    CategoryID: $('#ddlCatagory').val(),
+                    SubCatagoryID: $('#ddlSubCatagory').val(),
+                    ItemName: $('#txtItemName').val(),
+                    ItemNameInBangle: $('#txtItemNameInBangla').val(),
+                    ItemShortName: $('#txtItemShortName').val(),
+                    ItemCode: $('#txtItemCode').val(),
+                    Unit: $('#ddlUnit').val(),
+                    ItemDetails: $('#txtDiscription').val(),
+                    IsActive: true,
+                    MinStockLevel: $('#txtMinimumStock').val()
+                }
+                status = true;
+            }
+        }
+            // Category Add
+        else if (modelName.id == 'btnCategorySave') {
+            if (!$("#txtCategoryName").val()) {
+                status = false; mess = "Category Name Required";
+            }
+            else {
+                var dataObject = {
+                    CategorySubCategoryID: 0,
+                    CategorySubCategoryName: $("#txtCategoryName").val(),
+                    NameInBangla: '',
+                    CateorSubCateCode: $("#txtCategoryCode").val(),
+                    ParentCategoryID: 0,
+                    IsActive: true,
+                };
+                var status = 'I';
+                var autos = $("#txtCateCode").val() ? false : true;
+                vUrl = '/Common/CategorySetup?status=' + status + '&isAutoGenerate=' + autos + '';
+                status = true;
+            }
+        }
+            // SubCategory Add
+        else if (modelName.id == 'btnSubCategorySave') {
+            if (!$("#txtSubCategoryName").val()) {
+                status = false; mess = "Subcategory Name Required";
+            }
+            else {
+                var dataObject = {
+                    CategorySubCategoryID: 0,
+                    CategorySubCategoryName: $("#txtSubCategoryName").val(),
+                    NameInBangla: '',
+                    CateorSubCateCode: $("#txtSubCategoryCode").val(),
+                    ParentCategoryID: $("#ddlCategoryXSub").val(),
+                    IsActive: true,
+                };
+                vUrl = '/Common/SubCategorySetup?status=' + 'I' + '&isAutoGenerate=' + ($("#txtSubCategoryCode").val() ? false : true);
+            }
+        }
+            // Unit Price Add
+        else if (modelName.id == 'btnEffectiveDate') {
+            if (!$("#txtUnitPrice").val()) {
+                status = false; mess = "Unit Price Required";
+            }
+            else {
+                vUrl = '@Url.Action("AddUnitPrice", "Common")';
+                var dataObject = {
+                    ItemPriceSetID: 0,
+                    ItemID: $("#hdnUPitemID").val(),
+                    OfficeID: 0,
+                    UnitPrice: $("#txtUnitPrice").val(),
+                    EffectiveDate: $("#txtEffectiveDate").val()
+                };
+            }
+        }
+        // Service Call
+        if (status) {
+            var data = GenerateAjaxRequist(vUrl, JSON.stringify({ obj: dataObject }), "POST")
+            if (data.result == 1) {
+                ClearFields();
+                if (modelName.id == 'btnItemSave') {
+                    $("#hdnItemID").val("0");
+                    $("#btnItemSave").text("Save");
+                    //$.alert.open("Success", result.message);
+                    $("#dvmessage").css('color', 'red')
+                    $("#dvmessage").text(data.message)
+                    $("#dvmessage").fadeTo(2000, 500).slideUp(500, function () {
+                        $("#dvmessage").slideUp(500);
+                    });
+                    reloadGrid();
+                }
+                else if (modelName.id == 'btnCategorySave') {
+
+                    $('#dvCategoryModel').modal('hide');
+                    //$.alert.open("Success", result.message);
+                    $("#dvmessage").css('color', 'red')
+                    $("#dvmessage").text("Category " + data.message)
+                    $("#dvmessage").fadeTo(2000, 500).slideUp(500, function () {
+                        $("#dvmessage").slideUp(500);
+                    });
+                    FgetCategory();
+                }
+                else if (modelName.id == 'btnSubCategorySave') {
+
+                    $('#dvSubCategoryModel').modal('hide');
+                    //$.alert.open("Success", result.message);
+                    $("#dvmessage").css('color', 'red')
+                    $("#dvmessage").text("Subcategory " + data.message)
+                    $("#dvmessage").fadeTo(2000, 500).slideUp(500, function () {
+                        $("#dvmessage").slideUp(500);
+                    });
+                    FgetCategory();
+                }
+                else if (modelName.id == 'btnEffectiveDate') {
+                    $('#dvUnitPriceModel').modal('hide');
+                    $.alert.open("Success", data.message);
+                    reloadGrid();
+                }
+            }
+        }
+        else
+            $.alert.open("Error", mess);
+    }
+    $(document).ready(function () {
+        NumericTextboxOnly("#txtItemCode,#txtCategoryCode,#txtSubCategoryCode,#txtUnitPrice,#txtMinimumStock");
+        $("#hdnItemID").val(0);
+        $("#chkAutoGenerate").on('click', function () {
+            var bool = false;
+            if ($(this).is(':checked'))
+                bool = true;
+            $("#txtItemCode").prop("disabled", bool);
+            if (true) $("#txtItemCode").val('');
+        });
+
+        $("#txtEffectiveDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+       });
+        FgetCategory();
+        function FgetCategory() {
+            var data = GenerateAjaxRequist('/Common/GetAllCategory', null, "POST")
+            $("#ddlCatagory").html("");
+            $("#ddlCatagory").append("<option value=''>Select Catagory</option>")
+            for (var i = 0; i < data.Records.length; i++) {
+                //alert(data.Records.length)
+                $("#ddlCatagory").append('<option value=' + data.Records[i].CategorySubCategoryID + '>' +
+                    data.Records[i].CategorySubCategoryName
+                    + (data.Records[i].CateorSubCateCode === null ? '' : ' (' + data.Records[i].CateorSubCateCode + ')') + '</option>')
+
+                $("#ddlCategoryXSub").append('<option value=' + data.Records[i].CategorySubCategoryID + '>' +
+                    data.Records[i].CategorySubCategoryName
+                    + (data.Records[i].CateorSubCateCode === null ? '' : ' (' + data.Records[i].CateorSubCateCode + ')') + '</option>')
+            }
+        };
+        $("#ddlCatagory").on('change', function () {
+            if ($(this).val()) {
+                var data = GenerateAjaxRequist('/Common/GetSubCategoryXCategory?cID=' + $(this).val(), null, "POST")
+                $("#ddlSubCatagory").html("");
+                $("#ddlSubCatagory").append("<option value=''>Select Subcategory</option>")
+                for (var i = 0; i < data.Records.length; i++) {
+                    //alert(data.Records.length)
+                    $("#ddlSubCatagory").append('<option value=' + data.Records[i].CategorySubCategoryID + '>' +
+                        data.Records[i].CategorySubCategoryName
+                        + (data.Records[i].CateorSubCateCode === null ? '' : ' (' + data.Records[i].CateorSubCateCode + ')') + '</option>')
+                }
+
+            }
+        });
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            //url: '/Common/GetAllItem?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            url: '/Common/GetAllItem?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                ItemID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CategoryName: {
+                    title: 'Category',
+                    width: '10%'
+
+                },
+                SubcategoryName: {
+                    title: 'Subcategory',
+                    width: '10%'
+
+                },
+                ItemCode: {
+                    title: 'Item Code',
+                    width: '10%'
+
+                },
+                ItemName: {
+                    title: 'Item Name',
+                    width: '20%'
+                },
+                ItemNameInBangle: {
+                    title: 'Name(In Bangle)',
+                    width: '25%'
+                },
+                Unit: {
+                    title: 'Unit',
+                    width: '5%'
+                },
+                MinStockLevel: {
+                    title: 'Min. Stock',
+                    width: '10%'
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="#" onclick="GetByID(' + data.record.ItemID + ",'" + data.record.ItemName + "'" + ',1)"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="#" onclick="GetByID(' + data.record.ItemID + ",'" + data.record.ItemName + "'" + ',2)"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+<button type="button" class="btn btn-info btn-sm pull-right" onclick="GetPopUp('dvItemModel')">Add Item</button>
+
+<h2 class="page-title">Item Info</h2>
+
+<div class="modal fade" id="dvItemModel" tabindex="-1" role="dialog" aria-labelledby="dvItemModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 id="hdItem">Item</h4>
+            </div>
+            <div class="modal-body">
+                <div id="dvmessage"></div>
+                <input type="hidden" id="hdnItemID" />
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <label class="control-label">Catagory</label>
+                                <div class="col-md-12">
+                                    <div class="col-md-9" style="margin-left:-27px;width:220px">
+                                        <select class="form-control" id="ddlCatagory"></select>
+                                    </div>
+                                    <div class="col-md-3" style="margin-left:-25px;">
+                                        <button id="btnAddCategory" class="btn btn-info" type="button" onclick="GetPopUp('dvCategoryModel')">Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <label class="control-label">Subcatagory</label>
+                                <div class="col-md-12">
+                                    <div class="col-md-9" style="margin-left:-27px;width:220px">
+                                        <select class="form-control" id="ddlSubCatagory">
+                                            <option>Select Subcatagory</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3" style="margin-left:-25px;">
+                                        <button id="btnAddCategory" class="btn btn-info" type="button" onclick="GetPopUp('dvSubCategoryModel')">Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Item Code</label>
+                                    <input type="text" id="txtItemCode" placeholder="Item Code" class="form-control" />
+                                    <input type="checkbox" id="chkAutoGenerate" /><label for="chkAutoGenerate"> Auto Generate</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Item Name</label>
+                                    <input type="text" id="txtItemName" placeholder="Item Name" class="form-control" />
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <label class="control-label">Item Name(Bangla)</label>
+                                <input type="text" id="txtItemNameInBangla" placeholder="Item Name In Bangla" class="form-control" />
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Item Short Name</label>
+                                    <input type="text" id="txtItemShortName" placeholder="Item Short Name" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Unit</label>
+                                    <select id="ddlUnit" class="form-control">
+                                        <option value="">Select Unit</option>
+                                        <option value="Bottle">Bottle</option>
+                                        <option value="Box">Box</option>
+                                        <option value="Pak">Pak</option>
+                                        <option value="Pc">Pc</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <label class="control-label">Discription</label>
+                                <input type="text" id="txtDiscription" placeholder="Discription" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6">
+                                    <label class="control-label">Minimum Stock Lable</label>
+                                    <input type="text" id="txtMinimumStock" placeholder="Minimum Stock Lable" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <button type="button" class="btn btn-primary" id="btnItemSave" onclick="fDataSave(this)">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*Add SubCategory Model*@
+
+<div class="modal fade" id="dvSubCategoryModel" tabindex="-1" role="dialog" aria-labelledby="dvSubCategoryModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4>Subcategory Add</h4>
+            </div>
+            <div class="modal-body">
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Subcategory Code</label>
+                                    <input type="text" id="txtSubCategoryCode" placeholder="SubCategory Code" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Subcategory Name</label>
+                                    <input type="text" id="txtSubCategoryName" placeholder="Subcategory Name" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Category</label>
+                                    <select id="ddlCategoryXSub" class="form-control">
+                                        <option value="">Select Catagory</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <button type="button" class="btn btn-primary" id="btnSubCategorySave" onclick="fDataSave(this)">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+@*Add Category Model*@
+
+<div class="modal fade" id="dvCategoryModel" tabindex="-1" role="dialog" aria-labelledby="dvCategoryModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4>Category Add</h4>
+            </div>
+            <div class="modal-body">
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Category Code</label>
+                                    <input type="text" id="txtCategoryCode" placeholder="Category Code" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Category Name</label>
+                                    <input type="text" id="txtCategoryName" placeholder="Category Name" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <button type="button" class="btn btn-primary" id="btnCategorySave" onclick="fDataSave(this)">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+@*Unit Price Add*@
+<div class="modal fade" id="dvUnitPriceModel" tabindex="-1" role="dialog" aria-labelledby="dvUnitPriceModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <input type="hidden" id="hdnUPitemID" />
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 id="hUnitPrice"></h4>
+            </div>
+            <div class="modal-body">
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Unit Price</label>
+                                    <input type="number" id="txtUnitPrice" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" placeholder="Unit Price" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label">Effective Date</label>
+                                    <input type="text" id="txtEffectiveDate" placeholder="Effective Date" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <button type="button" class="btn btn-primary" id="btnEffectiveDate" onclick="fDataSave(this)">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

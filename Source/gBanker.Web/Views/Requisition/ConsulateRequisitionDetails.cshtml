@@ -1,0 +1,173 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style>
+    form {
+        margin: 20px 0;
+    }
+
+    select, input, button {
+        padding: 5px;
+    }
+
+        select, input[type=text], input[type=number], textarea {
+            width: 160px;
+            height: 35px;
+            padding: 5px;
+        }
+
+    div.jtable-main-container table.jtable tbody > tr.jtable-row-selected {
+        text-shadow: 0 !important;
+        color: black;
+    }
+</style>
+<script type="text/javascript">
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+    function DetailUpdate(ConsulateRequisitionID, ItemID, status) {
+        $("#ifrReport").attr('src','')
+        //$("#ifrReportv").attr('src','')
+        if (status == "storeIn") {
+            var data = GenerateAjaxRequist('/Requisition/ConsulateRequisitionStoreIn',
+                                   JSON.stringify({ masterID: ConsulateRequisitionID }), "POST");
+            $.alert.open("Message", data.Message);
+            if (data.Result == 1){
+                $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/ItemXStoreDetailsReport?masterID=" + data.VID + "&type=I")
+                //$("#ifrReportv").attr('src', "http://" + window.location.host + "/InventoryReport/VoucherReport?masterID=" + data.VID + "")
+            }
+                
+        }
+        else if (status == "View"){
+            var data = GenerateAjaxRequist('/Requisition/ConsulateRequisitionAreaView',
+                                   JSON.stringify({ masterID: ConsulateRequisitionID }), "POST");
+            $.alert.open("Message", data.Message);
+            if (data.Result == 1){
+                $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/StoreReportForArea?reuqisitionID=" + ConsulateRequisitionID + "&status=cr")
+            }
+        }
+        reloadGrid();
+    }
+    $(document).ready(function () {
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: false,
+            pageSize: false,
+            sorting: false,
+            defaultSorting: 'ItemID ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Requisition/GetConsulateRequsitionAfterApproved',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                ConsulateRequisitionID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                RequisitionNo: {
+                    title: 'Requisition No',
+                    width: '10%'
+
+                },
+                OfficeName: {
+                    title: 'Office',
+                    width: '10%'
+                },
+                WarehouseName: {
+                    title: 'Store',
+                    width: '10%'
+                },
+                StatusChangeDate: {
+                    title: 'Approved Date',
+                    type: 'date',
+                    displayFormat: 'yy-mm-dd',
+                    width: '25%'
+                },
+                CommandLink: {
+                    title: "Command",
+                    width: '15%',
+                    display: function (data) {
+                        return (@ViewBag.OfficeLevel==3 && data.record.AprovedStatus == "Approved"?
+                            '<div class="text-center view-link">' +
+                            '<a href="#" title="View" onclick="DetailUpdate(' + data.record.ConsulateRequisitionID + ',' + data.record.ItemID + ',\'View\'' + ')"><i class="fa fa-book"></i></a></div>'
+                            //:data.record.AprovedStatus == "Pending" ?""
+                        : data.record.AprovedStatus == "Approved" ?
+                            '<div class="text-center view-link">' +
+                            '<a href="#" title="Store In" onclick="DetailUpdate(' + data.record.ConsulateRequisitionID + ',' + data.record.ItemID + ',\'storeIn\'' + ')"><i class="fa fa-plus"></i></a></div>'
+                        : '');
+                    }
+                }
+            },
+        });
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        
+        //reloadGrid();
+
+
+    });
+</script>
+@if (ViewBag.OfficeLevel == 2 | ViewBag.OfficeLevel == 3)
+{
+    @Html.ActionLink("Requisition Send", (ViewBag.OfficeLevel == 1 ? "ConsulateRequisitionDetails"
+                            : ViewBag.OfficeLevel == 2 ? "ConsulateRequisitionForZone"
+                            : ViewBag.OfficeLevel == 3 ? "ConsulateRequisitionForArea"
+                            : "")
+                            , "Requisition", null, new { @class = "btn btn-warning btn-sm pull-right" })
+}
+
+@if (ViewBag.OfficeLevel == 1)// | ViewBag.OfficeLevel == 2
+{
+    @Html.ActionLink("Requisition Approve", "ConsulateRequisitionApprove", "Requisition", null, new { @class = "btn btn-success btn-sm pull-right" })
+}
+
+@if (ViewBag.OfficeLevel != 4)
+{
+    <h2 class="page-title">Consolidate Requisition</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+    <br />
+    <br />
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <iframe id="ifrReport" width="520" height="300" frameBorder="0"></iframe>
+        </div>
+        @*<div class="col-md-6">
+            <iframe id="ifrReportv" width="520" height="300" frameBorder="0"></iframe>
+        </div>*@
+    </div>
+}
+else
+{
+    <h2>Your Office is not Authorized</h2>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}

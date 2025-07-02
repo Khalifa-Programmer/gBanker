@@ -1,0 +1,589 @@
+﻿@model gBanker.Web.ViewModels.SavingSummaryViewModel
+
+@{
+    ViewBag.Title = "Savings Installment Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = ViewBag.MemberName as string;
+    var employee = ViewBag.employeeName as string;
+}
+
+<script type="text/javascript">
+    function getRate() {
+        var prodId = $("#ProductID").val();
+        var memId = $("#MemberID").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetRateAndDate", "SavingsInstallmentUpdate")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { productid: prodId, memberId: memId },
+
+            success: function (result) {
+                $("#InterestRate").val(result.rate);
+                $("#OpeningDate").val(result.jdate);
+
+            },
+            error: function (error) {
+                alert('error');
+            }
+        });
+    }
+    function getBalance() {
+        var Deposit = $("#Deposit").val();
+        var Withdrawal = $("#Withdrawal").val();
+        var CumInterest = $("#CumInterest").val();
+        var MonthlyInterest = $("#MonthlyInterest").val();
+        var Penalty = $("#Penalty").val();
+        if (Deposit.length == 0) {
+            $("#Deposit").val("0");
+            Deposit = "0";
+        }
+        if (Withdrawal.length == 0) {
+            $("#Withdrawal").val("0");
+            Withdrawal = "0";
+        }
+        if (CumInterest.length == 0) {
+            $("#CumInterest").val("0");
+            CumInterest = "0";
+        }
+        if (MonthlyInterest.length == 0) {
+            $("#MonthlyInterest").val("0");
+            MonthlyInterest = "0";
+        }
+        if (Penalty.length == 0) {
+            $("#Penalty").val("0");
+            Penalty = "0";
+        }
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBalance", "SavingsInstallmentUpdate")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { Deposit: Deposit, Withdrawal: Withdrawal, CumInterest: CumInterest, MonthlyInterest: MonthlyInterest, Penalty: Penalty },
+
+            success: function (result) {
+                $("#Balance").val(result.balance);
+
+            },
+            error: function (error) {
+                alert('error');
+            }
+        });
+    }
+    $(document).ready(function () {
+        ////////////////////////////////////
+        //$("#MemberID").change(function () {
+        //    getRate();
+        //    //CalcBalance()
+        //});
+        $("#CenterID").change(function () {
+            $("#memberAutoComplete").val('');
+            $("#MemberID").val('');
+
+        });
+        $("#Deposit").keyup(function () {
+            getBalance();
+        });
+        $("#Withdrawal").keyup(function () {
+            getBalance();
+        });
+        $("#CumInterest").keyup(function () {
+            getBalance();
+        });
+        $("#MonthlyInterest").keyup(function () {
+            getBalance();
+        });
+        $("#Penalty").keyup(function () {
+            getBalance();
+        });
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            var product = $("#ProductID").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemberList", "LoanSummary", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    // alert(data.length);
+                    if(data.length==1)
+                    {
+                        $("#memberAutoComplete").val(data[0].MemberName);
+                        $("#MemberID").val(data[0].MemberID);
+                        getRate();
+                    }
+                    else if (data.length==0)
+                    {
+                       // alert("No member found.");
+                        $("#MemberID").val("");
+                    }
+                    else
+                    {
+                       // alert("More than one member found with the given Member code.");
+                        $("#MemberID").val("");
+                    }
+
+                }
+            });
+        });
+
+        $("#EmployeeAutoComplete").blur(function () {
+            var member = $("#EmployeeAutoComplete").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetEmployeeList", "SavingsInstallmentUpdate", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    // alert(data.length);
+                    if (data.length == 1) {
+                        $("#EmployeeAutoComplete").val(data[0].EmployeeName);
+                        $("#Ref_EmployeeID").val(data[0].EmployeeID);
+                    }
+                    else if (data.length == 0) {
+                        // alert("No member found.");
+                        $("#Ref_EmployeeID").val("");
+                    }
+                    else {
+                        //  alert("More than one member found with the given Member code.");
+                        $("#Ref_EmployeeID").val("");
+                    }
+
+                }
+            });
+        });
+
+        $("#EmployeeAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetEmployeeList", "SavingsInstallmentUpdate", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.Ref_EmployeeID,
+                                label: item.EmployeeName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#EmployeeAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#EmployeeAutoComplete").val(ui.item.label);
+                $("#Ref_EmployeeID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#EmployeeAutoComplete").val(ui.item.label);
+                $("#Ref_EmployeeID").val(ui.item.value);
+                return false;
+            }
+        });
+
+        ////////////////////////////////////
+        $("#ProductID").blur(function () {
+            getRate();
+
+            @*var prodId = $("#ProductID").val();
+            var memId = $("#MemberID").val();
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetRateAndDate", "SavingSummary")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { productid: prodId, memberId: memId },
+
+                success: function (result) {
+                    $("#InterestRate").val(result.rate);
+                    $("#OpeningDate").val(result.jdate);
+
+                },
+                error: function (error) {
+                    alert('Test');
+                }
+            });*@
+        });
+        @*// $("#memberAutoComplete").autocomplete(source: '@Url.Action("GetMemberList")' );
+
+        $('#memberAutoComplete').autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: '@Url.Action("GetMemberList")',
+                    data: { memberid: request.term },
+                    dataType: 'json',
+                    type: 'GET',
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.MemberName,
+                                value: item.MemberID
+                            }
+                        }));
+                    }
+                })
+            },
+            select: function (event, ui) {
+                $('#memberAutoComplete').val(ui.item.MemberName);
+               // $('#Id').val(ui.item.value);
+                return false;
+            },
+            minLength: 1
+        });*@
+
+       
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "LoanSummary", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //$("#OpeningDate").val('');
+        gBankerDatePicker("OpeningDate");
+        //$("#OpeningDate").datepicker();
+        //$("#MaturedDate").val('');
+        gBankerDatePicker("MaturedDate");
+       // $("#MaturedDate").datepicker();
+        //$("#ClosingDate").val('');
+        gBankerDatePicker("ClosingDate");
+       // $("#ClosingDate").datepicker();
+        //$("#InstallmentDate").val('');
+        gBankerDatePicker("InstallmentDate");
+       // $("#InstallmentDate").datepicker();
+        //$("#TransactionDate").val('');
+        //$("#TransactionDate").datepicker();
+        gBankerDatePicker("TransactionDate");
+
+    });
+
+
+
+
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Edit SavingsOpening</h2>
+
+@using (Html.BeginForm("Edit", "SavingsInstallmentUpdate", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+        <div class="form-group" style=" display :none">
+            @Html.LabelFor(model => model.SavingSummaryID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.SavingSummaryID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.SavingSummaryID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control", @readonly = "readonly" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", member, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control", @readonly = "readonly" })
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NoOfAccount, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.NoOfAccount, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.NoOfAccount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TransactionDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.TransactionDate, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.TransactionDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Deposit, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Deposit, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Deposit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Withdrawal, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Withdrawal, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Withdrawal, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InterestRate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.InterestRate, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.InterestRate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SavingInstallment, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.SavingInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.SavingInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CumInterest, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.CumInterest, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.CumInterest, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MonthlyInterest, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MonthlyInterest, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.MonthlyInterest, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Penalty, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Penalty, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Penalty, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Balance, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control", defaultValue = "0", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OpeningDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.OpeningDate, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.OpeningDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MaturedDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MaturedDate, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.MaturedDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.ClosingDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ClosingDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ClosingDate, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.TransType, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.TransType, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.TransType, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.SavingStatus, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.SavingStatus, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.SavingStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+        <div class="form-group" style="display:none">
+            @Html.LabelFor(model => model.EmployeeId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.EmployeeId, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.EmployeeId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group" style="display:none">
+            @Html.LabelFor(model => model.MemberCategoryID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.MemberCategoryID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.MemberCategoryID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>UpdateAll @Html.CheckBoxFor(model => model.IsActive, new { htmlAttributes = new { @class = "form-control", @checked="0" } })</label> &nbsp;&nbsp;|&nbsp;&nbsp;
+                    @*<label>UpdateAll @Html.CheckBoxFor(model => model.IsActive)</label>*@
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Ref.Employee", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("EmployeeAutoComplete", employee, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.Ref_EmployeeID )
+                    @Html.TextBoxFor(model => model.Ref_EmployeeID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.Ref_EmployeeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

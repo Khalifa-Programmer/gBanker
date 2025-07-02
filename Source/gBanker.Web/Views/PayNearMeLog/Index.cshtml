@@ -1,0 +1,158 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.PNMConfirmViewModel>
+@{
+    ViewBag.Title = "PayNearMe Log";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $('#txtFromDt').val($.datepicker.formatDate("dd-M-yy", new Date($('#txtDayInitial').val())))
+        //$('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+        $('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date($('#txtDayInitial').val())))
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: false,
+            defaultSorting: 'OfficeName ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/PayNearMeLog/GetPNMInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                pnm_confirm_id: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                site_customer_identifier: {
+                    title: 'Center',
+                    width: '10%',
+                    create: false,
+                    edit: false
+                },
+                pnm_order_identifier: {
+                    title: 'Loan No',
+                    width: '20%',
+                    create: false,
+                    edit: false
+                },
+                //site_identifier: {
+                //    title: 'Member',
+                //    width: '15%',
+                //    create: false,
+                //    edit: false
+                //},
+                payment_timestamp_dt: {
+                    title: 'Date',
+                    width: '15%',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false,
+                    edit: true
+                },
+                payment_currency: {
+                    title: 'Currency',
+                    width: '10%',
+                    create: false,
+                    edit: false
+                },
+                payment_amount: {
+                    title: 'Amount',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                pnm_withheld_amount: {
+                    title: 'Withheld',
+                    width: '10%',
+                    create: false,
+                    edit: false
+                },              
+                pnm_payment_identifier: {
+                    title: 'Payment Identity',
+                    width: '20%',
+                    create: false,
+                    edit: false
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { dateFrom: $('#txtFromDt').val(), dateTo: $('#txtToDt').val(), memCode: $('#txtMemCode').val() });
+        $("#loading").hide();
+    }
+
+</script>
+<h2 class="page-title">SMS List</h2>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date From</label>
+            @Html.TextBox(" ", null, new { @ID = "txtFromDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date To</label>
+            @Html.TextBox(" ", null, new { @ID = "txtToDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Member Code</label>
+            @Html.TextBox(" ", null, new { @ID = "txtMemCode", @style = "width:150px; height:35px;" })
+        </div>
+    </div>    
+    <div class="col-md-6" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+<br />
+<div id="grid"></div>
+@Html.TextBox(" ", "" + ViewData["dayInitial"], new { @class = "form-control", @id = "txtDayInitial", @style = "display:none;" })
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+
+
+
+
+
+
+
+

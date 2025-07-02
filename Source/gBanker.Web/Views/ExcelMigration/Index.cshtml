@@ -1,0 +1,351 @@
+﻿@model gBanker.Web.ViewModels.BuroCustomerInfoViewModel
+@{
+    ViewBag.Title = "Index";
+    ViewBag.Title = "Excel Migration";
+}
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var rowCount = Model.CheckStaffDataTable != null ? Model.CheckStaffDataTable.Count : 0 ;
+    WebGrid grid = new WebGrid(Model.CheckStaffDataTable, rowsPerPage: rowCount == 0 ? 1 : rowCount);
+    //Model.BranchCode = Session["BranchCode"].ToString() != null ? Session["BranchCode"].ToString() : null;
+    //Model.IsSuperAdmin = Convert.ToBoolean(Session["IsSuperAdmin"].ToString() != null ? Session["IsSuperAdmin"].ToString() : "false");
+     
+}
+
+
+<style>
+    .jtable > thead > tr {
+        height: 50px;
+    }
+</style>
+
+<style type="text/css">
+    .webgrid-table {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        font-size: 1.2em;
+        width: 100%;
+        display: table;
+        border-collapse: separate;
+        border: solid 1px #98BF21;
+        background-color: white;
+    }
+
+        .webgrid-table td, th {
+            border: 1px solid #98BF21;
+            padding: 3px 7px 2px;
+        }
+
+    .webgrid-header {
+        background-color: #A7C942;
+        color: #FFFFFF;
+        padding-bottom: 4px;
+        padding-top: 5px;
+        text-align: left;
+    }
+
+    .webgrid-footer {
+    }
+
+    .webgrid-row-style {
+        padding: 3px 7px 2px;
+    }
+
+    .webgrid-alternating-row {
+        background-color: #EAF2D3;
+        padding: 3px 7px 2px;
+    }
+</style>
+
+
+
+<h2>Verify Excel Data</h2>
+
+<script>
+
+    function GetBranchList() { // Load ddl
+        var ddlBranchCode = $("#ddlBranchCode");
+        // alert("JHU");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBranchNameList", "ExcelMigration", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (Result) {
+                ddlBranchCode.html('');
+                ddlBranchCode.append($('<option></option>').val("0").html("Please Select"));
+                $.each(Result, function (id, option) {
+                    ddlBranchCode.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+                var BranchCode = $("#BranchCode").val();
+                if (BranchCode != "")
+                    $("#ddlBranchCode").val(BranchCode);
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+
+    function GetSPNameList() { // Load ddl
+        var ddlSPName = $("#ddlSPName");
+       // alert("JHU");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSPNameList", "ExcelMigration", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (Result) {
+                ddlSPName.html('');
+                ddlSPName.append($('<option></option>').val("0").html("Please Select"));
+                $.each(Result, function (id, option) {
+                    ddlSPName.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+                var SpName = $("#SpName").val();
+                if (SpName != "")
+                    $("#ddlSPName").val(SpName);
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function ExecuteSP() {
+
+        var txtBranchCode       = $("#txtBranchCode").val();
+        var ddlSPName           = $("#ddlSPName option:selected").val();
+        var TillDate            = $("#TillDate").val();
+       
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("ExecuteSP", "ExcelMigration", "http")', //CreateWorkArea(string WorkAreaName)
+            data: {
+                txtBranchCode: txtBranchCode, ddlSPName : ddlSPName, TillDate : TillDate
+              },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "No Problem Found For This Check. ");
+
+                $("#btnCheck").show();
+                $("#btnDownload").show();
+              
+            },
+            error: function (request, status, error) {
+                ///$.alert.open("Message", "Data Not Saved");
+                $.alert.open("Message", "You provided wrong parameter for this check.");
+
+                $("#btnCheck").hide();
+                $("#btnDownload").hide();
+                
+                //$('#btnSave').attr("disabled", false);
+            }
+        });
+
+    }
+
+
+
+
+    $(document).ready(function () {
+
+        //$("#btnCheck").hide();
+        //$("#btnDownload").hide();
+
+        $("#btnExecute").click(function () {
+            ExecuteSP();
+
+             //Download Excel
+
+            //url = '/ExcelMigration/DownloadExcel?DownloadExcel=' + 1 ; //DownloadExcel
+            //window.open(url);
+
+
+        });
+
+        $("#btnDownload").click(function () {
+            ExecuteSP();
+            //Download Excel
+
+            url = '/ExcelMigration/DownloadExcel?DownloadExcel=' + 1 ; //DownloadExcel
+            window.open(url);
+
+
+        });
+
+        
+
+        @*// var BranchCode =  @Html.Raw(Json.Encode(ViewData["BranchCode"]));*@
+        $("#txtBranchCode").val($("#BranchCode").val());
+
+
+        GetSPNameList();
+
+        $("#ddlSPName").change(function () {
+            $("#SpName").val('');
+            var ddlSPName = $("#ddlSPName option:selected").val();
+            $("#SpName").val(ddlSPName);
+        });
+
+        GetBranchList();
+
+        $("#ddlBranchCode").change(function () {
+
+            $("#BranchCode").val('');
+            var ddlBranchCode = $("#ddlBranchCode option:selected").val();
+            $("#BranchCode").val(ddlBranchCode);
+            $("#txtBranchCode").val(ddlBranchCode);
+
+        });
+
+        @*var SolutionRequire = @Html.Raw(Json.Encode(ViewData["LoginOfficeName"]));
+        GetProblemTypeId();
+        var Email = @Html.Raw(Json.Encode(ViewData["OfficeEmail"]));
+
+        var OfficeMobile = @Html.Raw(Json.Encode(ViewData["OfficeMobile"]));
+        var employee = @Html.Raw(Json.Encode(ViewData["LoginEmployeeName"]));
+
+        var SameUser = @Html.Raw(Json.Encode(ViewData["SameUser"]));
+
+        $("#SolutionRequire").val(SolutionRequire);
+        $("#Email").val(Email);
+        $("#Mobile").val(OfficeMobile);
+        $("#User").val(employee);
+        $("#SolvedBy").val(employee);*@
+
+
+        $("#TillDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+
+       });
+       // $("#TillDate").datepicker(
+       //'setDate', new Date());
+
+        //GetSPNameList();
+
+
+    });// END Document Ready
+
+</script>
+<hr />
+
+
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Branch Code</label> @*LOAD FROM Session..*@
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "ddlBranchCode", @class = "form-control" })
+                <input type="hidden" id="txtBranchCode" />
+
+               @*<input type="text" id="txtBranchCode" readonly="readonly" class="form-control" />*@
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Checking Type</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "ddlSPName", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Till Date</label>
+            <div class="col-sm-8">
+                <input type="text" id="TillDate" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+ 
+ 
+@*<div class="row">
+        <textarea style="width: 95%;" name="title" id="title"></textarea>
+    </div>*@
+
+ 
+<br />
+<div class="row">
+   
+    &nbsp;
+   
+</div>
+
+@using (Html.BeginForm("Index", "ExcelMigration", FormMethod.Post, new { enctype = "multipart/form-data", @role = "form" }))
+{
+
+    @Html.HiddenFor(model => model.BranchCode)
+    @Html.HiddenFor(model => model.SpName)
+    <div class="row frmRow">
+        <input type="button" value="Check" id="btnExecute" class="btn btn-primary" /> &nbsp;&nbsp;
+        <button type="submit" class="btn btn-sm btn-success" id="btnCheck">View Data</button> &nbsp;&nbsp;
+        <button type="submit" class="btn btn-sm btn-success" id="btnDownload">Download</button>  
+        
+    </div>
+        @*<div class="row frmRow">
+                <div class="col-md-6 col-sm-6">
+                    <div class="item form-group">
+                        <label class="control-label col-md-4 input-sm">&nbsp;</label>
+                        <div class="col-md-8">
+                            <button type="submit" class="btn btn-sm btn-success" id="btnCheck">View Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+
+
+        }
+
+
+        @*<div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <div class="form-group form-action" style="padding:10px;margin:5px;">
+                            &nbsp;
+                            <input type="button" value="Note" id="AddNote" class="btn btn-success" />
+                            &nbsp;
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+        <hr />
+
+
+        <!-- End Of Note Div -->
+        @section Scripts {
+
+            @Scripts.Render("~/bundles/jqueryui")
+            @Scripts.Render("~/bundles/jtable")
+        }
+
+
+        @grid.GetHtml(tableStyle: "webgrid",
+                            alternatingRowStyle: "webgrid-alternating-row",
+                            headerStyle: "webgrid-header",
+                            footerStyle: "webgrid-footer",
+                            selectedRowStyle: "webgrid-selected-row",
+                            rowStyle: "webgrid-row-style"
+                            )

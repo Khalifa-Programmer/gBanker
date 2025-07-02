@@ -1,0 +1,138 @@
+﻿
+@{
+    ViewBag.Title = "Savings Ledger";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+
+    function GetMember() {
+        var ddlMember = $("#ddlMember");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberList", "LoanSavingLedger", "http")',
+            data: { centerId: $("#ddlCenter option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetCenter();
+        $("#ddlCenter").change(function () {
+            var ddlCenter = $("#ddlCenter option:selected").val();
+            if (ddlCenter > 0) {
+                GetMember();
+            }
+            else {
+                GetMember();
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var url;
+            var center = $("#ddlCenter").val();
+            var member = $("#ddlMember").val();
+            if (center > 0) {
+                if (member > 0)
+                    url = '/LoanSavingLedger/GenerateSavingLedgerReport?Qtype=2&Center=' + center + '&Member=' + member;
+                else if (member == 0)
+                    url = '/LoanSavingLedger/GenerateSavingLedgerReport?Qtype=1&Center=' + center + '&Member=0';
+            }
+            else if (center == 0) {
+                url = '/LoanSavingLedger/GenerateSavingLedgerReport?Qtype=0&Center=0&Member=0';
+            }
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+
+        //$("#btnView").click(function (e) {
+        //    e.preventDefault();
+        //    //var from_date = $("#txtFromDt").val();
+        //    var url;
+        //    var center = $("#ddlCenter").val();
+        //    if(center > 0 ){
+        //        url = '/LoanSavingLedger/GenerateSavingLedgerReport?Qtype=2&Center=' + center;
+        //    }
+        //    else if (center == 0) {
+        //        url = '/LoanSavingLedger/GenerateSavingLedgerReport?Qtype=1&Center=0';
+        //    }
+
+        //    window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        //});
+    });
+</script>
+<h2 class="page-title">Savings Ledger</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control" })
+
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

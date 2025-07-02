@@ -1,0 +1,160 @@
+﻿
+@{
+    ViewBag.Title = "PendingDisburseList";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetCenter();
+        GetProduct();
+
+        $("#txtDateFrom").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        $("#txtDateTo").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale"
+          });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            //var from_date = $("#txtFromDt").val();
+            var url;
+            var Datefrom = $("#txtDateFrom").val();
+            var DateTo = $("#txtDateTo").val();
+
+            var center = $("#ddlCenter").val();
+            var product = $('#ddlProd').val();
+            if(center == 0 && product ==0){
+                url = '/LoanSavingLedger/GeneratePendingDisburseListReport?Qtype=5&Center=0' + '&Datefrom=' + Datefrom + '&DateTo=' + DateTo + '&product=0';
+            }
+            else if (center == 0 && product > 0) {
+                url = '/LoanSavingLedger/GeneratePendingDisburseListReport?Qtype=6&Center=0' + '&Datefrom=' + Datefrom + '&DateTo=' + DateTo + '&product=' + product;;
+            }
+            else if (center > 0 && product == 0) {
+                url = '/LoanSavingLedger/GeneratePendingDisburseListReport?Qtype=7&Center=' + center + '&Datefrom=' + Datefrom + '&DateTo=' + DateTo + '&product=0';
+            }
+            else if (center > 0 && product > 0) {
+                url = '/LoanSavingLedger/GeneratePendingDisburseListReport?Qtype=8&Center=' + center + '&Datefrom=' + Datefrom + '&DateTo=' + DateTo + '&product=' + product;
+            }
+            //else if (center == 0) {
+            //    url = '/LoanSavingLedger/GenerateDisburseReport?Qtype=1&Center=0'+'&Datefrom=' + Datefrom + '&DateTo=' + DateTo;
+            //}
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+<h2 class="page-title">Pending Disburse List</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("DateFrom", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtDateFrom", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("DateTo", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxdateTo"].ToString(), new { @ID = "txtDateTo", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductList", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+

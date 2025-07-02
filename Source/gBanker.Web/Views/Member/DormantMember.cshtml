@@ -1,0 +1,119 @@
+﻿@{
+    ViewBag.Title = "Dormant Member List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<script type="text/javascript">
+    
+    function reloadGrid() {
+ 
+         
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#typeFilterColumn').val() });
+
+
+    }// END Reload Grid
+ 
+
+    $(document).ready(function () {
+         
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 1000,
+            sorting: true,
+            async: false,
+            defaultSorting: 'MemberID ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    //console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Member/GetDormantMemberList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                Memberid: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+
+                }, 
+                MemberCode: {
+                    title: 'MemberCode',
+                    width: '8%'
+
+                },
+                MemberName: {
+                    title: 'MemberName',
+                    width: '8%'
+
+                },
+                FatherName: {
+                    title: 'FatherName',
+                    width: '8%'
+
+                },
+                SamityCode: {
+                    title: 'SamityCode',
+                    width: '8%'
+
+                },
+                SamityName: {
+                    title: 'SamityName',
+                    width: '8%'
+
+                },
+                SavingsBalance: {
+                    title: 'SavingsBalance',
+                    width: '8%'
+
+                },
+                LastTransactionDate: {
+                    title: 'LastTransactionDate',
+                    width: '8%'
+
+                },
+                DormantDate: {
+                    title: 'DormantDate',
+                    width: '8%'
+
+                } 
+            }
+        });
+         
+        //END Start
+
+        reloadGrid();
+ 
+    });// End Document Ready
+</script>
+@using (Html.BeginForm())
+{ 
+
+    <h2 class="page-title"> Dormant Members </h2>
+    <div class="row">
+        <div id="grid"></div>
+    </div>
+ 
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

@@ -1,0 +1,186 @@
+﻿@model gBanker.Web.ViewModels.ParticularViewModel
+@{ 
+    ViewBag.Title = "Particular Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+        GetParticularList();
+        $("#btnReset").click(function () {            
+            $("#ParticularName").val('');
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+        });
+
+    });
+    function SaveParticular() {        
+        var particular = $("#ParticularName").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveParticular", "Budget", "http")',
+            data: { particular: particular },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);                    
+                    $("#ParticularName").val('');
+                    GetParticularList();
+                } else {
+                    $.alert.open("Error", data.message);                    
+                }
+            }
+
+        });
+    }
+    function GetParticularList() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Budget/GetParticularList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                ParticularId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },               
+                ParticularName: {                    
+                    title: 'Particular Name',
+                },
+                Edit: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="EditParticular(' + "'" + data.record.ParticularId + "'" + ',' + "'" + data.record.ParticularName + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';                        
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteParticular(' + data.record.ParticularId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    }
+    function EditParticular(ParticularId, ParticularName) {
+        debugger;
+        $("#ParticularId").val(ParticularId);
+        $("#ParticularName").val(ParticularName);
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+    function UpdateParticular() {
+        var particularId = $("#ParticularId").val();
+        var particularName = $("#ParticularName").val();
+        var objParticular = {
+            ParticularId: particularId,
+            ParticularName: particularName
+        }
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateParticular", "Budget", "http")',
+            data: JSON.stringify({ objParticular: objParticular }),
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);
+                    $("#ParticularName").val('');
+                    GetParticularList();
+                } else {
+                    $.alert.open("Error", data.message);
+                }
+            }
+
+        });
+    }
+    function DeleteParticular(ParticularId) {
+        if (confirm("Are you sure you want to delete this record?") == true) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteParticular", "Budget", "http")',
+                data: { ParticularId: ParticularId },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    $('#grid').jtable('load');
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+            return true;
+        }
+        else {
+            hiddenField.value = 'false';
+            return false;
+        }
+    }
+</script>
+
+<h2 class="page-title">Particular Create</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.ParticularId)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Particular Name</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.ParticularName, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>       
+    </div>   
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">
+                <input type="button" value="Save" id="btnSave" class="btn btn-primary" onclick="SaveParticular()" />
+                <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateParticular()" />
+                <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

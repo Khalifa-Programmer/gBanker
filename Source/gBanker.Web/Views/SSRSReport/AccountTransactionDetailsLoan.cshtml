@@ -1,0 +1,637 @@
+﻿
+@{
+    ViewBag.Title = "Account Transaction Details (Loan)";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+    function GetHO(ddlVal) {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlHO').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetZone(HO_val, ddlVal) {
+        var ddlZone = $("#ddlZone");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetZoneList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZone.html('');
+                $.each(data, function (id, option) {
+                    ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlZone').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetArea(HO_val, zone_val, ddlVal) {
+        var ddlArea = $("#ddlArea");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlArea.html('');
+                $.each(data, function (id, option) {
+                    ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+                if (ddlVal != null) {
+                    $('#ddlArea').val(ddlVal);
+
+                }
+                else {
+                    $("#ddlArea").prop('selectedIndex', 0);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetOffice(HO_val, zone_val, area_val, ddlVal) {
+        var ddlOffice = $("#ddlOffice");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlOffice').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function CheckOffcLevel() {
+        var offcLevel = $('#lblOffcLevel').html();
+        var firstLevel = $('#lblFirstLevel').html();
+        var secondLevel = $('#lblSecondLevel').html();
+        var thirdLevel = $('#lblThirdLevel').html();
+        var fourthLevel = $('#lblFourthLevel').html();
+        //alert(offcLevel);
+        if (offcLevel == 1) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+        }
+        if (offcLevel == 2) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            // GetArea(firstLevel, secondLevel, thirdLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+        }
+        if (offcLevel == 3) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+        }
+        if (offcLevel == 4) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+            $("#ddlOffice").prop("disabled", true);
+        }
+
+    }
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetMember() {
+        var ddlMember = $("#ddlMember");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberList", "GroupwiseReport", "http")',
+            @*url: '@Url.Action("GetMemberList", "GroupwiseReport", "http")',*@
+            data: { centerId: $("#ddlCenter option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.MemberID).html(option.MemberName));
+
+                    //$.each(data, function (id, option) {
+                    //    ddlMember.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        var actionName = "";
+        actionName = ($('#chkSavings').is(":checked") ? "GetProductListByMemberFromSavingTrx"
+            : $('#chkLoan').is(":checked") ? "GetProductListByMemberWithProcedure"
+            : "GetProductListByMemberWithProcedure");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: "/GroupwiseReport/" + actionName,
+            data: { Qtype: 1, MemberID: $("#ddlMember option:selected").val(), ProductID: 0 },
+            dataType: 'json',
+            async: true,
+            success: function (List_MemberwiseProduct) {
+                console.log(List_MemberwiseProduct);
+                ddlProd.html('');
+                $.each(List_MemberwiseProduct, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.ProductID).html(option.ProductName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetLoanTerm() {
+        var ddlLoanTerm = $("#ddlLoanTerm");
+        var actionName = "";
+        actionName = ($('#chkSavings').is(":checked") ? "GetNoOfAccountListByProductandMemberFromSavingTrx"
+            : $('#chkLoan').is(":checked") ? "GetLoanTermListByProductandMemberWithProcedure"
+            : "GetLoanTermListByProductandMemberWithProcedure");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            //url: '@Url.Action("GetLoanTermListByProductandMemberWithProcedure", "GroupwiseReport", "http")',
+            url: "/GroupwiseReport/"+actionName ,
+            //data: { Member_id: Member_id, center_id: center_id },
+            data: { Qtype: 2, MemberID: $("#ddlMember").val(), ProductID: $("#ddlProd").val() },
+            dataType: 'json',
+            async: true,
+            success: function (List_LoanTermMemberandProductwise) {
+                console.log(List_LoanTermMemberandProductwise);
+                ddlLoanTerm.html('');
+                if ($('#chkSavings').is(":checked")) {
+                    $.each(List_LoanTermMemberandProductwise, function (id, option) {
+                        ddlLoanTerm.append($('<option></option>').val(option.ProductID).html(option.NoOfAccount));
+                    });
+                }
+                else if ($('#chkLoan').is(":checked")) {
+                    $.each(List_LoanTermMemberandProductwise, function (id, option) {
+                        ddlLoanTerm.append($('<option></option>').val(option.ProductID).html(option.LoanTerm));
+                    });
+                }
+                else {
+                    $.each(List_LoanTermMemberandProductwise, function (id, option) {
+                        ddlLoanTerm.append($('<option></option>').val(option.ProductID).html(option.LoanTerm));
+                    });
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        CheckOffcLevel();
+        $("#loading").hide();
+
+        $("#txtFromDt,#txtToDt").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: "1920:2100"
+
+         });
+        $("#txtFromDt").datepicker(
+        'setDate', new Date());
+
+        $("#txtToDt").datepicker(
+        'setDate', new Date());
+        $("input[type='checkbox']").on("click", function (e) {
+            $("input[type='checkbox']").each(function () {
+                if (e.target.value != $(this).val())
+                    $(this).prop("checked", false);
+            });
+            GetProduct();
+            $("#lblTerm").text(e.target.value == "Savings" ? "Number of Account"
+                : "Loan Term");
+            
+        });
+
+        $("#ddlHO").change(function () {
+            var HO_val = $("#ddlHO").val();
+            if (HO_val > 0) {
+                var ddlZone = $("#ddlZone");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetZoneList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlZone.html('');
+                        $.each(data, function (id, option) {
+                            ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlZone").empty();
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlArea.html('');
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        $("#ddlOffice").empty();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetOfficeList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlOffice.html('');
+                        $.each(data, function (id, option) {
+                            ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+
+        $("#txtAccLevel").change(function () {
+            var accLevel = $("#txtAccLevel").val();
+            if (accLevel > 0) {
+                var ddlAccName = $("#ddlAccName");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccName", "SSRSReport", "http")',
+                    data: { accLevel: accLevel },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        debugger;
+                        ddlAccName.html('');
+                        $.each(data, function (id, option) {
+                            ddlAccName.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlAccName").empty();
+            }
+        });
+        GetCenter();
+        $("#ddlCenter").change(function () {
+            var ddlCenter = $("#ddlCenter option:selected").val();
+            if (ddlCenter > 0) {
+                GetMember();
+            }
+            else {
+                $("#ddlMember").empty();
+            }
+        });
+        $("#ddlMember").change(function () {
+            var ddlMember = $("#ddlMember option:selected").val();
+            if (ddlMember > 0) {
+                GetProduct();
+            }
+            else {
+                $("#ddlProd").empty();
+            }
+        });
+        $("#ddlProd").change(function () {
+            var ddlProd = $("#ddlProd option:selected").val();
+            if (ddlProd > 0) {
+                GetLoanTerm();
+            }
+            else {
+                $("#ddlLoanTerm").empty();
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            debugger;
+            var qType='';
+            //$("#divLoading").show();
+            if ($("#ddlHO").val() > 0) {
+                var office_id;
+                if ($("#ddlZone").val() > 0) {
+                    if ($("#ddlArea").val() > 0) {
+                        if ($("#ddlOffice").val() > 0) {
+                            office_id = $("#ddlOffice").val();
+                        }
+                        else {
+                            office_id = $("#ddlArea").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlZone").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlHO").val();
+                }
+
+                
+                    qType = 's';
+                
+                    qType = 'l';
+
+                var from_date = $("#txtFromDt").val();
+                var to_date = $("#txtToDt").val();
+                var centerID = $("#ddlCenter").val();
+                var product = $("#ddlProd").val();
+                var loanterm = $("#ddlLoanTerm").val();
+                var memberID = $("#ddlMember").val();
+                if (from_date != '' && to_date != '') {
+                    if (centerID > 0 && memberID > 0) {
+                        if ($('#chkSavings').is(":checked")){
+                            if (product > 0 && loanterm > 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsSavingsReport?Qtype=3&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=' + product + '&NoOfAccount=' + loanterm + '&DateFrom=' + from_date + '&DateTo=' + to_date;
+
+                            else if (product > 0 && loanterm == 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsSavingsReport?Qtype=2&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=' + product + '&NoOfAccount=0' + '&DateFrom=' + from_date + '&DateTo=' + to_date;
+
+                            else if (product == 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsSavingsReport?Qtype=1&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=0&NoOfAccount=0' + '&DateFrom=' + from_date + '&DateTo=' + to_date;
+                        }
+                        else if ($('#chkLoan').is(":checked")){
+                            if (product > 0 && loanterm > 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?Qtype=3&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=' + product + '&loanterm=' + loanterm + '&from_date=' + from_date + '&to_date=' + to_date;
+                            else if (product > 0 && noofaccount == 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?Qtype=2&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=' + product + '&loanterm=0' + '&from_date=' + from_date + '&to_date=' + to_date;
+                            else if (product == 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?Qtype=1&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=0&loanterm=0' + '&from_date=' + from_date + '&to_date=' + to_date;
+                        }
+                        else {
+                            if (product > 0 && loanterm > 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?Qtype=3&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=' + product + '&loanterm=' + loanterm + '&from_date=' + from_date + '&to_date=' + to_date;
+                            else if (product > 0 && noofaccount == 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?Qtype=2&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=' + product + '&loanterm=0' + '&from_date=' + from_date + '&to_date=' + to_date;
+                            else if (product == 0)
+                                url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?Qtype=1&Center=' + centerID + '&office_id=' + office_id + '&Member=' + memberID + '&ProductID=0&loanterm=0' + '&from_date=' + from_date + '&to_date=' + to_date;
+                        }
+                    }
+                    window.open(url , '_blank');
+                    //window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+                }
+                else {
+                    alert('Date field cannot be blank')
+                }
+
+
+                //var qType = $("#txtQType").val();
+                //if (qType == "") { qType = 0; }
+                //var url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?office_id=' + office_id + '&from_date=' + from_date + '&to_date=' + to_date + '&qType=' + qType;
+                //var url = '/SSRSReport/GenerateAccountTransactionDetailsLoan?office_id=' + office_id + '&from_date=' + from_date + '&to_date=' + to_date;
+
+                //$("#divLoading").hide();
+                //window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+        });
+    });
+</script>
+<h2 class="page-title">Account Transaction Details (Loan)</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Head Office", new { @class = "control-label" })
+                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control" })
+                    @Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
+                    @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
+                    @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
+                    @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
+                    @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Zone Office", new { @class = "control-label" })
+                    @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Area Office", new { @class = "control-label" })
+                    @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Office", new { @class = "control-label" })
+                    @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control" })
+                    @*@Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })*@
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <fieldset>
+                        <input type="checkbox" name="type" value="Savings" id="chkSavings" /> Savings&nbsp;
+                        <input type="checkbox" name="type" value="Loan" id="chkLoan" /> Loan
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductListByMember", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Loan Term", new { @class = "control-label",@id="lblTerm" })
+                    @Html.DropDownList("LoanTermList", null, new { @ID = "ddlLoanTerm", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        @*<div class="row" style="display:none">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        @Html.Label("Report", new { @class = "control-label" })
+                        @Html.DropDownList("QTypeList", null, new { @ID = "txtQType", @class = "form-control" })
+                    </div>
+                </div>
+            </div>*@
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="button" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,313 @@
+﻿@model gBanker.Web.ViewModels.getWriteOffListViewModel
+
+@{
+    ViewBag.Title = "WriteOff List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+   
+}
+
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    
+    function Message(LoanSummaryID, officeID, CenterCode, MemberCode, FirstName, ProductCode, LoanTerm, PrincipalLoan, LoanPaid, LoanBalance, IntCharge, intPaid, intBal, DisburseDatestg) {
+        alert("Already Processed.");
+    }
+
+
+    function Add(LoanSummaryID, officeID, CenterCode, MemberCode, FirstName, ProductCode, LoanTerm, PrincipalLoan, LoanPaid, LoanBalance, IntCharge, intPaid, intBal, DisburseDatestg)
+    {
+        var cmt = confirm('Do you want to proceed?');
+        if (cmt == true) {
+           
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("FinalApprove", "WriteOffList", "http")',
+                data: { LoanSummaryID: LoanSummaryID, officeID: officeID, CenterCode: CenterCode, MemberCode: MemberCode, FirstName: FirstName, ProductCode: ProductCode, LoanTerm: LoanTerm, PrincipalLoan: PrincipalLoan, LoanPaid: LoanPaid, LoanBalance: LoanBalance, IntCharge: IntCharge, intPaid: intPaid, intBal: intBal, DisburseDatestg: DisburseDatestg },
+                dataType: 'json',
+                async: true,
+                success: function (result) {
+
+                    var selectId = "#select" + LoanSummaryID;
+
+                    //$(selectId).addClass('fa fa-check-circle-o');
+
+                    var className = $(selectId).attr('class');
+
+                    if (className == "fa fa-circle-o") {
+                        $(selectId).removeClass('fa fa-circle-o').addClass('fa fa-circle');
+                    }
+                    else {
+                        $(selectId).removeClass('fa fa-check-circle-o').addClass('fa fa-circle-o');
+                    }
+                    // $(selectId).removeClass('fa fa-circle-o').addClass('fa fa-check-circle-o');
+
+                    // Remove OnClick if Selected
+                   var buttonId = "#button" + LoanSummaryID;
+                    $(buttonId).attr("onclick", "");
+                    return true;
+
+                },
+                error: function (request, status, error) {
+                    return true;
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });//END jQuery
+
+        }
+        else {
+            
+            return false;
+        }
+
+}// End Function
+             
+
+
+
+
+
+      
+
+  
+
+    function FinallySave()
+    {
+
+
+        var allTrx = new Object();
+
+        /*
+        Additional info while Insert Data
+        */
+        allTrx.center = $("#ddlCenter option:selected").val();
+        allTrx.member = $("#ddlMember option:selected").val();
+        allTrx.product = $("#ddlProd option:selected").val();
+        allTrx.noOfAccount = $("#ddlNoOfAccount option:selected").val();
+        /*END */
+
+        var json = JSON.stringify(allTrx);
+
+        $("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveCorrection", "SavingInstallmentCorrection", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+
+                $("#loading").hide();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+
+                alert("Data Saved Successfully.");
+
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                    $("#dvMessageDown").toggle('fade', 1500);
+                    setTimeout("hideMsg()", 1500);
+                }
+
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+            }
+        });
+
+
+
+
+
+
+    }
+
+
+    $(document).ready(function () {
+       
+
+        
+     
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/WriteOffList/GenerateWriteOffListFinal?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                CenterCode: {
+                    title: 'Center Code',
+                   // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                   // width: '10%'
+
+                },
+                FirstName: {
+                    title: 'Member Name',
+                   // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                   // width: '8%'
+                },
+                LoanTerm: {
+                    title: 'Loan Term',
+                    // width: '8%'
+                },
+
+                PrincipalLoan: {
+                    title: 'Principal Loan',
+                   // width: '8%'
+                },
+
+
+
+                LoanPaid: {
+                    title: 'Loan Paid',
+                   // width: '8%'
+                },
+
+                LoanBalance: {
+                    title: 'Loan Balance',
+                    // width: '8%'
+                },
+                IntCharge: {
+                    title: 'Int. Charge',
+                   // width: '8%'
+                },
+
+                intPaid: {
+                    title: 'Int. Paid',
+                   // width: '8%'
+                },
+                intBal: {
+                    title: 'Interest Balance',
+                    // width: '8%'
+                },
+                DisburseDatestg: {
+                    title: 'Disburse Date',
+                    // width: '12%'
+
+                },
+                //DisburseDate: {
+                //    title: 'Disburse Date',
+                //    displayFormat: 'dd-mm-yy',
+                //    type: 'date',
+                //}
+
+                EditLink: {
+                    title: "Add",
+                    sorting: false,
+                    display: function (data) {
+                       // return '<div class="text-center"><a href="#"'   + ' id = "select' + data.record.LoanSummaryID + '" OnClick="Add(' + data.record.LoanSummaryID + ',' + data.record.OfficeID + ')"><i class="fa fa-circle-o"></i></a></div>';
+                        if (data.record.isProcessed == true) {
+                            return '<div class="text-center"><a href="#"' + ' id = "button' + data.record.LoanSummaryID + '"  OnClick="Message(' + data.record.LoanSummaryID + ',' + data.record.OfficeID + ',\'' + data.record.CenterCode + '\',\'' + data.record.MemberCode + '\',\'' + data.record.FirstName + '\' ,\'' + data.record.ProductCode + '\', \'' + data.record.LoanTerm + '\' , \'' + data.record.PrincipalLoan + '\' , \'' + data.record.LoanPaid + '\' , \'' + data.record.LoanBalance + '\' , \'' + data.record.IntCharge + '\' , \'' + data.record.intPaid + '\' , \'' + data.record.intBal + '\' , \'' + data.record.DisburseDatestg + '\' )"><i ' + ' id = "select' + data.record.LoanSummaryID + '"  class="fa fa-circle"></i></a></div>';
+                        }
+                        else {
+                            return '<div class="text-center"><a href="#"' + ' id = "button' + data.record.LoanSummaryID + '"  OnClick="Add(' + data.record.LoanSummaryID + ',' + data.record.OfficeID + ',\'' + data.record.CenterCode + '\',\'' + data.record.MemberCode + '\',\'' + data.record.FirstName + '\' ,\'' + data.record.ProductCode + '\', \'' + data.record.LoanTerm + '\' , \'' + data.record.PrincipalLoan + '\' , \'' + data.record.LoanPaid + '\' , \'' + data.record.LoanBalance + '\' , \'' + data.record.IntCharge + '\' , \'' + data.record.intPaid + '\' , \'' + data.record.intBal + '\' , \'' + data.record.DisburseDatestg + '\' )"><i ' + ' id = "select' + data.record.LoanSummaryID + '"  class="fa fa-circle-o"></i></a></div>';
+                        }
+                    }
+                },
+ 
+            }
+        });
+        reloadGrid();
+         //$('#grid').jtable('load');
+       
+
+    }); // End of Document Ready
+    function reloadGrid() {
+        $('#grid').jtable('load', {});
+       // $('#grid').jtable('load', { DateFrom: $('#txtDateFrom').val(), MemberId: $('#MemberID').val()});
+    }
+    
+</script>
+
+
+<h2 class="page-title">Final Approved </h2>
+ 
+
+<div id="confirmDlg" style="display:none">
+    <div class="form-group">
+        <label id="lblMsg"></label>
+    </div>
+</div>
+
+<div id="grid"></div>
+
+
+ 
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

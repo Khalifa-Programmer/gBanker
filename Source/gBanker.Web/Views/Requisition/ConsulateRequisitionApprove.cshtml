@@ -1,0 +1,222 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style>
+    form {
+        margin: 20px 0;
+    }
+
+    select, input, button {
+        padding: 5px;
+    }
+
+        select, input[type=text], input[type=number], textarea {
+            width: 160px;
+            height: 35px;
+            padding: 5px;
+        }
+
+    div.jtable-main-container table.jtable tbody > tr.jtable-row-selected {
+        text-shadow: 0 !important;
+        color: black;
+    }
+</style>
+<script type="text/javascript">
+    $.ajax({
+        contentType: "application/json; charset=utf-8",
+        url: '/Requisition/GetConRequisitionWiseOffice',
+        type: "Get",
+        dataType: 'json',
+        async: true,
+        success: function (data) {
+            $("#ddlStore").html('').append("<option value=''>Select Office</option>")
+            if (data.Result == "OK")
+                for (var i = 0; i < data.Records.length; i++) {
+                    $("#ddlStore").append('<option value=' + data.Records[i].WarehouseID + '>'
+                        + data.Records[i].WarehouseName + '</option>')
+                }
+            else if (data.Result == "Error")
+                $.alert.open("Error", data.Message);
+            else if (data.Result == "Relogin")
+                location.reload();
+        },
+        error: function (data) {
+            $.alert.open("Error", data.message);
+        }
+    });
+    $(document).ready(function () {
+
+        function fnLoadGrid(storeid) {
+            $("#tbl").html('')
+            var data = GenerateAjaxRequist('/Requisition/GetConsulateRequisitionApprove', JSON.stringify({ requestStorID: storeid }), "POST")
+            var distrinctRequsitionNo = Array.from(new Set(data.Records.map(x=>x.RequsitionNo)));
+            var html = ""
+            distrinctRequsitionNo.forEach(function (r) {
+
+                var fltObj = data.Records.filter(x=>x.RequsitionNo === r);
+
+                //$("#tbl").append(
+                html += "<tr><td><table>" +
+                "<tr><td colspan='5'><b>RequsitionNo:" + r + "</b></td></tr>" +
+                "<tr><td><b>Item</b></td><td><b>RequestQty</b></td><td><b>ApprovedQty</b></td>" +
+                "<td><b>StockBalance</b></td><td><b>MinStockLevel</b></td></tr>";
+
+                fltObj.forEach(function (obj) {
+                    html += "<tr><td><input type='hidden' name='hdnDetail' value='" + obj.ConsulateDetailID + "'/><input type='hidden' name='hdnItem' value='" + obj.ItemID + "'/>" + obj.ItemName + "(" + obj.ItemCode + ")" +
+                        "</td><td>" + obj.ApprovedQty + "</td><td><input type='number' value='" + obj.ApprovedQty + "' style='width:85px'/>" +
+                        "</td><td>" + obj.StockBalance + "</td><td>" + obj.MinStockLevel + "</td></tr>";
+                });
+                html += "<tr><td><button type='button' name='btn' class='btn btn-success'>Approve</button> </td><td colspan='4'></td></tr>";
+                html += "</table></td></tr>";
+            });
+            $("#tbl").append(html)
+            $("button[name='btn']").click(function (e) {
+                //debugger
+                //console.log($(this).parent().closest('table').html())
+                $("#ifrReport").attr('src', '')
+                //$("#ifrReportv").attr('src', '')
+                if ($("#ddlStore").val() && $("#txtApprovedDate").val()) {
+                    var rowincrement = 1
+                    var tbl = $(this).parent().closest('table').find('tbody tr')
+                    var len = tbl.length;
+                    var requNo = ''
+
+                    jsonObj = [];
+                    //$(this).parent().closest('table').find('tbody tr')
+                    tbl.each(function (e) {
+
+                        if (rowincrement == 1)
+                            requNo = $(this).find('td').text().replace('RequsitionNo:', '');
+
+                        else if (rowincrement == 2) {/* Header*/ }
+                        else if (rowincrement < len) {
+                            //debugger
+                            var mQty = parseInt($(this).find('td').eq(2).find('input').val())
+                            var sbQty = parseInt($(this).find('td').eq(3).text())
+                            var minQty = parseInt($(this).find('td').eq(4).text())
+                            if (sbQty - mQty < minQty) {
+
+                                $.alert.open("Error", "Quantity Check");
+                                return false;
+                            }
+                            item = {}
+                            item["ConsulateDetailID"] = $(this).find('td').eq(0).find('input[name="hdnDetail"]').val();
+                            item["ItemID"] = $(this).find('td').eq(0).find('input[name="hdnItem"]').val();
+                            item["ApproveQty"] = $(this).find('td').eq(1).text();
+                            item["ModifyQty"] = $(this).find('td').eq(2).find('input').val();
+                            item["StockBalance"] = $(this).find('td').eq(3).text();
+                            item["MinStockLevel"] = $(this).find('td').eq(4).text();
+                            jsonObj.push(item);
+                        }
+                        else if (rowincrement == len) {/*Button*/ }
+
+                        rowincrement++
+                    });
+                    console.log(jsonObj)
+                    dataObject = {
+                        RequsitionNo: requNo,
+                        ApproveStoreID: $("#ddlStore").val(),
+                        ApproveDate: $("#txtApprovedDate").val(),
+                    };
+                    if (jsonObj.length > 0) {
+                        //debugger
+                        var data = GenerateAjaxRequist('/Requisition/ConsulateRequisitionApproved',
+                        JSON.stringify({ vmObj: dataObject, vdObj: jsonObj }), "POST");
+                        $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/ItemXStoreDetailsReport?masterID=" + data.VID + "&type=O")
+                        //$("#ifrReportv").attr('src', "http://" + window.location.host + "/InventoryReport/VoucherReport?masterID=" + data.VID + "")
+                        $("#ddlStore").val('')
+                        $("#tbl").html('')
+                    }
+                }
+                else
+                    $.alert.open("Error", "Date & Request Store check");
+
+                //fnLoadGrid($("#ddlStore").val())
+            });
+        }
+        $("#ddlStore").change(function () {
+            $("#ifrReport").attr('src', '')
+            //$("#ifrReportv").attr('src', '')
+            $("#tbl").html('')
+            if ($(this).val()) {
+                fnLoadGrid($(this).val())
+                //NumericTextboxOnly("input[type = 'number']");
+            }
+            else $("#tbl").html('')
+            //
+        });
+
+        $("#txtApprovedDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        //$("#txtApprovedDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+        $("#txtApprovedDate").val('@ViewBag.TransactionDate')
+    });
+
+</script>
+@if (ViewBag.OfficeLevel == 2 | ViewBag.OfficeLevel == 3)
+{
+    @Html.ActionLink("Requisition Send", (ViewBag.OfficeLevel == 1 ? "ConsulateRequisitionDetails"
+                            : ViewBag.OfficeLevel == 2 ? "ConsulateRequisitionForZone"
+                            : ViewBag.OfficeLevel == 3 ? "ConsulateRequisitionForArea"
+                            : "")
+                            , "Requisition", null, new { @class = "btn btn-warning btn-sm pull-right" })
+}
+
+@if (ViewBag.OfficeLevel == 1 | ViewBag.OfficeLevel == 2)
+{
+    @Html.ActionLink("Back", "ConsulateRequisitionDetails", "Requisition", null, new { @class = "btn btn-warning btn-sm pull-right" })
+
+    <h2 class="page-title">Requisition Approve</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <table style="font-size:medium">
+                <tr>
+                    <td>Approve Date</td>
+                    <td>:</td>
+                    <td>
+                        <input type="text" id="txtApprovedDate" class="form-control" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Request Office</td>
+                    <td>:</td>
+                    <td><select id="ddlStore"> </select></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <br />
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <table id="tbl"></table>
+        </div>
+
+    </div>
+    <br />
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <iframe id="ifrReport" width="520" height="300" frameBorder="0"></iframe>
+        </div>
+        @*<div class="col-md-6">
+            <iframe id="ifrReportv" width="520" height="300" frameBorder="0"></iframe>
+        </div>*@
+    </div>
+}
+else
+{
+    <h2>Your Office is not Authorized</h2>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}

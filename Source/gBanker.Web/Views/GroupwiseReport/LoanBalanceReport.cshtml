@@ -1,0 +1,120 @@
+﻿@{
+    ViewBag.Title = "Loan Balance Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    function FnMainProductList() {
+
+        var ddlMainProduct = $("#ddlMainProduct");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMainProductList", "KhatwaryReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlMainProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlMainProduct.append($('<option></option>').val(option.MainProductCode).html(option.MainItemName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        $("#txtToDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        FnMainProductList();
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var url;
+            if (DateFrom != '' && DateTo != '') {
+
+                if ($("#ddlMainProduct option:selected").val() != '0')
+                {
+                    var url = '/GroupwiseReport/GenerateLoanBalanceReport?MainProductCode=' + $("#ddlMainProduct option:selected").val() + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo + '&Qtype=1';
+
+                }
+                else
+                    var url = '/GroupwiseReport/GenerateLoanBalanceReport?MainProductCode=' + $("#ddlMainProduct option:selected").val() + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo + '&Qtype=2';
+
+
+               // var url = '/GroupwiseReport/GenerateLoanBalanceReport?DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+            else {
+                alert('Date field cannot be blank')
+            }
+        });
+    });
+</script>
+<h2 class="page-title">Loan Balance Report</h2>
+@using (Html.BeginForm())
+{   
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Main Product", new { @class = "control-label" })
+                @Html.DropDownList("MainProductView", null, new { @id = "ddlMainProduct", @class = "form-control" })
+                @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+            </div>
+        </div>
+        <div class="col-md-8">&nbsp;</div>
+    </div>
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="button" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+
+
+

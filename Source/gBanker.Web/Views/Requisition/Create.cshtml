@@ -1,0 +1,394 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style>
+    form {
+        margin: 20px 0;
+    }
+
+    select, input, button {
+        padding: 5px;
+    }
+
+        select, input[type=text], input[type=number], textarea {
+            width: 160px;
+            height: 35px;
+            padding: 5px;
+        }
+
+    #tblAdd {
+        width: 100%;
+        margin-bottom: 20px;
+        border-collapse: collapse;
+    }
+
+        #tblAdd td, #tblAdd th {
+            padding: 2px 2px;
+        }
+
+        #tblAdd th {
+            text-align: center;
+        }
+
+        #tblAdd tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+    .dvpInline {
+        display: flex;
+        justify-content: center;
+    }
+
+    .dvInline {
+        display: inline;
+    }
+
+    #tblAdd {
+        table-layout: fixed;
+        /*width:100px;*/
+    }
+
+        #tblAdd td:not(:first-child) {
+            overflow-x: auto;
+            overflow-y: auto;
+            white-space: nowrap;
+            max-width: 40px;
+        }
+
+        #tblAdd thead tr th:first-child,
+        #tblAdd tbody tr td:first-child {
+            width: 50px;
+        }
+
+        #tblAdd thead tr th:last-child,
+        #tblAdd tbody tr td:last-child {
+            width: 80px;
+        }
+</style>
+
+<script type="text/javascript">
+    GetRequsitionNo();
+    function GetRequsitionNo() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            //url: '/Requisition/GetRequsitionNo',
+            url: '/Common/NoGenerate?prefix=RC',
+            type: "Get",
+            dataType: 'json',
+            success: function (data) {
+                if (data.status == 1)
+                    $("#lblRequsition").text(data.Result);
+                else
+                    location.reload(true);
+            },
+            error: function (data) {
+                $.alert.open("Error", data.message);
+            }
+        });
+    }
+    $(document).ready(function () {
+        var data = GenerateAjaxRequist('/Common/GetAllCategory', null, "POST")
+        $("#Category").html("");
+        $("#Category").append("<option value=''>Select Catagory</option>")
+        for (var i = 0; i < data.Records.length; i++) {
+            $("#Category").append('<option value=' + data.Records[i].CategorySubCategoryID + '>' +
+                data.Records[i].CategorySubCategoryName + '</option>')
+        }
+        $("#Category").change(function () {
+            $("#txtItem").val('');
+            $("#hdnItem").val('');
+        //    ////////// Item
+        //    $("#ddlItem").html("");
+
+        //    $("#ddlItem").append("<option value=''>Select Item</option>");
+        //    if ($(this).val()) {
+        //        var data = GenerateAjaxRequist('/Common/GetItemXCategory?categoryid=' + $(this).val() + '', null, "POST")
+        //        for (var i = 0; i < data.Records.length; i++) {
+        //            $("#ddlItem").append("<option value='" + data.Records[i].ItemID + "'>" + data.Records[i].ItemName + "</option>")
+        //        }
+        //    }
+
+        //    ////////// Item
+        })
+        jQuery("#txtItem").on('input propertychange paste', function () {
+
+            var availableTags = [
+            ];
+            if ($(this).val()  && $("#Category").val()) {
+                if ($(this).val().length > 1) {
+                    var param = { categoryID: $("#Category").val(), item: $(this).val() };
+                    var data = GenerateAjaxRequist('/Common/GetItemSearchXCategory', param, "GET")
+                    //debugger
+                    if (data.Message == "LogOut")
+                        location.reload(true);
+                    else {
+                        for (var i = 0; i < data.Records.length; i++) {
+                            availableTags.push(data.Records[i])
+                        }
+                    }
+                }
+            }
+            else {
+                $(this).val('')
+                $("#hdnItem").val('')
+            }
+
+            $("#txtItem").autocomplete({
+                source: availableTags,
+                select: function (event, ui) {
+                    param = JSON.stringify({ categoryID: $("#Category").val(), itemCode: ui.item.label.split('~')[0], itemName: ui.item.label.split('~')[1] });
+                    data = GenerateAjaxRequist('/Common/GetItemIDXCategoryANDItemInfo', param, "POST")
+                    $("#hdnItem").val(data.Records.ItemID)
+                    data = GenerateAjaxRequist('/Store/GetStockXItem?itemID=' + data.Records.ItemID + '', null, "Get")
+                    //$.alert.open("Message", "Store Quantity: " + data);
+                    $('#lblItemPreviousTotal').text("Store Quantity: " + data).fadeTo(2000, 500).slideUp(500, function () {
+                        $("#lblItemPreviousTotal").slideUp(500);
+                    });
+                }
+            });
+        });
+        NumericTextboxOnly("#txtQty");
+        //$("#hdnItem").change(function () {
+        //    if ($(this).val() > 0) {
+        //        var data = GenerateAjaxRequist('/Store/GetStockXItem?itemID=' + $(this).val() + '', null, "Get")
+        //        //$.alert.open("Message", "Store Quantity: " + data);
+        //        $('#lblItemPreviousTotal').text("Store Quantity: " + data).fadeTo(2000, 500).slideUp(500, function () {
+        //            $("#lblItemPreviousTotal").slideUp(500);
+        //        });
+        //    }
+            
+        //});
+        $(".add-row").click(function () {
+            var status = 0;
+            if ($("#hdnItem").val() && $("#txtQty").val()) {
+                var itemAddStatus = false;
+                if($("#txtQty").val())
+                {
+                    var qty = $("#txtQty").val();
+                    if(qty==0)
+                    {
+                        itemAddStatus = false;
+                        $.alert.open("Warning", "Quantity is required");
+                        $("#txtQty").focus();
+                        return false;
+                    }
+                }
+
+                if ($("#tblAdd tbody tr").html() == "" || $("#tblAdd tbody tr").html() === undefined)
+                    itemAddStatus = true;
+                else {
+                    $("#tblAdd tbody tr").each(function () {
+                        if ($("#hdnItem").val() == $(this).closest('tr').find('td').eq(2).find('input:hidden').val()) {
+                            itemAddStatus = false;
+                            $.alert.open("Error", "Duplicate Item not allow");
+                            return false;
+                        }
+                        else
+                            itemAddStatus = true;
+                    });
+                }
+                if (itemAddStatus) {
+                    var markup = "<tr><td style=\"text-align: center;\"><input type='checkbox' name='record'></td>" +
+                                    "<td>" + $("#Category option:selected").text() + "</td>"+
+                                    "<td><input name='hdnRItem' type='hidden' value='" +
+                                   $("#hdnItem").val() + "'/>" + $("#txtItem").val() +
+                                   "</td><td style='text-align: center;'>" + $("#txtQty").val() +
+                                   "</td><td style='text-align: center;'>" + $("#txtremarks").val() + "</td><td></td></tr>";
+                    $("#tblAdd tbody").append(markup);
+
+                    $("#txtQty").val('');
+                    $("#txtItem").val('');
+                    $("#hdnItem").val('');
+                    $("#txtremarks").val('');
+                }
+                //
+            }
+            else $.alert.open("Warning", "Required Field Check");
+        });
+
+        // Find and remove selected table rows
+        $(".delete-row").click(function () {
+            $("#tblAdd tbody").find('input[name="record"]').each(function () {
+                if ($(this).is(":checked"))
+                    $(this).parents("tr").remove();
+            });
+            $("#chkAll").prop('checked', false);
+        });
+
+        $("#chkAll").click(function () {
+            var status = $(this).prop("checked")
+            $("input[type=checkbox][name=record]").each(function () {
+                $(this).prop('checked', status);
+            });
+        });
+        var data = GenerateAjaxRequist('/Store/GetStoreInfoXOffice', null, "Get");
+        debugger;
+        var str = "";
+        for (var i = 0; i < data.Records.length; i++) {
+            if ((i + 1) < data.Records.length)
+                str = str + data.Records[i].WarehouseName + ", ";
+            else
+                str = str + data.Records[i].WarehouseName;
+        }        
+        $("#lblOffice").text(str);
+        $("#hdnFromStoreID").val(data.Records[0].WarehouseID)
+        
+        // drop down
+        data = GenerateAjaxRequist('/Store/GetStoreOfficeXMapping', null, "Get");
+        for (var i = 0; i < data.Records.length; i++) {
+            //alert(data.Records.length)
+            $("#ddlStore").append('<option value=' + data.Records[i].WarehouseID + '>'
+                + data.Records[i].WarehouseName + '</option>')
+        }
+
+       
+        
+        // Drop down
+
+        $("#btnSave").click(function () {
+            $("#ifrReport").attr('src','')
+            //$("#ifrReport").attr('src', "http://" + window.location.host + "/Requisition/RequsitionReport?status=c&rmID="+15+"")
+            //return;
+            
+            jsonObj = [];
+            if ($("#txtRequsitionDate").val()) {
+               // debugger;
+                $("#tblAdd tbody tr").each(function () {
+                    item = {}
+                    item["ItemID"] = $(this).closest('tr').find('td').eq(2).find('input:hidden').val();
+                    item["RequestQty"] = $(this).closest('tr').find('td').eq(3).html();
+                    item["Remarks"] = ($(this).closest('tr').find('td').eq(4).html() === null?'':$(this).closest('tr').find('td').eq(3).html());
+                    jsonObj.push(item);
+                });
+                dataObject = {
+                    FromStoreID: $("#hdnFromStoreID").val(),
+                    RequsitionNo: $("#lblRequsition").text(),
+                    ToStoreID: $("#ddlStore").val(),
+                    RequsitionDate: $("#txtRequsitionDate").val(),
+                    RequsitionStatus: 'p'
+                }
+               
+                if (jsonObj) {
+                    var data = GenerateAjaxRequist('/Requisition/CreateRequsition', 
+                        JSON.stringify({ mObj: dataObject, dObj: jsonObj }), "POST");
+                    if (data.Result == "Login Fail") {
+                        $.alert.open(data.Result, data.message);
+                        location.reload(true);
+                    }
+                    else if (data.Result == "Fail")
+                        $.alert.open(data.Result, data.message);
+                    else if (data.Result == "Success") {
+                        $.alert.open(data.Result, data.message);
+                        GetRequsitionNo();
+                        $("#tblAdd tbody").find('input[name="record"]').each(function () {
+                            $(this).parents("tr").remove();
+                        });
+                        $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/RequsitionReport?status=p&rmID=" + data.RmID + "")
+                    }
+                }
+                else $.alert.open("Error", "Item Not Found");
+            }
+            else $.alert.open("Error", "Date Required");
+        });
+        $("#txtRequsitionDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale"
+       });
+        
+        //$("#txtRequsitionDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+        $("#txtRequsitionDate").val('@ViewBag.TransactionDate')
+    });
+</script>
+
+@if (ViewBag.OfficeLevel == 2 | ViewBag.OfficeLevel == 4)
+{
+@Html.ActionLink("Back", "Index", "Requisition", null, new { @class = "btn btn-warning btn-sm pull-right" })
+<h2 class="page-title">Add Requisition</h2>
+<div class="form-horizontal">
+    <table style="font-size:medium">
+        <tr>
+            <td>Requisition No</td>
+            <td>:</td>
+            <td><label class="control-label" id="lblRequsition">  </label>
+            <input type="hidden" id="hdnFromStoreID" /></td>
+        </tr>
+        <tr>
+            <td>Store</td>
+            <td>:</td>
+            <td><label class="control-label" id="lblOffice">  </label></td>
+        </tr>
+        <tr>
+            <td>Request Store</td>
+            <td>:</td>
+            <td><select id="ddlStore"> </select></td>
+        </tr>
+        <tr>
+            <td>Requisition Date</td>
+            <td>:</td>
+            <td><input type="text" id="txtRequsitionDate" class="form-control" /></td>
+        </tr>
+    </table>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="tblAdd">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Category</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Remarks</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th><select id="Category"></select></th>
+                    <th><input type="text" id="txtItem" autocomplete="off" />
+                    <input type="hidden" id="hdnItem" />
+                    @*<select id="ddlItem"></select>*@
+                    <br /><lable id="lblItemPreviousTotal" style="color:red"></lable></th>
+                    <th><input type="number" id="txtQty" placeholder="Quantity" min="0"></th>
+                    <th><textarea id="txtremarks" style="resize:none;height:30px"></textarea></th>
+                    <th>
+                        <div class="dvpInline">
+                            <div class="dvInline"><button type="button" class="add-row btn btn-info"><i class="fa fa-plus"></i></button></div>
+                            <div class="dvInline"><button type="button" class="delete-row btn btn-warning"><i class="fa fa-trash-o"></i></button></div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6" style="text-align:right;">
+                        <button id="btnSave" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<br />
+<br />
+<div class="row">
+    <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <iframe id="ifrReport" width="900" height="300" frameBorder="0"></iframe>
+        </div>
+    <div class="col-md-1"></div>
+    </div>
+}
+else
+{
+    <h2>Your Office is not Authorized</h2>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

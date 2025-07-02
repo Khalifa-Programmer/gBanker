@@ -1,0 +1,272 @@
+﻿@{
+    ViewBag.Title = "Bkash Transaction Log";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .ui-autocomplete {
+        z-index: 999999 !important;
+    }
+</style>
+<link href="~/Content/jtable-custom.css" rel="stylesheet" />
+<script type="text/javascript">
+         
+    
+    
+    function GetTotal() {  
+         
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetTotal", "BkashTransactionLog", "http")',  //GetWorkAreaList(string WorkAreaId, int jtStartIndex, int jtPageSize, string jtSorting, string filterColumn, string filterValue)
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                // alert(data);
+                var v = 'Total Amount: ' + data;
+                $('#total').val(v)
+                 
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                clear();
+            }
+        });
+    }
+
+
+
+
+$(document).ready(function () {  // Document Ready
+     
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                 
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/BkashTransactionLog/GetBkashTransactionLog?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+
+                OfficeCode: {
+                    title: 'Office Code',
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Center Code',
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    create: false,
+                    edit: false
+                },
+
+                MemberName: {
+                    title: 'Member Name',
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    create: false,
+                    edit: false
+                },
+                PartialAmount: {
+                    title: ' Amount',
+                    create: false,
+                    edit: true
+                },
+                LoanCloseDate: {
+                    title: 'Bill Month',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false,
+                    edit: false
+                },
+                InActiveDate: {
+                    title: 'Create Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false,
+                    edit: false
+                }
+                 
+            },
+            recordsLoaded: function (event, data) {
+                var pagenumber = $('.jtable-goto-page select option:selected').val();
+                var pagesize = $('.jtable-page-size-change select option:selected').val();
+                var SrNo = pagesize * pagenumber - pagesize;
+                if (data.records) {
+                    $.each(data.records, function (index, record) {
+                        var row = $('#grid').jtable('getRowByKey', record.MemberID);
+                        SrNo++;
+                        row.find('td:eq(0)').text(SrNo);
+                    });
+                }
+            }
+        });
+         
+      //  reloadGrid();
+
+        
+
+
+        //inside Document Ready
+        $("#FromDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1920:2050"
+
+            });
+
+
+        $("#ToDate").datepicker(
+              {
+                  dateFormat: "dd-M-yy",
+                  showAnim: "scale",
+                  changeMonth: true,
+                  changeYear: true,
+                  yearRange: "1920:2100"
+
+              });
+        //$("#ToDate").datepicker(
+        //'setDate', new Date());
+
+
+
+     //   gBankerDatePicker("accountDate");
+
+    });
+
+    function reloadGrid() {
+
+        $("#loading").show();
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+        $("#loading").hide();
+    }
+
+    function reloadGridSubmit() {
+
+        if ($("#FromDate").val() == "") {
+            alert("Please Give FromDate Date.");
+            return false;
+        }
+        if ($("#ToDate").val() == "") {
+            alert("Please Give ToDate Date.");
+            return false;
+        }
+
+        else if ($('#ProdType :selected').val() == 0 || $('#ProdType :selected').val() == '0') {
+            alert("Please Select Product Type.");
+            return false;
+        }
+        else {
+
+            $("#loading").show();     
+            $('#grid').jtable('load', { FromDate: $("#FromDate").val(), ToDate: $("#ToDate").val(),ProdType: $('#ProdType :selected').val()  , filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+            $("#loading").hide();
+            GetTotal();
+        }
+
+
+    }
+
+
+
+
+
+</script>
+
+
+<h2 class="page-title"> </h2>
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">From Date:</label>
+    </div>
+    <div class="col-md-2">
+        <input type="text" placeholder="From Date" id="FromDate" class="form-control" />
+    </div>
+
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">To Date:</label>
+    </div>
+    <div class="col-md-2">
+        <input type="text" placeholder="To Date" id="ToDate" class="form-control" />
+    </div>
+    
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;"> Product Type </label>
+    </div>
+    <div class="col-md-2">
+        <select id="ProdType" class="form-control">
+            <option value="0">Please Select</option>
+            <option value="L">Loan</option>
+            <option value="S">Savings</option>
+            <option value="B">Both</option>
+        </select>
+    </div>
+     
+     
+    <div class="col-md-3">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGridSubmit();" />
+    </div>
+</div>
+
+<div class="row" >
+
+   
+
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+<div class="row">
+     
+       <input type="text" style="text-align: right; color:darkolivegreen; font-size:30px;" class="form-control" readonly="readonly" id="total" />
+    
+</div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

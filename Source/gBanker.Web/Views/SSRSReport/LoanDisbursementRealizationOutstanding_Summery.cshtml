@@ -1,0 +1,317 @@
+﻿@model gBanker.Web.ViewModels.SSRSReportViewModel
+@{
+    ViewBag.Title = "LoanDisbursementRealizationOutstandingSummery";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+<!-- kendo csss -->
+<link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+<link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+<!-- end kendo csss -->
+<!-- kendo JS -->
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+<!-- kendo Js -->
+
+
+<script type="text/javascript">
+    var checkedIds = {};
+    $(document).ready(function () {
+        $("#txtDateFrom").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1920:2100"
+            });
+        $("#txtDateFrom").datepicker(
+            'setDate', new Date());
+
+        $("#txtDateTo").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1920:2100"
+            });
+        $("#txtDateTo").datepicker(
+            'setDate', new Date());
+
+        //$("#PeriodType").change(function () {
+        //    var periodType = $("#PeriodType").val();
+        //    if (periodType == 2 || periodType == 4) {
+        //        $("#hideDateTo").show();
+        //    } else {
+        //        $("#hideDateTo").hide();
+        //    }
+        //});
+        $("#FilterBy").change(function () {
+            GetFilteredOfficeList();
+        });
+
+        $("#btnView").click(function (e) {
+            debugger;
+            var reportType = $("#ReportType").val();
+            var periodType = $("#PeriodType").val();
+            var from_date = $("#txtDateFrom").val();
+            var to_date = $("#txtDateTo").val();
+            var product = $("#Product").val();
+
+            //var from_date = new Date(); //$("#txtDateFrom").val();
+            //var to_date = new Date();
+
+            //if (periodType == 2 || periodType == 4) {
+            //    from_date = $("#txtDateFrom").val();
+            //    to_date = $("#txtDateTo").val();
+            //}
+            //else {
+            //    from_date = $("#txtDateFrom").val();
+            //}
+
+                var And_Condition = "";
+                var AllOffice = 0;
+            var AccLevel = 3;
+
+
+            var office_id = 2;
+            var officeid_Multi = '2';
+
+
+                var url = '/SSRSReport/GenerateDisbursementRealizationOutstandingSummery?reportType=' + reportType + '&from_date=' + from_date + '&to_date=' + to_date + '&office_id=' + office_id + '&PeriodType=' + periodType + '&officeid_Multi=' + officeid_Multi + '&product=' + product ;
+                //$("#divLoading").hide();
+                //window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+                window.open(url, '_blank');
+        });
+
+    });
+    function GetFilteredOfficeList() {
+            var filterByOffice = $("#FilterBy").val();
+            var dataSource = new kendo.data.DataSource({
+                type: "aspnetmvc-ajax",
+                pageSize: 350,
+                serverPaging: true,   // enable server paging
+                serverSorting: true,
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetFilteredOfficeList", "SSRSReport", "http")',
+                        dataType: "json",
+                        data: { filterByOffice: filterByOffice },
+                    }
+                },
+                schema: {
+
+                    data: "data", // records are returned in the "data" field of the response
+                    total: "total", // total number of records is in the "total" field of the response
+                },
+                pageSize: 25
+            });
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 590,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                //selectable: "multiple",
+                resizable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                columns: [
+                {
+                    title: 'Select All',
+                    headerTemplate: "<input type='checkbox' id='header-chb' class='k-checkbox header-checkbox'><label class='k-checkbox-label' for='header-chb'></label>",
+                    template: function (dataItem) {
+                           if (dataItem.IsChecked == 1) {
+                               return "<input type='checkbox' checked id='" + dataItem.OfficeID + "' class='k-checkbox row-checkbox'><label class='k-checkbox-label' for='" + dataItem.OfficeID + "'></label>"
+                           } else {
+                               return "<input type='checkbox' id='" + dataItem.OfficeID + "' class='k-checkbox row-checkbox'><label class='k-checkbox-label' for='" + dataItem.OfficeID + "'></label>"
+                           }
+                       },
+                    width: "2%"
+                },
+                {
+                    field: "rowSl",
+                    title: 'SL',
+                    width: "4%",
+                    filterable: false,
+                    columnMenu: false,
+                    groupable: false,
+                    reorderable: false,
+                    sortable: false
+                },
+                {
+                    field: "OfficeName",
+                    title: "Office Name",
+                    filterable: true,
+                    width: "30%",
+                },
+                ],
+                dataBound: function (e) {
+
+                var columns = e.sender.columns;
+                var dataItems = e.sender.dataSource.view();
+                for (var j = 0; j < dataItems.length; j++) {
+                    var IsChecked = dataItems[j].get("IsChecked");
+                    if (IsChecked === 1) {
+                        var row = e.sender.tbody.find("[data-uid='" + dataItems[j].uid + "']");
+                        var checked = true,
+                          row = row.closest("tr"),
+                          grid = $("#grid").data("kendoGrid"),
+                          dataItem = grid.dataItem(row);
+
+                        checkedIds[dataItem.id] = checked;
+                        if (checked) {
+                            row.addClass("k-state-selected");
+                        } else {
+                            row.removeClass("k-state-selected");
+                        }
+                        var checkedAmount = countCheckedAmount();
+                        $("#totalCheckedAmt").html(checkedAmount)
+                    } else {
+
+                    }
+                }
+            }
+            }).data("kendoGrid");
+        grid.table.on("click", ".k-checkbox", selectRow);;
+         $('#header-chb').change(function (ev) {
+            debugger;
+            var checked = ev.target.checked;
+            $('.row-checkbox').each(function (idx, item) {
+                if (checked) {
+                    if (!($(item).closest('tr').is('.k-state-selected'))) {
+                        $(item).click();
+                    }
+                } else {
+                    if ($(item).closest('tr').is('.k-state-selected')) {
+                        $(item).click();
+                    }
+                }
+            });
+        });
+    }
+     function onDataBound(e) {
+        var view = this.dataSource.view();
+        for (var i = 0; i < view.length; i++) {
+            if (checkedIds[view[i].id]) {
+                this.tbody.find("tr[data-uid='" + view[i].uid + "']")
+                  .addClass("k-state-selected")
+                  .find(".checkbox")
+                  .attr("checked", "checked");
+            }
+        }
+    }
+    //on click of the checkbox:
+    function selectRow() {
+
+        var checked = this.checked,
+            row = $(this).closest("tr"),
+            grid = $("#grid").data("kendoGrid"),
+            dataItem = grid.dataItem(row);
+
+        checkedIds[dataItem.id] = checked;
+
+        if (checked) {
+            //-select the row
+            row.addClass("k-state-selected k-state-selected-no-color");
+        } else {
+            //-remove selection
+            row.removeClass("k-state-selected k-state-selected-no-color");
+        }
+    }
+</script>
+
+
+<h2>Loan Disbursement, Realization and Outstanding Summery</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Report Type", new { @class = "control-label" })
+                    @Html.DropDownList("ReportTypeList", null, new { @ID = "ReportType", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductList", null, new { @ID = "Product", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Period Type", new { @class = "control-label" })
+                    @Html.DropDownList("PeriodTypeList", null, new { @ID = "PeriodType", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @*@Html.TextBox("DateFrom", null, new { @ID = "DateFrom", @class = "form-control" })*@
+                    @Html.TextBox(" ", ViewData["DateFrom"].ToString(), new { @ID = "txtDateFrom", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @*@Html.TextBox("DateTo", null, new { @ID = "DateTo", @class = "form-control" })*@
+                    @Html.TextBox(" ", ViewData["DateTo"].ToString(), new { @ID = "txtDateTo", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Filter By", new { @class = "control-label" })
+                    @Html.DropDownList("FilterByList", null, new { @ID = "FilterBy", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6" style="display:none;">
+                <div class="form-group">
+                    @Html.Label("Search", new { @class = "control-label" })
+                    @Html.TextBox("Search", null, new { @ID = "Search", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="grid"></div>
+    <br />
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="form-group form-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+
+    <span id="test">
+    </span>
+    <select id='multipleSelect' multiple='multiple' style="display:none;">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+    </select>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+

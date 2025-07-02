@@ -1,0 +1,51 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberViewModel>
+
+@{
+    ViewBag.Title = "Member List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<link href="~/Content/jtable-custom.css" rel="stylesheet" />
+<script type="text/javascript">
+
+    $(document).ready(function () {
+      
+    });
+    
+</script>
+@Html.ActionLink("Add New", "CreateBuro", null, new { @class = "btn btn-info btn-sm pull-right" })
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right", @style = "margin-left:10px;" })
+    @Html.ActionLink("Eligible List", "Eligible", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title">Iframe:: </h2>
+ 
+
+<div class="row" >
+
+    <iframe src="https://muhammadyunus.org/webcam/" style="height:500px;width:1200px; border:2px solid red;" ></iframe>
+
+</div>
+ 
+ 
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

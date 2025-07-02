@@ -1,0 +1,78 @@
+@model gBanker.Web.ViewModels.BasicDataAddViewModel
+
+@{
+    ViewBag.Title = "Add Basic Data";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<a class="btn btn-info btn-sm pull-right" href="/OLRSReport/basicdata">Back to List</a>
+<h2>Basic Data</h2>
+@using (Html.BeginForm("add", "basicdata", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.IndicatorCode, new { @class = "required" })
+                @Html.DropDownListFor(model => model.IndicatorCode, Model.IndicatorList, "Select One", new { @class = "form-control chosen" })
+                @Html.ValidationMessageFor(model => model.IndicatorCode)
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.M_F_flag, new { @class = "required" })
+                <select class="form-control" id="M_F_flag" name="M_F_flag">                   
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="N">Neutral</option>
+                </select>
+                @Html.ValidationMessageFor(model => model.M_F_flag)
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.MNYR, new { @class = "required" })
+                @Html.EditorFor(model => model.MNYR, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.MNYR)
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.bd_pksf_fund, new { @class = "required" })
+                @Html.EditorFor(model => model.bd_pksf_fund, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.bd_pksf_fund)
+            </div>
+        </div>
+    </div>
+        <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.bd_non_pksf_fund, new { @class = "required" })
+                @Html.EditorFor(model => model.bd_non_pksf_fund, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.bd_non_pksf_fund)
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group form-action">
+                <button type="submit" class="btn btn-primary"> Submit </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/basicDataManager.js"></script>
+}

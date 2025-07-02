@@ -1,0 +1,101 @@
+﻿@model gBanker.Web.ViewModels.GroupViewModel
+
+@{
+    ViewBag.Title = "Group Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var statusMode = Model == null ? null : Model.StatusMode;
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var dateFormat = "dd M, y";
+        Date.firstDayOfWeek = 0;
+        Date.format = 'dd/mm/yyyy';
+        $("#FormationDate").val('');
+      
+        gBankerDatePicker("FormationDate");
+       
+
+    });
+
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Add Group</h2>
+@using (Html.BeginForm("Create", "Group", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="">
+       
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+      
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GroupCode, htmlAttributes: new { @class = "control-label" }) <span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.GroupCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.GroupCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            @*<div class="form-group">
+                @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.OfficeID, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.OfficeCode, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.OfficeCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.OfficeCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.OfficeName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.OfficeName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.OfficeName, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FormationDate, htmlAttributes: new { @class = "control-label" }) <span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.FormationDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.FormationDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GroupStatus, htmlAttributes: new { @class = "control-label" }) <span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.DropDownListFor(model => model.GroupStatus, statusMode, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.GroupStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+            <div class="form-group">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

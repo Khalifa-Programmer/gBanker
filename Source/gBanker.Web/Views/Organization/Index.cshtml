@@ -1,0 +1,161 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.OrganizationViewModel>
+
+@{
+    ViewBag.Title = "Organization Details";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#btnExport').click(function ()
+        {
+
+            window.location = '/Organization/ExportData';
+
+        });
+
+        $('#grid').jtable({
+           // title: 'Product List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Organization/GetOrganizations?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'GET',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+           
+            },
+            fields: {
+                OrgID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OrganizationCode: {
+                    title: 'Organization Code',
+                    width: '20%'
+
+                },
+                OrganizationName: {
+                    title: 'Organization Name',
+                    width: '40%'
+                },
+                OrgAddress: {
+                    title: 'Organization Address',
+                    width: '40%'
+                },
+                OrgLOGO: {
+                    title: 'Image',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        //return "<div class='text-center'><img src='/images/blank-headshot.jpg' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                        return "<div class='text-center'><img src='/Organization/RetrieveImage/" + data.record.OrgID + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+               
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                       // return "<a href='/Product/Edit/" + data.record.ProductID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                        return "<div class='text-center'><a href='/Organization/Edit/" + data.record.OrgID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                       // return '<a href="/Product/Edit/' + data.record.ProductID + '">Edit</a>';
+                    }
+                }
+                //,
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<div class="text-center delete-link"><a href="/Organization/Delete/' + data.record.OrgID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+                //       // return '<a href="/Product/Delete/' + data.record.ProductID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //    }
+                //}
+            }
+        });
+        reloadGrid();
+        //$('#grid').jtable('load');
+
+
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title">Organization Details</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="OrganizationCode">Organization Code </option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+
+@*<div>
+        Filter By:&nbsp; <select id="filterColumn">
+            <option value="">View All</option>
+           <option value="ProductCode">Product Code</option>
+        </select>
+        <input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />
+    </div>*@
+
+@*<input type="button" id="btnExport" value="Export" class="btn btn-primary" />*@
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+
+
+@*<input id="btnProduct" type="submit" value="Product Info" />*@
+

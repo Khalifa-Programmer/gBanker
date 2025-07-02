@@ -1,0 +1,108 @@
+﻿@{
+    ViewBag.Title = "InActiveMemberList With Date Range";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+
+
+        $("#btnView").click(function (e) {
+            
+            var EmployeeStatus = $("#ddlQtype").val();
+
+            var DateTo = $("#txtToDt").val();
+
+            var DateFrom = $("#txtFromDt").val();
+ 
+            var url = '/GroupwiseReport/GenerateInactiveMemberList_SSS?DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+             
+        });
+
+
+        $("#btnDrop").click(function (e) {
+             
+            var EmployeeStatus = $("#ddlQtype").val();
+            var DateTo = $("#txtToDt").val();
+            var DateFrom = $("#txtFromDt").val();
+
+            var url = '/GroupwiseReport/GenerateInactiveMemberListDrop_SSS?DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+
+
+
+<h2 class="page-title">InActive Member List With Date Range</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+
+
+
+    <h2 class="page-title"></h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-group from-action">
+                <input type="button" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+
+        <div class="col-md-8" style="padding-right:20px;" align="right">
+            <input id="btnDrop" type="button" value="Dropable" class="btn btn-primary" />
+        </div>
+
+    </div>
+
+
+</div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+

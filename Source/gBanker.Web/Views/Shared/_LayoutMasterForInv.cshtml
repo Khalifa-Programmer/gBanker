@@ -1,0 +1,414 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>gInventory@*@ViewBag.Title*@</title>
+    <link rel="shortcut icon" href="../images/LOGO_G.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="~/content/bootstrap.css" rel="stylesheet">
+    <link href="~/content/ui-libs/font-awesome-4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- The styles -->
+    @*<link href="~/Content/charisma-master/css/bootstrap-cerulean.min.css" rel="stylesheet" />*@
+    <link href="~/Content/charisma-master/css/charisma-app.css" rel="stylesheet">
+    <link href='~/Content/charisma-master/bower_components/fullcalendar/dist/fullcalendar.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/bower_components/fullcalendar/dist/fullcalendar.print.css' rel='stylesheet' media='print'>
+    <link href='~/Content/charisma-master/bower_components/chosen/chosen.min.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/bower_components/colorbox/example3/colorbox.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/bower_components/responsive-tables/responsive-tables.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/bower_components/bootstrap-tour/build/css/bootstrap-tour.min.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/jquery.noty.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/noty_theme_default.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/elfinder.min.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/elfinder.theme.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/jquery.iphone.toggle.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/uploadify.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/animate.min.css' rel='stylesheet'>
+    <link href='~/Content/themes/base/jquery-ui.css' rel='stylesheet'>
+    <link href='~/Content/charisma-master/css/custom.css' rel='stylesheet'>
+    <link href="~/Content/alert/css/alert.css" rel="stylesheet" />
+    <link href="~/Content/alert/themes/light/theme.css" rel="stylesheet" />
+    <link href='~/Scripts/jtable/themes/lightcolor/blue/jtable.min.css' rel='stylesheet' />
+    
+    <!-- jQuery -->
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Content/alert/js/alert.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    @RenderSection("scripts", required: false)
+
+</head>
+<body>
+    <div id="loading" style="display:none" class="modal">
+        Pls Wait........
+    </div>
+    @{
+        var parentModules = gBanker.Web.Helpers.SessionHelper.AllPrentModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+        var userModules = gBanker.Web.Helpers.SessionHelper.UserSecurityModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+    }
+    @Html.Partial("_headerTopInv")
+    <div class="container-fluid ch-container">
+        <div class="row">
+            @Html.Partial("_leftMenu")
+
+            <div id="content" class="col-lg-10 col-sm-10">
+                <!-- content starts -->
+                <div class="row">
+                    <div class="col-md-12"><div id="dvMessage"></div></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 content">@RenderBody()</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12"><div id="dvMessageDown"></div></div>
+                </div>
+
+                <!-- content ends -->
+            </div><!--/#content.col-md-0-->
+
+        </div><!--/fluid-row-->
+
+        <footer class="row">
+            <p class="col-md-9 col-sm-9 col-xs-12 copyright">
+                Copyright &copy; <a href="http://grameencommunications.org/" target="_blank">Grameen Communications</a> @DateTime.Now.Year
+            </p>
+        </footer>
+
+    </div><!--/.fluid-container-->
+    @Scripts.Render("~/bundles/bootstrap")
+
+    <!-- external javascript -->
+    <!-- library for cookie management -->
+    <script src="~/Content/charisma-master/js/jquery.cookie.js"></script>
+    <!-- calender plugin -->
+    <script src='~/Content/charisma-master/bower_components/moment/min/moment.min.js'></script>
+    <script src='~/Content/charisma-master/bower_components/fullcalendar/dist/fullcalendar.min.js'></script>
+    <!-- data table plugin -->
+    <script src='~/Content/charisma-master/js/jquery.dataTables.min.js'></script>
+    <!-- select or dropdown enhancer -->
+    <script src="~/Content/charisma-master/bower_components/chosen/chosen.jquery.min.js"></script>
+    <!-- plugin for gallery image view -->
+    <script src="~/Content/charisma-master/bower_components/colorbox/jquery.colorbox-min.js"></script>
+    <!-- notification plugin -->
+    <script src="~/Content/charisma-master/js/jquery.noty.js"></script>
+    <!-- library for making tables responsive -->
+    <script src="~/Content/charisma-master/bower_components/responsive-tables/responsive-tables.js"></script>
+    <!-- tour plugin -->
+    <script src="~/Content/charisma-master/bower_components/bootstrap-tour/build/js/bootstrap-tour.min.js"></script>
+    <!-- star rating plugin -->
+    <script src="~/Content/charisma-master/js/jquery.raty.min.js"></script>
+    <!-- for iOS style toggle switch -->
+    <script src="~/Content/charisma-master/js/jquery.iphone.toggle.js"></script>
+    <!-- autogrowing textarea plugin -->
+    <script src="~/Content/charisma-master/js/jquery.autogrow-textarea.js"></script>
+    <!-- multiple file upload plugin -->
+    <script src="~/Content/charisma-master/js/jquery.uploadify-3.1.min.js"></script>
+    <!-- history.js for cross-browser state change on ajax -->
+    <script src="~/Content/charisma-master/js/jquery.history.js"></script>
+    <!-- application script for Charisma demo -->
+
+    <script src="~/Content/charisma-master/js/charisma.js"></script>
+    <script src="~/Content/js/CommonMethod.js"></script>
+
+    <script type="text/javascript">
+
+        function confirmDayInitiated() {
+            var isDayInitiated = "@gBanker.Web.Helpers.SessionHelper.IsDayInitiated";
+            if (isDayInitiated.toLowerCase() == 'false') {
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html("Please run the start work process.");
+                $("#dvMessage").show();
+            }
+        }
+        function clearAllControls(url) {
+            var splits = url.split("/");
+            var edit = false;
+            for (var i = 0; i < splits.length; i++) {
+                if (splits[i] == "Edit") {
+                    edit = true;
+                    break;
+                }
+            }
+            if (!edit) {
+                $('input[type="text"]').each(function (index) {
+                    var defaultValue = $(this).attr('defaultValue');
+                    if (defaultValue != null && defaultValue.length > 0)
+                        $(this).val(defaultValue);
+                    else
+                        $(this).val('');
+                });
+            }
+        }
+
+        $(document).ready(function () {
+            /*jquery to implement css*/
+            $('ul.dropdown-menu.mega-dropdown-menu').on('click', function (event) {
+                event.stopPropagation();
+            });
+
+            $('#expand-all-main-menu').click(function (event) {
+                $('.sidebar-nav .nav li.accordion').toggleClass('active');
+                $('.sidebar-nav .nav li.accordion a i').toggleClass('fa-plus-circle fa-minus-circle');
+                $('.sidebar-nav .nav li.accordion ul').toggle();
+                $('#expand-all-main-menu>i').toggleClass('fa-expand fa-compress');
+
+                if ($('#expand-all-main-menu').attr('title')) {
+                    $('#expand-all-main-menu').removeAttr('title');
+                    $('#expand-all-main-menu').attr('title', 'Compress All Menu');
+                } else {
+                    $('#expand-all-main-menu').attr('title', 'Expand All Menu');
+                }
+
+            });
+
+            $('.sidebar-nav li.accordion a').click(function () {
+                $(this).find('i').toggleClass('fa-plus-circle fa-minus-circle');
+            });
+
+            $('.page-title').nextAll('div.row:first').addClass('content-filter');
+            $('.page-title').nextAll('form').addClass('form-create');
+            $('.content form').addClass('form-create');
+
+            $('.content-filter').next('br').remove();
+            $('form .form-horizontal').removeClass();
+
+            $('#grid').wrap("<div class='row'><div class='col-md-12'></div></div>");
+            $('#grid .jtable-main-container').addClass('table-responsive');
+            $('#grid table.jtable').addClass('table');
+
+
+            $('.form-create .col-md-12, .content-filter .col-md-12').addClass('col-sm-12 col-xs-12');
+            $('.form-create .col-md-11, .content-filter .col-md-11').addClass('col-sm-11 col-xs-12');
+            $('.form-create .col-md-10, .content-filter .col-md-10').addClass('col-sm-10 col-xs-12');
+            $('.form-create .col-md-9, .content-filter .col-md-9').addClass('col-sm-9 col-xs-12');
+            $('.form-create .col-md-8, .content-filter .col-md-8').addClass('col-sm-8 col-xs-12');
+            $('.form-create .col-md-7, .content-filter .col-md-7').addClass('col-sm-7 col-xs-12');
+            $('.form-create .col-md-6, .content-filter .col-md-6').addClass('col-sm-6 col-xs-12');
+            $('.form-create .col-md-5, .content-filter .col-md-5').addClass('col-sm-5 col-xs-12');
+            $('.form-create .col-md-4, .content-filter .col-md-4').addClass('col-sm-4 col-xs-12');
+            $('.form-create .col-md-3, .content-filter .col-md-3').addClass('col-sm-3 col-xs-12');
+            $('.form-create .col-md-2, .content-filter .col-md-2').addClass('col-sm-2 col-xs-12');
+            $('.form-create .col-md-1, .content-filter .col-md-1').addClass('col-sm-1 col-xs-12');
+
+
+            $('.content-filter label.control-label, .form-create label.control-label').parent().removeClass('text-right');
+            $('.content-filter select.form-control, .form-create select.form-control').parent().addClass('form-group');
+            $('.content-filter .form-control, .form-create .form-control').parent().addClass('form-group');
+            $('.content-filter .btn.btn-primary, .form-create .btn.btn-primary').parent().addClass('form-group');
+            $('.content-filter label.control-label').css({ 'min-width': '200px' });
+
+
+            $('form#MemProfile img.thumb-img').css({ 'width': '75px', 'margin-bottom': '20px' });
+            $('form#MemProfile img#thumbnil').parent().removeClass('col-xs-12').addClass('col-xs-4');
+            $('form#MemProfile img#FingerThumb').parent().removeClass('col-xs-12').addClass('col-xs-4');
+            $('form#MemProfile input#ImgFile').parent().parent().removeClass('col-xs-12').addClass('col-xs-8');
+            $('form#MemProfile input#ThumbImgFile').parent().parent().removeClass('col-xs-12').addClass('col-xs-8');
+
+
+            if (($(document).find("title").text() == 'Loan Collection List' && $('#content .content .page-title').text() == 'Loan Collection')) {
+                $('.content-filter .btn.btn-primary').parent().removeAttr('style').removeAttr('align').removeClass().addClass('col-md-12 col-sm-4 col-xs-12');
+                $('.content-filter #filterColumn, .content-filter #filterValue, .content-filter #sortColumn, .content-filter #sortOrder').parent().removeClass().addClass('col-md-6 col-sm-6 col-xs-12');
+                $('.content-filter .form-group').parent().removeClass().addClass('col-md-4 col-sm-6 col-xs-12');
+                $('.content-filter .btn.btn-primary').parent().addClass('form-group');
+
+                $('.content-filter #filterColumn, .content-filter #filterValue, .content-filter #sortColumn, .content-filter #sortOrder').parent().css({ 'margin-bottom': '5px' });
+
+                $(window).resize(function () {
+                    if ($(window).width() < 1280 && $(window).width() >= 768) {
+                        $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                    }
+                });
+                if ($(window).width() < 1280 && $(window).width() >= 768) {
+                    $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                }
+            }
+
+            if (($(document).find("title").text() == 'Savings Collection List' && $('#content .content .page-title').text() == 'Savings Collection')) {
+                $('.form-create>div.row:first').addClass('content-filter');
+                $('.content-filter>:nth-child(1)').removeClass().addClass('col-md-4 col-sm-4 col-xs-12');
+                $('.content-filter>:nth-child(2)').removeClass().addClass('col-md-8 col-sm-8 col-xs-12');
+                $('.content-filter>:nth-child(2) div.row>div.form-group').removeClass().addClass('col-md-4 col-sm-4 col-xs-12');
+
+                $('.content-filter .btn.btn-primary').parent().removeAttr('style').removeAttr('align');
+
+                $(window).resize(function () {
+                    if ($(window).width() < 768) {
+                        $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                        $('#filterValue').css({ 'margin-top': '5px' });
+                    }
+                });
+                if ($(window).width() < 768) {
+                    $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                    $('#filterValue').css({ 'margin-top': '5px' });
+                }
+            }
+
+            if (($(document).find("title").text() == 'OverdueAgeing' && $('#content .content .page-title').text() == 'Overdue Ageing Report') || ($(document).find("title").text() == 'Provision Calculation' && $('#content .content .page-title').text() == 'Provision Calculation')) {
+                $(window).resize(function () {
+                    if ($(window).width() <= 980) {
+                        $('form.form-create input:checkbox').removeAttr('style').css({ 'margin-left': '20px', 'margin-top': '30px' });
+                    }
+                });
+                if ($(window).width() <= 980) {
+                    $('form.form-create input:checkbox').removeAttr('style').css({ 'margin-left': '20px', 'margin-top': '30px' });
+                }
+
+                $(window).resize(function () {
+                    if ($(window).width() < 768) {
+                        $('form.form-create input:checkbox').parent().removeClass('col-xs-12').addClass('col-xs-2');
+                        $('form.form-create .form-group').parent().removeClass('col-xs-12').addClass('col-xs-10 pull-right');
+                    }
+                });
+                if ($(window).width() < 768) {
+                    $('form.form-create input:checkbox').parent().removeClass('col-xs-12').addClass('col-xs-2');
+                    $('form.form-create .form-group').parent().removeClass('col-xs-12').addClass('col-xs-10 pull-right');
+                }
+
+                $('form.form-create input:checkbox').parent().removeClass('col-xs-12').addClass('col-lg-1 col-xs-2 text-right');
+                $('form.form-create .form-group').parent().removeClass('col-xs-12').addClass('col-lg-5 col-xs-10');
+
+                $('form.form-create input.btn.btn-primary').parent().parent().removeClass('col-lg-12').addClass('col-lg-11 col-md-11 col-sm-11 col-xs-10 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-2');
+            }
+            /*jquery to implement css*/
+
+            //=============below function is used to restore menu navigation=======
+            activateMenuNavigation();
+            $('input').bind('focus', function (e) {
+                $("#dvMessage").hide();
+                $("#dvMessageDown").hide();
+
+            });
+
+            // Handle the form submit event, and make the Ajax request:
+            $("form").on("submit", function (event) {
+                var _currentForm = $(this).closest('form');
+                if (_currentForm.valid()) {
+
+                    event.preventDefault();
+                    $("#loading").show();
+                    var url = $(this).attr("action");
+                    var formData = $(this).serialize();
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: formData,
+                        dataType: "json",
+                        success: function (resp) {
+                            $("#loading").hide();
+                            var result = resp.Result;
+                            var msg = resp.Message;
+                            var userData = resp.UserData;
+                            var css = "failed";
+                            if (result == "OK")
+                                css = "success";
+                            $("#dvMessage").attr('class', css);
+                            $("#dvMessage").html(msg);
+                            $("#dvMessage").show();
+                            /////Dou
+                            $("#dvMessageDown").attr('class', css);
+                            $("#dvMessageDown").html(msg);
+                            $("#dvMessageDown").show();
+                            if (result == "OK") {
+                                $("#dvMessage").toggle('fade', 1500);
+                                ////////////////
+                                $("#dvMessageDown").toggle('fade', 1500);
+                                clearAllControls(url);
+                            }
+                            if (typeof callback != 'undefined') {
+                                callback(userData);
+                            }
+                        },
+                        error: function (err) {
+                            $("#loading").hide();
+                            var msg = err.responseText;
+                            var css = "failed";
+                            $("#dvMessage").attr('class', css);
+                            $("#dvMessage").html(msg);
+                            $("#dvMessage").show();
+                            //$("#dvMessage").toggle('fade',1500);
+
+                            $("#dvMessageDown").attr('class', css);
+                            $("#dvMessageDown").html(msg);
+                            $("#dvMessageDown").show();
+                        }
+
+                    })
+                }
+            });
+
+        });
+
+        function showDetailLink(moduleId) {
+            var divId = "subTab_" + moduleId;
+            $("#" + divId).show();
+            $(".sub-tabs2").each(function (i, element) {
+                var id = element.id;
+                if (id != divId)
+                    $("#" + id).hide();
+            });
+        }
+
+        function activateMenuNavigation() {
+            try {
+                var menuids = '@gBanker.Web.Helpers.SessionHelper.CurrentModuleKeys';
+                if (menuids.length > 0) {
+                    var ids = menuids.split("_");
+                    if (ids.length == 3) {
+                        var parent1 = ids[0];
+                        var parent2 = ids[1];
+                        var parent3 = ids[2];
+                        if (parent1 != -1) {
+                            $("#parent_" + parent1).attr('class', 'active');
+                            $("#" + parent1).attr('class', 'tab-pane active');
+                            showDetailLink(parent2);
+                        }
+                        else {
+                            $("#parent_" + parent2).attr('class', 'active');
+                            $("#" + parent2).attr('class', 'tab-pane active');
+                        }
+                        $("#activeLink_" + parent3).attr('class', 'activeMenu');
+                    }
+                }
+            } catch (e) {
+
+            }
+        }
+
+        $(document).ready(function () {
+
+            $("#appSwitcher").click(function (evt) {
+                switchApp(evt);
+            });
+        });
+        function switchApp(evt) {
+            debugger
+            evt.preventDefault();
+            var url = /*location.host +*/ '/Home/GetLandingUrl';//'@Url.Action("GetLandingUrl", "Home")';
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: url,
+                dataType: 'json',
+                async: true,
+                success: function (result) {
+                    //debugger
+                    console.log(result);
+                    if (result && result.length > 0) {
+                        window.location.href = result;
+                    }
+                    else
+                        alert("Url not configured correctly.");
+                },
+                error: function (request, status, error) {
+                    //debugger
+                    alert("Error occured.");
+                }
+            });
+        }
+    </script>
+    @*<script type="text/javascript" src="http://gc.plandoer.com/api/bug_suggestions/form?project_id=gbanker_mfi&name=@gBanker.Web.Helpers.SessionHelper.LoginUserEmployeeID&email=gt@test.com">
+        </script>*@
+</body>
+</html>

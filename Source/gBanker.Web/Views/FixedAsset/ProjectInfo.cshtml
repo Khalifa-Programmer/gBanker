@@ -1,0 +1,265 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Project Info Entry";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        GetProjectInfo();
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        $("#btnReset").click(function () {
+            ClearForm();
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+        });
+
+    });
+
+    function SaveProjectInformation() {
+        var projectName = $("#ProjectName").val();
+        var fundingAgency = $("#FundingAgency").val();
+        var description = $("#Description").val();
+
+        if (projectName != "" && fundingAgency != "") {
+            var projectInfo = {
+                ProjectName: projectName,
+                FundingAgency: fundingAgency,
+                Description: description,
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveProjectInformation", "FixedAsset", "http")',
+                data: JSON.stringify({ projectInfo: projectInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetProjectInfo();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        }
+        else {
+            $.alert.open("Error", "Please insert required field");
+        }
+    }
+    function ClearForm() {
+        $("#ProjectName").val('');
+        $("#FundingAgency").val('');
+        $("#Description").val('');
+
+    }
+    function GetProjectInfo() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FixedAsset/GetProjectInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                ProjectID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProjectName: {
+                    width: '10%',
+                    title: 'ProjectName'
+                },
+                FundingAgency: {
+                    width: '10%',
+                    title: 'FundingAgency'
+                },
+                Description: {
+                    width: '10%',
+                    title: 'Description'
+                },
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="EditProjectInfo( ' + data.record.ProjectID + ',' + "'" + data.record.ProjectName + "'" + ',' + "'" + data.record.FundingAgency + "'" + ',' + "'" + data.record.Description + "'" + ' );"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+
+                },
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteProjectInfo(' + data.record.ProjectID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+
+        });
+        $('#grid').jtable('load');
+    }
+
+    function EditProjectInfo(ProjectID, ProjectName, FundingAgency, Description) {
+        $("#ProjectID").val(ProjectID);
+        $("#ProjectName").val(ProjectName);
+        $("#FundingAgency").val(FundingAgency);
+        $("#Description").val(Description);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+
+    function UpdateProjectInformation() {
+        var projectID     = $("#ProjectID").val();
+        var projectName   = $("#ProjectName").val();
+        var projectName   = $("#ProjectName").val();
+        var fundingAgency = $("#FundingAgency").val();
+        var description   = $("#Description").val();
+
+        if (projectName != "" && fundingAgency != "") {
+            var projectInfo = {
+                ProjectID:projectID,
+                ProjectName: projectName,
+                FundingAgency: fundingAgency,
+                Description: description,
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateProjectInformation", "FixedAsset", "http")',
+                data: JSON.stringify({ projectInfo: projectInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetProjectInfo();
+                        ClearForm();
+                        $("#btnUpdate").hide();
+                        $("#btnReset").hide();
+                        $("#btnSave").show();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        }
+        else {
+            $.alert.open("Error", "Please insert required field");
+        }
+    }
+    function DeleteProjectInfo(ProjectID) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteProjectInfo", "FixedAsset", "http")',
+                    data: { ProjectID: ProjectID },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            $('#grid').jtable('load');
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+
+
+</script>
+
+
+<h2 class="page-title">Project Info Entry</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.ProjectID)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Project Name</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.ProjectName, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Funding Agency</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.FundingAgency, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Description</label>
+                <div class="col-sm-7">
+                    @Html.TextAreaFor(model => model.Description, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>       
+    </div>    
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Save" id="btnSave" class="btn btn-primary" onclick="SaveProjectInformation()" />
+            <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateProjectInformation()" />
+            <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")    
+    @Scripts.Render("~/bundles/jtable")
+}

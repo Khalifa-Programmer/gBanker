@@ -1,0 +1,373 @@
+﻿
+@{
+    ViewBag.Title = "RecoveryStatement";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+    function GetEmployee() {
+        var ddlEmp = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmployeeList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });                
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });                
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });                
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetOffice() {
+        var ddlOffice = $("#ddlOffice");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });               
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",                
+            showAnim: "scale"                
+        });
+        $("#txtToDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",                
+            showAnim: "scale"                
+        });
+        //$("#ddlEmp").prop("readonly", false);
+        $('#ddlEmp').prop("disabled", true)
+        $("#ddlProd").prop("disabled", true);
+        $("#ddlCenter").prop("disabled", true);
+        $("#ddlOffice").prop("disabled", true);
+        GetEmployee();
+        GetProduct();
+        GetCenter();
+        GetOffice();
+        $("#chkEmp").change(function () {
+            if (this.checked) {
+                $("#ddlEmp").prop("disabled", false);                
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+                $("#chkOverall").prop("checked", false);
+            }
+            else {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+
+                $("#chkEmp").prop("checked", false);
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);                
+            }
+        });
+        $("#chkProd").change(function () {
+            if (this.checked) {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", false);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+                $("#chkOverall").prop("checked", false);
+
+                $("#chkEmp").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+            else {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+
+                $("#chkEmp").prop("checked", false);
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+        });
+        $("#chkCenter").change(function () {
+            if (this.checked) {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", false);
+                $("#ddlOffice").prop("disabled", true);
+                $("#chkOverall").prop("checked", false);
+
+                $("#chkProd").prop("checked", false);
+                $("#chkEmp").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+            else {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+
+                $("#chkEmp").prop("checked", false);
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+        });
+        $("#chkOffice").change(function () {
+            if (this.checked) {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", false);
+                $("#chkOverall").prop("checked", false);
+
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkEmp").prop("checked", false);
+            }
+            else {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+                $("#chkOverall").prop("checked", false);
+
+                $("#chkEmp").prop("checked", false);
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+        });
+        $("#chkOverall").change(function () {
+            if (this.checked) {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkEmp").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+            else {
+                $("#ddlEmp").prop("disabled", true);
+                $("#ddlProd").prop("disabled", true);
+                $("#ddlCenter").prop("disabled", true);
+                $("#ddlOffice").prop("disabled", true);
+
+                $("#chkEmp").prop("checked", false);
+                $("#chkProd").prop("checked", false);
+                $("#chkCenter").prop("checked", false);
+                $("#chkOffice").prop("checked", false);
+            }
+        });
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var from_date = $("#txtFromDt").val();
+            var to_date = $("#txtToDt").val();
+            var emp = $("#ddlEmp").val();
+            var prod = $("#ddlProd").val();
+            var center = $("#ddlCenter").val();
+            var offc = $("#ddlOffice").val();
+            var qType;
+            if (from_date != '' && to_date != '') {
+                if ($('#chkEmp').is(":checked") == true)
+                    qType = 4;
+                else if ($('#chkProd').is(":checked") == true)
+                    qType = 5;
+                else if ($('#chkCenter').is(":checked") == true)
+                    qType = 3;
+                else if ($('#chkOffice').is(":checked") == true)
+                    qType = 6;
+                else if ($('#chkOverall').is(":checked") == true)
+                    qType = 7;
+                
+                else
+                    qType = 0;
+                var url = '/GroupwiseReport/GenerateRecoveryStatementReport?from_date=' + from_date + '&to_date=' + to_date + '&emp=' + emp + '&prod=' + prod + '&center=' + center + '&offc=' + offc + '&qType=' + qType;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+            else {
+                alert('Date field cannot be blank')
+            }
+            
+        });
+    });
+</script>
+<h2 class="page-title">Recoverable & Recovery Statement</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @*@Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
+        @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
+        @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
+        @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
+        @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })*@
+    <div class="">
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkEmp" style="margin-left:50px; margin-top:30px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Employee", new { @class = "control-label" })
+                    @Html.DropDownList("EmployeeList", null, new { @ID = "ddlEmp", @class = "form-control" })
+
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkProd" style="margin-left:50px; margin-top:30px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductList", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkCenter" style="margin-left:50px; margin-top:30px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Samity", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkOffice" style="margin-left:50px; margin-top:30px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Office", new { @class = "control-label" })
+                    @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkOverall" style="margin-left:50px; margin-top:20px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Overall", new { @Style = "margin-top:20px;" })
+
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                &nbsp;
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                &nbsp;
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

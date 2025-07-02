@@ -1,0 +1,760 @@
+﻿
+@{
+    ViewBag.Title = "Generate MRA CIB Information";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function GetZoneOffice() {
+        var HO_val = $("#ddlHO").val();
+        if (HO_val > 0) {
+            var ddlZone = $("#ddlZone");
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetZoneList", "GroupwiseReport", "http")',
+                data: { HO_val: HO_val },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    ddlZone.html('');
+                    ddlZone.append($('<option></option>').val("0").html("Please Select"));
+                    $.each(data, function (id, option) {
+                        ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        else {
+            $("#ddlZone").empty();
+            $("#ddlArea").empty();
+            $("#ddlOffice").empty();
+        }
+    }
+
+    function GetHO() {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                GetZoneOffice();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $("#dv").hide();
+        GetHO();
+        $("input[type='radio']").on("change", function (e) {
+            if (e.target.id == "rdDivision" && e.target.checked) {
+                $("#ddlZone").val('');
+                $("#ddlZone").attr("readonly", true)
+                $("#ddlOffice").val('');
+                $("#ddlArea").val('');
+                $("#ddlArea").attr("readonly", true)
+                $("#ddlOffice").attr("readonly", true)
+                $("#dv").show();
+                $("#dvZone").hide();
+            }
+            else {
+                $("#ddlZone").attr("readonly", false)
+                $("#ddlOffice").attr("readonly", false)
+                $("#ddlArea").attr("readonly", false)
+                $("#dv").hide();
+                $("#dvZone").show();
+            }
+        })
+
+        function getDivisionAndRegion(url, ddl) {
+            //debugger
+            ddl.html('');
+            ddl.append($('<option></option>').val("").html("Please Select"));
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: url,
+                //data: { HO_val: HO_val, zone_val: zone_val },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+
+
+                    $.each(data, function (id, option) {
+                        ddl.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "GroupwiseReport", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlArea.html('');
+                        ddlArea.append($('<option></option>').val("0").html("Please Select"));
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        $("#ddlOffice").empty();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0 && area_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetBranchOfficeList", "GroupwiseReport", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlOffice.html('');
+                        //ddlOffice.append($('<option></option>').val("0").html("Please Select"));
+                        //$.each(data, function (id, option) {
+                        //    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        //});
+                        $.each(data, function (id, option) {
+                            var selected = option.Selected ? 'selected="selected"' : '';
+                            ddlOffice.append($(`<option ${selected}></option>`).val(option.Value).html(option.Text));
+                        });
+
+                        $('.ddl-select-picker').selectpicker('refresh');
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+
+
+        $("#txtToDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true
+            });
+
+        $(document).ready(function () {
+            $('.ddl-select-picker').selectpicker();
+            let isGridInitialized = false;
+            $("#btnView").click(function (e) {
+                e.preventDefault();
+
+                var office_id;
+                var DateTo = $("#txtToDt").val();
+
+                if ($("#ddlHO").val() > 0) {
+                    office_id = $("#ddlHO").val();
+
+                    if ($("#rdDivision").prop('checked')) {
+                        if ($("#ddlProgram").val()) {
+                            Qtype = 7;
+                            office_id = $("#ddlProgram").val();
+                        }
+                        else if ($("#ddlDivision").val()) {
+                            Qtype = 6;
+                            office_id = $("#ddlDivision").val();
+                        }
+                    }
+                    else {
+                        if ($("#ddlZone").val() > 0) {
+                            if ($("#ddlArea").val() > 0) {
+                                var officeVal = $("#ddlOffice").val();
+                                if (officeVal && officeVal.length > 0) {
+                                    office_id = officeVal;
+                                }
+                                else {
+                                    office_id = $("#ddlArea").val();
+                                }
+                            }
+                            else {
+                                office_id = $("#ddlZone").val();
+                            }
+                        }
+                        else {
+                            office_id = $("#ddlHO").val();
+                        }
+                    }
+                }
+
+                // 💥 Destroy the existing jTable grid
+                if (isGridInitialized) {
+                    $('#grid').jtable('destroy');
+                }
+
+                // 🔁 Initialize with new action
+                $('#grid').jtable({
+                    paging: true,
+                    pageSize: 50,
+                    sorting: true,
+                    defaultSorting: 'OfficeId',
+                    actions: {
+                        listAction: function (postData, jtParams) {
+                            return $.Deferred(function ($dfd) {
+                                $.ajax({
+                                    url: '/GroupWiseReport/GenerateMRASubjectDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&officeId=' + office_id + '&dateTo=' + DateTo,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: postData,
+                                    success: function (data) {
+                                        $dfd.resolve(data);
+                                    },
+                                    error: function () {
+                                        $dfd.reject();
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    fields: {
+                        ACCOUNTINGDATE: {
+                            title: 'ACCOUNTINGDATE',
+                            width: '5%'
+                        },
+                        PRODUCTIONDATE: {
+                            title: 'PRODUCTIONDATE',
+                            width: '5%'
+                        },
+                        MFICODE: {
+                            title: 'MFICODE',
+                            width: '5%'
+                        },
+                        BRANCH_CODE: {
+                            title: 'BRANCH_CODE',
+                            width: '15%'
+                        },
+                        MEMBERID: {
+                            title: 'MEMBERID',
+                            width: '5%'
+                        },
+                        Name: {
+                            title: 'Name',
+                            width: '5%'
+                        },
+                        Occupation: {
+                            title: 'Occupation',
+                            width: '5%'
+                        },
+                        FATHERS_NAME: {
+                            title: 'FATHERS_NAME',
+                            width: '5%'
+                        },
+                        MOTHERS_NAME: {
+                            title: 'MOTHERS_NAME',
+                            width: '5%'
+                        },
+                        MARITAL_STATUS: {
+                            title: 'MARITAL_STATUS',
+                            width: '5%'
+                        },
+                        SPOUSE_NAME: {
+                            title: 'SPOUSE_NAME',
+                            width: '5%'
+                        },
+                        Gender: {
+                            title: 'Gender',
+                            width: '5%'
+                        },
+                        DOB: {
+                            title: 'DOB',
+                            width: '5%'
+                        },
+                        NID: {
+                            title: 'NID',
+                            width: '5%'
+                        },
+                        SMARTCARD_NO: {
+                            title: 'SMARTCARD_NO',
+                            width: '5%'
+                        },
+                        BIRTH_CERTIFICATE_NO: {
+                            title: 'BIRTH_CERTIFICATE_NO',
+                            width: '5%'
+                        },
+                        TIN: {
+                            title: 'TIN',
+                            width: '5%'
+                        },
+                        Other_ID_Type: {
+                            title: 'Other_ID_Type',
+                            width: '5%'
+                        },
+                        OTHER_ID_NO: {
+                            title: 'OTHER_ID_NO',
+                            width: '5%'
+                        },
+                        EXPIRY_DATE: {
+                            title: 'EXPIRY_DATE',
+                            width: '5%'
+                        },
+                        ISSUE_COUNTRY: {
+                            title: 'ISSUE_COUNTRY',
+                            width: '5%'
+                        },
+                        ContactNo: {
+                            title: 'ContactNo',
+                            width: '5%'
+                        },
+                        P_ADDRESS: {
+                            title: 'P_ADDRESS',
+                            width: '5%'
+                        },
+                        P_THANA: {
+                            title: 'P_THANA',
+                            width: '5%'
+                        },
+                        P_DISTRICT: {
+                            title: 'P_DISTRICT',
+                            width: '5%'
+                        },
+                        P_COUNTRY: {
+                            title: 'P_COUNTRY',
+                            width: '5%'
+                        },
+                        PR_ADDRESS: {
+                            title: 'PR_ADDRESS',
+                            width: '5%'
+                        },
+                        PR_THANA: {
+                            title: 'PR_THANA',
+                            width: '5%'
+                        },
+                        PR_DISTRICT: {
+                            title: 'PR_DISTRICT',
+                            width: '5%'
+                        },
+                        PR_COUNTRY: {
+                            title: 'PR_COUNTRY',
+                            width: '5%'
+                        },
+                        ACADEMIC_QUALIFICATION: {
+                            title: 'ACADEMIC_QUALIFICATION',
+                            width: '5%'
+                        },
+                        OfficeId: {
+                            title: 'OfficeId',
+                            width: '5%'
+                        },
+                        ReportDate: {
+                            title: 'ReportDate',
+                            width: '5%'
+                        },
+                        Data_Status: {
+                            title: 'Data_Status',
+                            width: '5%'
+                        }
+                    },
+
+                    recordsLoaded: function () {
+                        isGridInitialized = true;
+                    }
+                });
+                $('#grid').jtable('load');
+
+            });
+            /////End of btnView////
+
+            $("#btnViewConDetails").click(function (e) {
+                e.preventDefault();
+
+                var office_id;
+                var DateTo = $("#txtToDt").val();
+
+                if ($("#ddlHO").val() > 0) {
+                    office_id = $("#ddlHO").val();
+
+                    if ($("#rdDivision").prop('checked')) {
+                        if ($("#ddlProgram").val()) {
+                            Qtype = 7;
+                            office_id = $("#ddlProgram").val();
+                        }
+                        else if ($("#ddlDivision").val()) {
+                            Qtype = 6;
+                            office_id = $("#ddlDivision").val();
+                        }
+                    }
+                    else {
+                        if ($("#ddlZone").val() > 0) {
+                            if ($("#ddlArea").val() > 0) {
+                                var officeVal = $("#ddlOffice").val();
+                                if (officeVal && officeVal.length > 0) {
+                                    office_id = officeVal;
+                                }
+                                else {
+                                    office_id = $("#ddlArea").val();
+                                }
+                            }
+                            else {
+                                office_id = $("#ddlZone").val();
+                            }
+                        }
+                        else {
+                            office_id = $("#ddlHO").val();
+                        }
+                    }
+                }
+
+                // 💥 Destroy the existing jTable grid
+                if (isGridInitialized) {
+                    $('#grid').jtable('destroy');
+                }
+
+                // 🔁 Initialize with new action
+                $('#grid').jtable({
+                    paging: true,
+                    pageSize: 50,
+                    sorting: true,
+                    defaultSorting: 'OfficeId',
+                    actions: {
+                        listAction: function (postData, jtParams) {
+                            return $.Deferred(function ($dfd) {
+                                $.ajax({
+                                    url: '/GroupWiseReport/GenerateMRAContractDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&officeId=' + office_id + '&dateTo=' + DateTo,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: postData,
+                                    success: function (data) {
+                                        $dfd.resolve(data);
+                                    },
+                                    error: function () {
+                                        $dfd.reject();
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    fields: {
+                        ACCOUNTINGDATE: {
+                            title: 'ACCOUNTINGDATE',
+                            width: '5%'
+                        },
+                        PRODUCTIONDATE: {
+                            title: 'PRODUCTIONDATE',
+                            width: '5%'
+                        },
+                        MFICODE: {
+                            title: 'MFICODE',
+                            width: '5%'
+                        },
+                        BRANCH_CODE: {
+                            title: 'BRANCH_CODE',
+                            width: '15%'
+                        },
+                        MEMBERID: {
+                            title: 'MEMBERID',
+                            width: '5%'
+                        },
+                        LOAN_CODE: {
+                            title: 'LOAN_CODE',
+                            width: '5%'
+                        },
+                        LOAN_TYPE: {
+                            title: 'LOAN_TYPE',
+                            width: '5%'
+                        },
+                        LOAN_DISBURSEMENT_DATE: {
+                            title: 'LOAN_DISBURSEMENT_DATE',
+                            width: '5%'
+                        },
+                        END_DATE_CONTRACT: {
+                            title: 'END_DATE_CONTRACT',
+                            width: '5%'
+                        },
+                        LAST_INSTALLMENT_PAID_DATE: {
+                            title: 'LAST_INSTALLMENT_PAID_DATE',
+                            width: '5%'
+                        },
+                        DISBURSED_AMOUNT: {
+                            title: 'DISBURSED_AMOUNT',
+                            width: '5%'
+                        },
+                        TOTAL_OUTSTANDING_AMT: {
+                            title: 'TOTAL_OUTSTANDING_AMT',
+                            width: '5%'
+                        },
+                        PERIODICITY_PAYMENT: {
+                            title: 'PERIODICITY_PAYMENT',
+                            width: '5%'
+                        },
+                        TOTAL_NUM_INSTALLMENT: {
+                            title: 'TOTAL_NUM_INSTALLMENT',
+                            width: '5%'
+                        },
+                        INSTALLMENT_AMT: {
+                            title: 'INSTALLMENT_AMT',
+                            width: '5%'
+                        },
+                        NUM_REMAINING_INSTALLMENT: {
+                            title: 'NUM_REMAINING_INSTALLMENT',
+                            width: '5%'
+                        },
+                        NUM_OVERDUE_INSTALLMENT: {
+                            title: 'NUM_OVERDUE_INSTALLMENT',
+                            width: '5%'
+                        },
+                        OVERDUE_AMT: {
+                            title: 'OVERDUE_AMT',
+                            width: '5%'
+                        },
+                        LOAN_STATUS: {
+                            title: 'LOAN_STATUS',
+                            width: '5%'
+                        },
+                        RESCHEDULE_NO: {
+                            title: 'RESCHEDULE_NO',
+                            width: '5%'
+                        },
+                        LAST_RESCHEDULE_DATE: {
+                            title: 'LAST_RESCHEDULE_DATE',
+                            width: '5%'
+                        },
+                        WRITE_OFF_AMT: {
+                            title: 'WRITE_OFF_AMT',
+                            width: '5%'
+                        },
+                        WRITE_OFF_DATE: {
+                            title: 'WRITE_OFF_DATE',
+                            width: '5%'
+                        },
+                        CONTRACT_PHASE: {
+                            title: 'CONTRACT_PHASE',
+                            width: '5%'
+                        },
+                        LOAN_DURATION: {
+                            title: 'LOAN_DURATION',
+                            width: '5%'
+                        },
+                        ACTUAL_END_DATE_CONTRACT: {
+                            title: 'ACTUAL_END_DATE_CONTRACT',
+                            width: '5%'
+                        },
+                        ECONOMIC_PURPOSE_CODE: {
+                            title: 'ECONOMIC_PURPOSE_CODE',
+                            width: '5%'
+                        },
+                        COMPULSORY_SAVING_AMT: {
+                            title: 'COMPULSORY_SAVING_AMT',
+                            width: '5%'
+                        },
+                        VOLUNTARY_SAVING_AMT: {
+                            title: 'VOLUNTARY_SAVING_AMT',
+                            width: '5%'
+                        },
+                        TERM_SAVING_AMT: {
+                            title: 'TERM_SAVING_AMT',
+                            width: '5%'
+                        },
+                        SUBSIDIZED_CREDIT_FLAG: {
+                            title: 'SUBSIDIZED_CREDIT_FLAG',
+                            width: '5%'
+                        },
+                        SERVICE_CHARGE_RATE: {
+                            title: 'SERVICE_CHARGE_RATE',
+                            width: '5%'
+                        },
+                        PAYMENT_MODE: {
+                            title: 'PAYMENT_MODE',
+                            width: '5%'
+                        },
+                        ADVANCE_PAYMENT_AMT: {
+                            title: 'ADVANCE_PAYMENT_AMT',
+                            width: '5%'
+                        },
+                        LAW_SUIT: {
+                            title: 'LAW_SUIT',
+                            width: '5%'
+                        },
+                        ME: {
+                            title: 'ME',
+                            width: '5%'
+                        },
+                        MEMBER_WELFARE_FUND: {
+                            title: 'MEMBER_WELFARE_FUND',
+                            width: '5%'
+                        },
+                        INSURENCE_COVERAGE: {
+                            title: 'INSURENCE_COVERAGE',
+                            width: '5%'
+                        },
+
+                        OfficeId: {
+                            title: 'OfficeId',
+                            width: '5%'
+                        },
+                        ReportDate: {
+                            title: 'ReportDate',
+                            width: '5%'
+                        },
+                        Data_Status: {
+                            title: 'Data_Status',
+                            width: '5%'
+                        }
+                    },
+
+                    recordsLoaded: function () {
+                        isGridInitialized = true;
+                    }
+                });
+                $('#grid').jtable('load');
+
+            });
+            /////End of btnViewConDetails////
+        });
+    });
+</script>
+
+<h2 class="page-title">Generate MRA CIB Information</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Head Office", new { @class = "control-label" })
+                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control", @readonly = "true" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group" style="margin-top:27px">
+                    <input type="radio" id="rdZone" name="under" checked="checked">
+                    <label for="under">Zone Wise</label>
+                    <br>
+                </div>
+            </div>
+        </div>
+        <!--<div id="dv">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">Program/Project</label>
+                        <select class="form-control" id="ddlDivision"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">Division/Region</label>
+                        <select class="form-control" id="ddlProgram"></select>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <div id="dvZone">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Zone Office", new { @class = "control-label" })
+                        @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Area Office", new { @class = "control-label" })
+                        @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Office", new { @class = "control-label" })
+                        @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @multiple = "multiple", @class = "ddl-select-picker form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" align="left">
+                <div class="form-group form-action" style="margin-top:10px">
+                    <input type="button" value="CIB_Subject_Details" class="btn btn-primary" id="btnView" />
+                    &nbsp;
+                    <input type="button" value="CIB_Contract_Details" class="btn btn-primary" id="btnViewConDetails" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<div class="">
+    <div id="grid"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+
+    <link href="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.css" rel="stylesheet" />
+    <script src="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.js"></script>
+}

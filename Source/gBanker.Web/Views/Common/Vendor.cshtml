@@ -1,0 +1,194 @@
+﻿
+@{
+    ViewBag.Title = "Vendor Setup";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    function GetByID(ids, status) {
+        var data = GenerateAjaxRequist('/Common/GetByVendorID?ids=' + ids + '&status=' + (status == 1 ? 'u' : 'd'), null, "POST")
+        if (status == 1) {
+            $("#hdnID").val(data.Records.VendorID);
+            $("#ddlStore").val(data.Records.WharehouseID);
+            $("#txtName").val(data.Records.VendorName);
+            $("#txtMobileNo").val(data.Records.MobileNo);
+            $("#txtAddress").val(data.Records.Address);
+            $("#btnSave").val("Update");
+        }
+        else if (status == 2) {
+            $.alert.open("Success", data.message);
+            reloadGrid();
+        }
+        
+    }
+    $(document).ready(function () {
+        NumericTextboxOnly("#txtMobileNo");
+        $(function () {
+            var data = GenerateAjaxRequist('/Store/GetStoreInfoXOffice', null, "POST");
+            for (var i = 0; i < data.Records.length; i++) {
+                $("#ddlStore").append('<option value=' + data.Records[i].WarehouseID + '>' +
+                    data.Records[i].WarehouseName + '</option>')
+            }
+        });
+
+       
+        $("#hdnID").val(0);
+        $("#btnSave").on('click', function () {
+            var status = "";
+            if ($("#hdnID").val() == "0") status = "I";
+            else
+                status = "U";
+            if (!$("#txtName").val()) $.alert.open("Error", "Vendor name required");
+            else if (!$("#txtMobileNo").val()) $.alert.open("Error", "Category Required");
+            else {
+                var dataObject = {
+                    VendorID: $("#hdnID").val(),
+                    WharehouseID: $("#ddlStore").val(),
+                    VendorName: $("#txtName").val(),
+                    MobileNo: $("#txtMobileNo").val(),
+                    Address: $("#txtAddress").val(),
+                    IsActive: true,
+                };
+                var data = GenerateAjaxRequist('/Common/VendorSetup?status=' + status, JSON.stringify({ obj: dataObject }), "POST")
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);
+                    $("#hdnID").val(0);
+                    $("#txtName").val("");
+                    $("#txtMobileNo").val("");
+                    $("#txtAddress").val("");
+                    $("#btnSave").val("Save")
+                    reloadGrid();
+                }
+                else
+                    $.alert.open("Fail", data.message);
+                
+            }
+
+        });
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            //url: '/Product/GetProducts?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            url: '/Common/GetAllVendor',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                VendorID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                VendorName: {
+                    title: 'Vendor Name',
+                    width: '30%'
+
+                },
+                MobileNo: {
+                    title: 'Mobile No',
+                    width: '20%'
+
+                },
+                Address: {
+                    title: 'Address',
+                    width: '30%'
+
+                },
+                WarehouseName: {
+                    title: 'Store',
+                    width: '20%'
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='#' onclick='GetByID(" + data.record.VendorID + ",1)'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="#" onclick="GetByID(' + data.record.VendorID + ',2)"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+<h2 class="page-title">Vendor Setup</h2>
+<input type="hidden" id="hdnID" />
+<table>
+    <tr>
+        <td>Store Name</td>
+        <td>:</td>
+        <td>
+            <select id="ddlStore" class="form-control">
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <td>:</td>
+        <td>
+            <input type="text" class="form-control" id="txtName" placeholder="Vendor Name" />
+        </td>
+    </tr>
+    <tr>
+        <td>Mobile No</td>
+        <td>:</td>
+        <td><input type="text" class="form-control" id="txtMobileNo" placeholder="Mobile No" /></td>
+    </tr>
+    <tr>
+        <td>Address</td>
+        <td>:</td>
+        <td><textarea class="form-control" style="resize:none" id="txtAddress"></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td><input type="button" id="btnSave" value="Save" class="btn btn-primary" /></td>
+    </tr>
+</table>
+<br />
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

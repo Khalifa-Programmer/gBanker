@@ -1,0 +1,385 @@
+﻿@model gBanker.Web.ViewModels.CategoryTransferViewModel
+
+@{
+    ViewBag.Title = "CategoryTransfer Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var prod = Model == null ? null : Model.productList;
+    var cate = Model == null ? null : Model.categoryList;
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        // $("#TrxDate").datepicker();
+        gBankerDatePicker("TransactionDate");
+    });
+    function SetProductid(value) {
+
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+
+    }
+    function LoadNewProduct(Member_id, center_id) {
+        var ddlproduct = $("#ProductID");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "CategoryTransfer", "http")',
+            data: { Member_id: Member_id, center_id: center_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlproduct.html('');
+                $.each(data, function (id, option) {
+                    ddlproduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    @*function LoadNewProduct() {
+
+        var mem_id = $("#MemberID").val();
+        var ddlProduct = $("#ProductID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "CategoryTransfer", "http")',
+            data: { mem_id: mem_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlProduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }*@
+
+
+    function LoadNewcategory(Member_id, center_id) {
+        var mem_id = $("#MemberID").val();
+        var ddlCate = $("#MemberCategoryId");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetNewcategoryList", "CategoryTransfer", "http")',
+            data: { Member_id: Member_id, center_id: center_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlCate.html('');
+                $.each(data, function (id, option) {
+                    ddlCate.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    @*function LoadNewcategory() {
+        var mem_id = $("#MemberID").val();
+        var ddlProduct = $("#MemberCategoryId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetNewcategoryList", "CategoryTransfer", "http")',
+            data: { mem_id: mem_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlProduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }*@
+
+    function GetMemberCategory() {
+        var ddlMember = $("#TrProductID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetTrhfMemberCategoryID", "CategoryTransfer", "http")',
+            data: { TrMemberCategoryID: $("#TrMemberCategoryID option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.Value).html(option.Text));
+                   
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#ProductID").blur(function () {
+           
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var centerId = $("#CenterID").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetSavBalance", "CategoryTransfer", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, productid: prodId},
+
+                success: function (result) {
+                    $("#Principal").val(result.Principal);
+                }
+            });
+        });
+
+        $("#TrMemberCategoryID").change(function () {
+            var ddlCenter = $("#TrMemberCategoryID option:selected").val();
+            if (ddlCenter > 0) {
+                GetMemberCategory();
+               
+            }
+            else {
+                $("#TrMemberCategoryID").empty();
+              
+            }
+        });
+       
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "CategoryTransfer", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            // CalcLoanTerm();
+                            if ($("#CenterID").val() > 0 && data[0].MemberID > 0) {
+
+                                LoadNewProduct(data[0].MemberID, $("#CenterID").val());
+                                LoadNewcategory(data[0].MemberID, $("#CenterID").val());
+                            }
+                            //LoadNewProduct();
+                            //LoadNewcategory();
+                        }
+                        else if (data.length == 0) {
+                            
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                           
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "CategoryTransfer", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                   
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            minLength: 3,
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+</script>
+
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Category Transfer</h2>
+
+@using (Html.BeginForm("Create", "CategoryTransfer", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+       
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            @*<div class="form-group">
+                @Html.LabelFor(model => model.TransferDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.TransferDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.TransferDate, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MemberCategoryId, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.EditorFor(model => model.MemberCategoryId, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.DropDownListFor(model => model.MemberCategoryId, cate, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MemberCategoryId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-10">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TrMemberCategoryID, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.EditorFor(model => model.TrMemberCategoryID, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.DropDownListFor(model => model.TrMemberCategoryID, membercategory, new { @class = "form-control" })
+
+                   
+                    @Html.ValidationMessageFor(model => model.TrMemberCategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.DropDownListFor(model => model.ProductID, product, new { onchange = "SetProductid(this.value);" })*@
+                    @Html.DropDownListFor(model => model.ProductID, prod, new { @class = "form-control", onchange = "SetProductid(this.value);" })
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TrProductID, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.DropDownListFor(model => model.TrProductID, product, new { onchange = "SetProductid(this.value);" })*@
+                    @Html.DropDownListFor(model => model.TrProductID, product, new { @class = "form-control" })
+                    @Html.Hidden("hftrProdId")
+                    @Html.ValidationMessageFor(model => model.TrProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Principal, htmlAttributes: new { @class = "control-label"  })
+
+                    @Html.EditorFor(model => model.Principal, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.Principal, "", new { @class = "text-danger"})
+                </div>
+            </div>
+        </div>
+
+            <div class="form-group">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

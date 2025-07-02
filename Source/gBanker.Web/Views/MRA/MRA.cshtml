@@ -1,0 +1,87 @@
+﻿
+@{
+    ViewBag.Title = "MRA Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        //$("#txtFromDt").datepicker(
+        //   {
+        //       dateFormat: "dd-M-yy",
+        //       showAnim: "scale"
+        //   });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            //var from_date = $("#txtFromDt").val();
+            var Date = $("#txtToDt").val();
+            var Qtype = $("#ddlQtype").val();
+
+            var url = '/MRA/GenerateMraReport?Date=' + Date + '&Qtype=' + Qtype;
+
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+<h2 class="page-title">MRA Reports</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+  <div class="row">
+      <div class="col-md-4">
+          <div class="form-group">
+              @Html.Label("Date", new { @class = "control-label" })
+              @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+              @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control", @Value = @DateTime.Now.ToString("dd-MMM-yyyy") })*@
+          </div>
+      </div>
+      <div class="col-md-8">&nbsp;</div>
+  </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Report No", new { @class = "control-label" })
+                    @Html.DropDownList("QtypeList", new[] {
+                       new SelectListItem() {Text="01", Value= "1",Selected = true},
+                       new SelectListItem() {Text="02", Value="2"},
+                       new SelectListItem() {Text="03",Value="3"},
+                       new SelectListItem() {Text="04", Value="4"},
+                       new SelectListItem() {Text="05",Value="5"},
+                       new SelectListItem() {Text="06",Value="6"}},
+                new { @ID = "ddlQtype", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <h2 class="page-title"></h2>
+         <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+     
+   
+
+       
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

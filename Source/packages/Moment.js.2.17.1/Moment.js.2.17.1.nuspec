@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Moment.js</id>
+    <version>2.17.1</version>
+    <title>Moment.js</title>
+    <authors>Tim Wood, Iskren Chernev, Moment.js contributors</authors>
+    <owners>Tim Wood, Iskren Chernev, Moment.js contributors</owners>
+    <licenseUrl>https://raw.github.com/timrwood/moment/master/LICENSE</licenseUrl>
+    <projectUrl>http://momentjs.com/</projectUrl>
+    <iconUrl>http://pbs.twimg.com/profile_images/482670411402858496/Xrtdc94q_normal.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A lightweight JavaScript date library for parsing, manipulating, and formatting dates.</description>
+    <summary />
+    <releaseNotes>* Release Dec 3, 2016 -- full changelog https://gist.github.com/ichernev/f38280b2b29c4932914a6d3a4e50bfb2
+            * [#3638](https://github.com/moment/moment/pull/3638) [misc] TS: Make typescript definitions work with 1.x</releaseNotes>
+    <tags>JavaScript date time browser node.js</tags>
+  </metadata>
+</package>

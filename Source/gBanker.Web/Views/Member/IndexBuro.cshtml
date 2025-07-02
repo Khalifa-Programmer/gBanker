@@ -1,0 +1,326 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberViewModel>
+
+@{
+    ViewBag.Title = "Member List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<link href="~/Content/jtable-custom.css" rel="stylesheet" />
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#DateFromValue").datepicker(
+        {
+
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+            //dateFormat: "dd-M-yy",
+            //showAnim: "scale",
+            //changeMonth: true,
+            //changeYear: true,
+            //yearRange: "1920:2100"
+
+        });
+        $("#DateFromValue").datepicker(
+       'setDate', new Date());
+
+        $("#DateToValue").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale"
+           //dateFormat: "dd-M-yy",
+           //showAnim: "scale",
+           //changeMonth: true,
+           //changeYear: true,
+           //yearRange: "1920:2100"
+
+       });
+        $("#DateToValue").datepicker(
+     'setDate', new Date());
+        var SrNo = 1;
+        $('#grid').jtable({
+          //title: 'Member List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                //deleteAction: '/Member/Delete',
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Member/GetMemberInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                SrNo: {
+                    title: 'SL',
+                    width: '5%',
+                    list: true
+                },
+                MemberID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberImg: {
+                    title: 'Image',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        //return "<div class='text-center'><img src='/images/blank-headshot.jpg' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                        return "<div class='text-center'><img src='/Member/RetrieveImage/" + data.record.MemberID + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+
+                MemberCode: {
+                    title: 'Code',
+                    create: false,
+                    edit: false
+                },
+                OldMemberCode: {
+                    title: 'Old Code',
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Samity',
+                    create: false,
+                    edit: true
+                },
+                GroupCode: {
+                    title: 'Group',
+                    create: false,
+                    edit: false
+                },
+                FullName: {
+                    title: 'Name',
+                    create: false,
+                    edit: false
+                },
+                RefereeName: {
+                    title: 'Reference',
+                    create: false,
+                    edit: false,
+                    list:false
+                },
+                JoinDate: {
+                    title: 'Joining Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                    create: false,
+                    edit:false
+                },
+                ReleaseDate: {
+                    title: 'Release Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                    create: false,
+                    edit: false
+                },
+                Gender: {
+                    title: 'Gender',
+                    create: false,
+                    edit: false
+                },
+                CategoryName: {
+                    title: 'Category',
+                    create: false,
+                    edit: false,
+                    list:true
+                },
+                NationalID: {
+                    title: 'NID/Birth Cert',
+                    create:false,
+                    edit:false
+                },
+                PhoneNo: {
+                    title: 'Phone',
+                    create:false,
+                    edit: false,
+                    list: true
+                },
+                MemberStatus: {
+                    title: 'Status',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        if (data.record.MemberStatus == '0')
+                            return "In Active";
+                        else if (data.record.MemberStatus == '1')
+                            return "Active";
+                        else if (data.record.MemberStatus == '2')
+                            return "Drop";
+                        else if (data.record.MemberStatus == '3')
+                            return "Dead";
+                        else if (data.record.MemberStatus == '4')
+                            return "Black List";
+                        else if (data.record.MemberStatus == '5')
+                            return "Rejected";
+                        else
+                            return null;
+                    }
+                },
+                MemCategory: {
+                    title: 'Type',
+                    create: false,
+                    edit: false,
+                    list:true
+                },
+                EditLink: {
+                    title: "Edit",
+                    sort:false,
+                    display: function (data) {
+                        if (data.record.MemberStatus != '5')
+                            return "<div class='text-center'><a href='/Member/EditBuro/" + data.record.MemberID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        else
+                            return null;
+                    }
+                }
+                ,
+                EditLink2: {
+                    title: "Survey Form",
+                    width: '2%',
+                    sorting: false,
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/Survey/Form?MemberId=" + data.record.MemberID + "'><i title='Survey' class='fa fa-list-alt'></i></a></div>";
+                    }
+                } // End Of display
+            },
+            recordsLoaded: function (event, data) {
+                var pagenumber = $('.jtable-goto-page select option:selected').val();
+                var pagesize = $('.jtable-page-size-change select option:selected').val();
+                var SrNo = pagesize * pagenumber - pagesize;
+                if (data.records) {
+                    $.each(data.records, function (index, record) {
+                        var row = $('#grid').jtable('getRowByKey', record.MemberID);
+                        SrNo++;
+                        row.find('td:eq(0)').text(SrNo);
+                    });
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+    });
+    function reloadGridSubmit() {
+
+        if ($("#DateFromValue").val() == "") {
+            alert("Please Give FromDate Date.");
+            return false;
+        }
+        if ($("#DateToValue").val() == "") {
+            alert("Please Give ToDate Date.");
+            return false;
+        }
+
+        else if ($('#filterColumn :selected').val() == 0 || $('#filterColumn :selected').val() == '0') {
+            alert("Please Select Filter.");
+            return false;
+        }
+        else {
+            reloadGrid();
+
+        }
+
+
+    }
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val(),DateFromValue: $('#DateFromValue').val(), DateToValue: $('#DateToValue').val() });
+        $("#loading").hide();
+    }
+</script>
+@Html.ActionLink("Add New", "CreateBuro", null, new { @class = "btn btn-info btn-sm pull-right" })
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right", @style = "margin-left:10px;" })
+    @Html.ActionLink("Eligible List", "Eligible", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title">Member List</h2>
+<div class="row">
+    <div class="col-md-4">
+        <label class="control-label" style="padding-top:0px;">Date From:</label>
+        <input type="text" id="DateFromValue" placeholder="Type Search Text" autocomplete="off" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label class="control-label" style="padding-top:0px;">Date To:</label>
+        <input type="text" id="DateToValue" placeholder="Type Search Text" autocomplete="off" class="form-control" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Type:</label>
+    </div>
+    <div class="col-md-2">
+        <select id="TypeFilterColumn" class="form-control">
+            <option value="V">View All</option>
+            <option value="1">Active</option>
+            <option value="0">In Active</option>
+            <option value="2">Drop</option>
+            <option value="3">Dead</option>
+            <option value="4">Blacklist</option>
+            <option value="5">Rejected</option>
+        </select>
+    </div>
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-2">
+        <select id="filterColumn" class="form-control">
+            <option value="ViewAll">View All</option>
+            <option value="MemberCode">Member Code</option>
+            <option value="MemberName">Member Name</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="GroupCode">Group Code</option>
+            <option value="NationalID">National ID</option>
+            <option value="PhoneNo">Phone No</option>
+            <option value="MemberType">Member Type</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGridSubmit();" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        &nbsp;
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

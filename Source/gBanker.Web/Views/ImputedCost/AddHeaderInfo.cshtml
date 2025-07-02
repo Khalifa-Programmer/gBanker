@@ -1,0 +1,121 @@
+﻿
+@model ImputedCost_HeaderInfoViewModel
+
+@{
+    ViewBag.Title = "Header Information";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+@Html.ActionLink("Back to List", "HeaderInformation", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Header Information of Imputed Cost</h2>
+
+@using (Html.BeginForm("AddHeaderInfo", "ImputedCost", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.MNYR)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.FY_Month, htmlAttributes: new { @class = "control-label required" })
+                            @Html.DropDownListFor(model => model.FY_Month, DropdownListHelper.GetDropdownList(DropdownListTypes.MonthList, Model.FY_Month), "Select One", new { @class = "form-control chosen" })
+                            @Html.ValidationMessageFor(model => model.FY_Month)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MarketRate, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.MarketRate, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.MarketRate)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.InflationRate, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.InflationRate, new { @class = "form-control CheckNumeric" })
+                            @Html.ValidationMessageFor(model => model.InflationRate)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.imp_fs_npk, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.imp_fs_npk, new { @class = "form-control CheckNumeric" })
+                            @Html.ValidationMessageFor(model => model.imp_fs_npk)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.imp_fs_pk, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.imp_fs_pk, new { @class = "form-control CheckNumeric" })
+                            @Html.ValidationMessageFor(model => model.imp_fs_pk)
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.imp_fsi_npk, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.imp_fsi_npk, new { @class = "form-control CheckNumeric" })
+                            @Html.ValidationMessageFor(model => model.imp_fsi_npk)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.imp_fsi_pk, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.imp_fsi_pk, new { @class = "form-control CheckNumeric" })
+                            @Html.ValidationMessageFor(model => model.imp_fsi_pk)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <div class="form-group form-action">
+                                <button type="submit" class="btn btn-sm btn-primary" id="btnSave"> Submit </button>
+                                @*<button type="button" id="btnSyncToPKSF" class="btn btn-sm btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div id="grid"></div>*@
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/headerInformationManager.js"></script>
+}

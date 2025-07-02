@@ -1,0 +1,407 @@
+﻿@model gBanker.Web.ViewModels.TransferDisburseViewModel
+
+@{
+    ViewBag.Title = "Transfer Disburse";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var offc = Model == null ? null : Model.officeList;
+    var cntr = Model == null ? null : Model.centerList;
+    var prod = Model == null ? null : Model.productList;
+    var trProd = Model == null ? null : Model.trProductList;
+}
+
+<script type="text/javascript">
+    function LoadCenterByOfficeId(office_id) {
+        var ddlCenters = $("#CenterID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "Member", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenters.html('');
+                $.each(data, function (id, option) {
+                    ddlCenters.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    function LoadCurProduct() {
+        var mem_id = $("#MemberID").val();
+        var ddlProduct = $("#ProductID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "TransferDisburse", "http")',
+            data: { mem_id: mem_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlProduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    function LoadNewProduct() {
+        var prod_id = $("#ProductID").val();
+        var ddlProduct = $("#TrProductID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetNewProductList", "TransferDisburse", "http")',
+            data: { prod_id: prod_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProduct.html('');
+                $.each(data, function (id, option) {
+                    ddlProduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    function GetLoanSummaryDetail() {
+        var prod_id = $("#ProductID").val();
+        var mem_id = $("#MemberID").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLoanSummaryDetail", "TransferDisburse", "http")',
+            data: { mem_id: mem_id, prod_id: prod_id },
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                $("#LoanTerm").val(result.LoanTerm);
+                $("#PurposeID").val(result.PurposeID);
+                $("#PurposeName").val(result.PurposeName);
+                $("#PrincipalLoan").val(result.PrincipalLoan);
+                $("#IntCharge").val(result.IntCharge);
+                $("#Duration").val(result.Duration);
+                $("#DisburseDate").val(result.DisburseDate);
+                $("#LoanInstallment").val(result.LoanInstallment);
+                $("#InstallmentStartDate").val(result.InstallmentStartDate);
+                $("#IntInstallment").val(result.IntInstallment);
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    function CalcTransaction() {
+        var prod_id = $("#TrProductID").val();
+        var pr_loan = $("#PrincipalLoan").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CalcTransaction", "TransferDisburse", "http")',
+            data: { prod_id: prod_id, pr_loan: pr_loan },
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                $("#LoanInstallment").val(result.LoanInstallment);
+                $("#IntInstallment").val(result.IntInstallment);
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#InstallmentStartDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+            });
+        $("#DisburseDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+        });
+        $("#InstallmentStartDate").val('');
+        $("#DisburseDate").val('');
+        
+        LoadCenterByOfficeId($("#OfficeID").val());
+
+        $("#ProductID").change(function () {
+            LoadNewProduct();
+            GetLoanSummaryDetail();
+        });
+        $("#TrProductID").change(function () {
+            CalcTransaction();
+        });
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemberList", "LoanSummary", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    if (data.length == 1) {
+                        $("#memberAutoComplete").val(data[0].MemberName);
+                        $("#MemberID").val(data[0].MemberID);
+                        LoadCurProduct();
+                    }
+                    else if (data.length == 0) {
+                        alert("No member found.");
+                        $("#MemberID").val("");
+                    }
+                    else {
+                        alert("More than one member found with the given Member code.");
+                        $("#MemberID").val("");
+                    }
+                }
+            });
+        });
+
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "LoanSummary", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+            var CenterID = $("#CenterID").val();
+            var MemberID = $("#MemberID").val();
+            var ProductID = $("#ProductID").val();
+            var LoanTerm = $("#LoanTerm").val();
+            var PurposeID = $("#PurposeID").val();
+            var DisburseDate = $("#DisburseDate").val();
+            var PrincipalLoan = $("#PrincipalLoan").val();
+            var LoanInstallment = $("#LoanInstallment").val();
+            var IntInstallment = $("#IntInstallment").val();
+            var InstallmentStartDate = $("#InstallmentStartDate").val();
+            var Duration = $("#Duration").val();
+            var TransferProductID = $("#TrProductID").val();
+            var TransferInterest = $("#IntCharge").val();
+            var TransType = '0';
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveTransferDisburse", "TransferDisburse", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { CenterID: CenterID, MemberID: MemberID, ProductID: ProductID, LoanTerm: LoanTerm, PurposeID: PurposeID, DisburseDate: DisburseDate, PrincipalLoan: PrincipalLoan, LoanInstallment: LoanInstallment, IntInstallment: IntInstallment, InstallmentStartDate: InstallmentStartDate, Duration: Duration, TransferProductID: TransferProductID, TransferInterest: TransferInterest, TransType: TransType },
+                success: function (Result) {
+                    $("#loading").hide();
+                    var msg, css;
+                    if (Result == "OK") {
+                        var msg = "Transfer Disburse Successfully";
+                        var css = "success";
+                    }
+                    else {
+                        var msg = "Failed to transfer";
+                        var css = "failed";
+                    }
+                    $("#dvMessage").attr('class', css);
+                    $("#dvMessage").html(msg);
+                    $("#dvMessage").show();
+                    if (data.Message == null)
+                        $("#dvMessage").toggle('fade', 1500);
+                    //alert(latest_voucher);
+                },
+                error: function (request, status, error) {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html(request.statusText);
+                    $("#dvMessage").show();
+                }
+            });            
+        });
+    });
+
+
+</script>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <h2 class="page-title">Transfer Disbursement</h2>
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    
+    <div class="row">
+       
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.HiddenFor(model => model.OfficeID)
+                @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, cntr, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.MemberID, htmlAttributes: new { @class = "control-label" })
+                @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                @Html.HiddenFor(model => model.MemberID)
+                @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    @*<h2 class="page-title">Product</h2>*@
+    <fieldset>
+        <legend>Product</legend>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.ProductID, prod, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TrProductID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.TrProductID, trProd, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.TrProductID, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanTerm, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.LoanTerm, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LoanTerm, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PurposeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.PurposeName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.HiddenFor(model => model.PurposeID)
+                    @Html.ValidationMessageFor(model => model.PurposeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Transaction</legend>        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PrincipalLoan, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.PrincipalLoan, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.PrincipalLoan, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IntCharge, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.IntCharge, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.IntCharge, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Duration, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Duration, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Duration, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.DisburseDate, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.DisburseDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.DisburseDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanInstallment, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.LoanInstallment, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LoanInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InstallmentStartDate, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.InstallmentStartDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.InstallmentStartDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IntInstallment, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.IntInstallment, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.IntInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+        </div>
+    </fieldset>
+                <div class="row">
+            <div class="col-md-12">
+                <div class="form-group form-action">
+                    <input type="button" value="Save" class="btn btn-primary" id="btnSave" />
+                </div>
+            </div>
+        </div>
+
+
+}
+
+        @section Scripts {
+            @Scripts.Render("~/bundles/jqueryval")
+            @Scripts.Render("~/bundles/jqueryui")
+        }

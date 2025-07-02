@@ -1,0 +1,118 @@
+﻿@{
+    ViewBag.Title = "DownLoadJSON";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+     $("#txtACCOUNTINGDATE").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           changeMonth: true,
+           changeYear: true,
+           yearRange: "c-50:c+50",
+       });
+      $("#txtACCOUNTINGDATE").datepicker(
+       'setDate', new Date());
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var EmployeeStatus = $("#ddlQtype").val();
+    
+            //var url = '/ExcelMigration/DownloadExcelJson';
+            //window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+     
+            var ACCOUNTINGDATE      = $("#txtACCOUNTINGDATE").val();
+            var spName = "";
+            var txtBranchCode = "";
+
+    
+            var url = '/ExcelMigration/DownloadExcelJsonCon?spName=' + spName + '&ACCOUNTINGDATE=' + ACCOUNTINGDATE + '&txtBranchCode=' + txtBranchCode ;
+            window.open(url);
+            //public ActionResult DownloadExcelJsonSub(string spName, string ACCOUNTINGDATE, string txtBranchCode = "")
+            //var url = '/ExcelMigration/DownloadExcelJsonSub?spName=' + spName + '&ACCOUNTINGDATE=' + ACCOUNTINGDATE + '&txtBranchCode=' + txtBranchCode ;
+            //window.open(url);
+           // alert("btnView");
+            
+        });
+
+        $("#btnSubView").click(function (e) {
+            e.preventDefault();
+
+            var EmployeeStatus = $("#ddlQtype").val();
+
+            //var url = '/ExcelMigration/DownloadExcelJson';
+            //window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+            var ACCOUNTINGDATE = $("#txtACCOUNTINGDATE").val();
+            var spName = "";
+            var txtBranchCode = "";
+
+
+            //var url = '/ExcelMigration/DownloadExcelJsonCon?spName=' + spName + '&ACCOUNTINGDATE=' + ACCOUNTINGDATE + '&txtBranchCode=' + txtBranchCode;
+            //window.open(url);
+            //public ActionResult DownloadExcelJsonSub(string spName, string ACCOUNTINGDATE, string txtBranchCode = "")
+            var url = '/ExcelMigration/DownloadExcelJsonSub?spName=' + spName + '&ACCOUNTINGDATE=' + ACCOUNTINGDATE + '&txtBranchCode=' + txtBranchCode;
+            window.open(url);
+            //alert("btnView");
+
+        });
+
+       
+    });
+</script>
+
+
+
+<h2 class="page-title">DownLoad JSON</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-sm-6" id="dvIdentityValidDate">
+            <div class="form-group">
+                <label class="control-label col-sm-4"> Accounting Date   </label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtACCOUNTINGDATE" class="form-control" autocomplete="off" />
+                </div>
+            </div>
+        </div>
+        </div>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group from-action">
+                <input type="submit" value="Contract JSON" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group from-action">
+                <input type="submit" value="Subject JSON" class="btn btn-primary" id="btnSubView" />
+            </div>
+        </div>
+        
+    </div>
+
+ 
+    </div>
+    }
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/jqueryui")
+    }
+
+
+
+
+
+

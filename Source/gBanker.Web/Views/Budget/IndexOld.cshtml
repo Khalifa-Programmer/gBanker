@@ -1,0 +1,85 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.BudgetViewModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'TrxDate ASC',
+            actions: {
+                listAction: '/Budget/GetBudgetList'                
+            },
+            fields: {
+                BudgetID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                SlNo: {
+                    title: 'SL',
+                    create: false,
+                    edit: false,
+                    width:'5%'
+                },
+                BudgetYear: {
+                    title: 'Year',
+                    create: false,
+                    edit: true,
+                    width: '5%'
+                },
+                AccName: {
+                    title: 'Account Code',
+                    create: false,
+                    edit: true,
+                    width: '25%'
+                },
+                BudgetAmount: {
+                    title: 'Amount',
+                    create: false,
+                    edit: true                   
+                },
+                EditLink: {
+                    title: "Edit",
+                    sort: false,
+                    display: function (data) {
+                        if (data.record.MemberStatus != '5')
+                            return "<div class='text-center'><a href='/Budget/Edit/" + data.record.BudgetID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        else
+                            return null;
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        if (data.record.MemberStatus != '5')                            
+                            return '<div class="text-center delete-link"><a href="/Budget/DeleteBudget?BudgetId=' + data.record.BudgetID + '" ' + ' OnClick="return confirm(' + "'" + 'Are you sure you want to delete this item?' + "'" + ');"' + '><i class="fa fa-trash-o"></i></a></div>';
+                        else
+                            return null;                        
+                    }
+                }
+            }
+        });
+
+        $('#grid').jtable('load');
+
+
+    });
+
+
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Budget List</h2>
+<div id="grid"></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

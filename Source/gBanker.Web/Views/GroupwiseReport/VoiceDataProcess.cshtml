@@ -1,0 +1,162 @@
+﻿@model gBanker.Web.ViewModels.VoiceDataProcessViewModel
+
+@{
+    ViewBag.Title = "Voice Data Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style>
+    #countRow, #successRow {
+        background-color: #fff !important;
+        cursor: default !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        TotalRowCountVoiceData();
+
+        $("#DateValue").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                changeMonth: true,
+                changeYear: true,
+                showAnim: "scale",
+            });
+
+        $('#btnView').click(function (e) {
+            e.preventDefault();
+            var officeIds = $('#OfficeId').val();
+            if (officeIds == null || officeIds == '') {
+                $.alert.open("Required", "Please select office");
+            } else {
+                run_VoiceDataProcess();
+            }
+        });
+
+        $('#btnRefresh').click(function (e) {
+            e.preventDefault();
+            TotalRowCountVoiceData();
+        });
+    });
+
+    function run_VoiceDataProcess() {
+        var officeIds = $('#OfficeId').val();
+        var trxType = $('#TrxType').val();
+        var dateValue = $('#DateValue').val();
+
+        var model = {
+            officeIds: officeIds,
+            TrxType: trxType,
+            DateValue: dateValue
+        };
+
+        $.ajax({
+            url: '/GroupWiseReport/GenerateVoiceDataProcess',
+            type: 'POST',
+            data: model,
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                $.alert.open("Success", "Process Successfully Completed.");
+            },
+            error: function (request, status, error) {
+                $.alert.open("Error", "Error occured to load data : " + error);
+            }
+        });
+    }
+
+    function TotalRowCountVoiceData() {
+
+        $.ajax({
+            url: '/GroupWiseReport/GenerateTotalRowCountVoiceData',
+            type: 'POST',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                $("#countRow").val(result.Data.TotalRow);
+                $("#successRow").val(result.Data.SuccessRow);
+            },
+            error: function (request, status, error) {
+                $.alert.open("Error", "Error occured to load data : " + error);
+            }
+        });
+    }
+
+
+</script>
+
+<h2 class="page-title">Voice Data Process</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="control-label" style="padding-top:0px;">Office</label>
+                    @Html.DropDownListFor(model => model.OfficeId, Model.OfficeList, new { @multiple = "multiple", @class = "ddl-select-picker form-control", data_live_search = "true" })
+                </div>
+                <div class="col-md-4">
+                    <label class="control-label" title="Transaction Type" style="padding-top:0px;">Trx Type:</label>
+                    @*@Html.DropDownList("TrxTypeList", Model.TrxTypeList, new { @ID = "ddlTrxType", @class = "form-control" })*@
+                    @Html.DropDownListFor(model => model.TrxType, Model.TrxTypeList, new {@class = "form-control" })
+                </div>
+                <div class="col-md-4">
+                    <label class="control-label" style="padding-top:0px;">Date From</label>
+                    @Html.TextBoxFor(model => model.DateValue, new { @placeholder = "select date", @class = "form-control", @autocomplete = "off" })
+                </div>
+            </div>
+
+            <br />
+
+            <div class="row">
+                <div class="col-md-3">
+                    <button type="button" id="btnView" class="btn btn-primary"><i class="glyphicon glyphicon-cog"></i> Process </button>
+                    &nbsp;
+                </div>
+                <div class="col-md-7">
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-addon">Total Record: </span>
+                                <strong><input id="countRow" class="form-control text-center" disabled />   </strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-addon">Success Record: </span>
+                                <strong><input id="successRow" class="form-control text-center" disabled />   </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="btnRefresh" class="btn btn-primary"><i class="glyphicon glyphicon-refresh"></i> Refresh </button>
+                    &nbsp;
+                </div>
+                &nbsp;
+
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+
+    <link href="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.css" rel="stylesheet" />
+    <script src="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.js"></script>
+
+    <script src="~/Assets/js/sms/bulkSMSManager.js"></script>
+}

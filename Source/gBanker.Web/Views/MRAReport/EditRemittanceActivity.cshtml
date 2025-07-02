@@ -1,0 +1,151 @@
+﻿@model gBanker.Web.ViewModels.RemittanceActivityViewModel
+
+@{
+    ViewBag.Title = "Remittance Activity";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {  
+        $("#TransactionDate").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+          });
+        $("#btnReset").click(function () {
+            $("#NoOfClient").val('');
+            $("#RemittedAmount").val('');
+            $("#Commission").val('');
+            $("#LinkedBank").val('');
+            $("#Remark").val('');
+            $("#TransactionDate").val('');
+        });
+
+    });
+    function UpdateRemittanceAcitivity() {
+        var remittanceActivityId = $("#RemittanceActivityId").val();
+        var noOfClient = $("#NoOfClient").val();
+        var remittedAmount = $("#RemittedAmount").val();
+        var commission = $("#Commission").val();
+        var linkedBank = $("#LinkedBank").val();
+        var remark = $("#Remark").val();
+        var transactionDate = $("#TransactionDate").val();
+
+        var remittanceActivity = {
+            RemittanceActivityId:remittanceActivityId,
+            NoOfClient: noOfClient,
+            RemittedAmount: remittedAmount,
+            Commission: commission,
+            LinkedBank: linkedBank,
+            Remark: remark,
+            TransactionDate: transactionDate
+        }
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateRemittanceAcitivity", "MRAReport", "http")',
+            data: JSON.stringify({ remittanceActivity: remittanceActivity }),
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);                    
+                    Clearform();
+                } else {
+                    $.alert.open("Error", data.message);
+                    ClearForm();
+                }
+            }
+
+        });
+    }
+    function Clearform() {
+        $("#NoOfClient").val('');
+        $("#RemittedAmount").val('');
+        $("#Commission").val('');
+        $("#LinkedBank").val('');
+        $("#Remark").val('');
+        $("#TransactionDate").val('');
+    }
+
+
+
+</script>
+
+@Html.ActionLink("Back to List", "IndexRemittanceActivity", null, new { @class = "pull-right" })
+<h2 class="page-title">Remittance Activity</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.RemittanceActivityId)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">No. of Client</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.NoOfClient, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Remitted Amount</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.RemittedAmount, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Commission from Remittance</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.Commission, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Linked Bank</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.LinkedBank, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Remark</label>
+                <div class="col-sm-7">
+                    @Html.TextAreaFor(model => model.Remark, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">TransactionDate</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.TransactionDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">                
+                <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateRemittanceAcitivity()" />
+                <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

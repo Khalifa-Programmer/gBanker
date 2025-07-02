@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <FullPath>Debug</FullPath>
+    <OutputPath>bin\Debug</OutputPath>
+    <ErrorLevel>2</ErrorLevel>
+    <OverwriteDatasets>True</OverwriteDatasets>
+    <OverwriteDataSources>True</OverwriteDataSources>
+    <TargetServerVersion>SSRS2016</TargetServerVersion>
+    <Platform>Win32</Platform>
+    <TargetReportFolder>gBanker_Reports</TargetReportFolder>
+    <TargetDatasetFolder>Datasets</TargetDatasetFolder>
+    <TargetDatasourceFolder>Data Sources</TargetDatasourceFolder>
+    <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
+    <TargetServerURL>http://192.192.192.195:8081/ReportServer</TargetServerURL>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocal' ">
+    <FullPath>DebugLocal</FullPath>
+    <OutputPath>bin\DebugLocal</OutputPath>
+    <ErrorLevel>2</ErrorLevel>
+    <OverwriteDatasets>False</OverwriteDatasets>
+    <OverwriteDataSources>False</OverwriteDataSources>
+    <TargetServerVersion>SSRS2016</TargetServerVersion>
+    <Platform>Win32</Platform>
+    <TargetReportFolder>gBanker.Reports</TargetReportFolder>
+    <TargetDatasetFolder>Datasets</TargetDatasetFolder>
+    <TargetDatasourceFolder>Data Sources</TargetDatasourceFolder>
+    <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
+    <TargetServerURL>http://localhost/reportserver</TargetServerURL>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <FullPath>Release</FullPath>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorLevel>2</ErrorLevel>
+    <OverwriteDatasets>False</OverwriteDatasets>
+    <OverwriteDataSources>False</OverwriteDataSources>
+    <TargetServerVersion>SSRS2016</TargetServerVersion>
+    <Platform>Win32</Platform>
+    <TargetReportFolder>gBanker.Reports</TargetReportFolder>
+    <TargetDatasetFolder>Datasets</TargetDatasetFolder>
+    <TargetDatasourceFolder>Data Sources</TargetDatasourceFolder>
+    <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
+    <TargetServerURL>http://localhost/reportserver</TargetServerURL>
+  </PropertyGroup>
+  <PropertyGroup>
+    <State>$base64$PFNvdXJjZUNvbnRyb2xJbmZvIHhtbG5zOnhzZD0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zOmRkbDI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yIiB4bWxuczpkZGwyXzI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yLzIiIHhtbG5zOmRkbDEwMF8xMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDA4L2VuZ2luZS8xMDAvMTAwIiB4bWxuczpkZGwyMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEwL2VuZ2luZS8yMDAiIHhtbG5zOmRkbDIwMF8yMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEwL2VuZ2luZS8yMDAvMjAwIiB4bWxuczpkZGwzMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDExL2VuZ2luZS8zMDAiIHhtbG5zOmRkbDMwMF8zMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDExL2VuZ2luZS8zMDAvMzAwIiB4bWxuczpkZGw0MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEyL2VuZ2luZS80MDAiIHhtbG5zOmRkbDQwMF80MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEyL2VuZ2luZS80MDAvNDAwIiB4bWxuczpkZGw1MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEzL2VuZ2luZS81MDAiIHhtbG5zOmRkbDUwMF81MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEzL2VuZ2luZS81MDAvNTAwIiB4bWxuczpkd2Q9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vRGF0YVdhcmVob3VzZS9EZXNpZ25lci8xLjAiPg0KICA8RW5hYmxlZD50cnVlPC9FbmFibGVkPg0KICA8UHJvamVjdE5hbWU+JC9CdXJvUmVwb3J0aW5nL0NlbnRlck1hbmFnZXJfU1NSUy9Tb3VyY2UvZ0Jhbmtlci5SZXBvcnRzPC9Qcm9qZWN0TmFtZT4NCiAgPEF1eFBhdGg+aHR0cHM6Ly9nY3JlcG9ydGluZy52aXN1YWxzdHVkaW8uY29tPC9BdXhQYXRoPg0KICA8TG9jYWxQYXRoPi48L0xvY2FsUGF0aD4NCiAgPFByb3ZpZGVyPns0Q0E1OEFCMi0xOEZBLTRGOEQtOTVENC0zMkRERjI3RDE4NEN9PC9Qcm92aWRlcj4NCjwvU291cmNlQ29udHJvbEluZm8+</State>
+    <DataSources>@(DataSource)</DataSources>
+    <DataSets>@(DataSet)</DataSets>
+    <Reports>@(Report)</Reports>
+  </PropertyGroup>
+  <ItemGroup>
+    <DataSet Include="DataSet1.rsd" />
+    <DataSet Include="MonthlyCollectionSheet.rsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <DataSource Include="DataSource1.rds" />
+    <DataSource Include="DataSource2.rds" />
+    <DataSource Include="DataSource3.rds" />
+    <DataSource Include="JCF.rds" />
+    <DataSource Include="Loan_Disbursement_Realization_Outstanding_DataSource.rds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Report Include="AccountsInfo_1.rdl" />
+    <Report Include="AccountsInfo_2.rdl" />
+    <Report Include="Account_Transaction_Details.rdl" />
+    <Report Include="acc_cashbook.rdl" />
+    <Report Include="AgrosorActivitiesStatement.rdl" />
+    <Report Include="AIS_Account_Transaction_Details.rdl" />
+    <Report Include="AIS_Account_Transaction_Details_Savings.rdl" />
+    <Report Include="AIS_Acc_Cash_Book.rdl" />
+    <Report Include="AIS_BalanceSheet.rdl" />
+    <Report Include="AIS_BalanceSheet_HO_New.rdl" />
+    <Report Include="AIS_Cash_Book.rdl" />
+    <Report Include="AIS_Income Expense_HO.rdl" />
+    <Report Include="AIS_Ledger_Book.rdl" />
+    <Report Include="AIS_Loan_Portfolio_Statement.rdl" />
+    <Report Include="AIS_Loan_Portfolio_Statement__Mamla.rdl" />
+    <Report Include="ASI_Bankbook.rdl" />
+    <Report Include="ASI_Cashbook.rdl" />
+    <Report Include="BalanceSheet.rdl" />
+    <Report Include="BKashErrorTransactionLog.rdl" />
+    <Report Include="BorrowersData.rdl" />
+    <Report Include="BranchMonitoringReport.rdl" />
+    <Report Include="Buro_Contractual_Savings_Collection_Statement.rdl" />
+    <Report Include="Buro_Contractual_Savings_Collection_Statement_HW.rdl" />
+    <Report Include="Buro_Loan_Fine_Realizable.rdl" />
+    <Report Include="Buro_Member_Dropout_list.rdl" />
+    <Report Include="Buro_Receipt_Payments.rdl" />
+    <Report Include="Buro_SavingsAccountOpening_Register.rdl" />
+    <Report Include="CashFlow.rdl" />
+    <Report Include="ChangesReport.rdl" />
+    <Report Include="CollectionSheet.rdl" />
+    <Report Include="Credit_Voucher.rdl" />
+    <Report Include="csOpening.rdl" />
+    <Report Include="csOpeningAll.rdl" />
+    <Report Include="CurrentDueOverdueLoanee.rdl" />
+    <Report Include="Customer_Balance.rdl" />
+    <Report Include="DailyDepositRegisterNew.rdl" />
+    <Report Include="DailySummarySamitywise.rdl" />
+    <Report Include="DailyWithdrawalList.rdl" />
+    <Report Include="EmployeeSalaryInfo.rdl" />
+    <Report Include="FIX_Compnay_Wise_Asset_Statement.rdl" />
+    <Report Include="FIX_Fixed_Assets_And_Depreciation_Schedule.rdl" />
+    <Report Include="FIX_Group_Wise_Asset_List.rdl" />
+    <Report Include="FIX_List_Of_Asset_Additions.rdl" />
+    <Report Include="FIX_List_Of_Asset_Sales.rdl" />
+    <Report Include="FIX_Location_Wise_Asset_list.rdl" />
+    <Report Include="FIX_User_Wise_Asset_list.rdl" />
+    <Report Include="FundManagement.rdl" />
+    <Report Include="Gen_Acc_Statement.rdl" />
+    <Report Include="HO_ AIS_BalanceSheet.rdl" />
+    <Report Include="HO_AccountsInfo_1.rdl" />
+    <Report Include="HO_AccountsInfo_2.rdl" />
+    <Report Include="HO_AIS_BalanceSheetSummery.rdl" />
+    <Report Include="HO_IncomeStatementDetail.rdl" />
+    <Report Include="HO_IncomeStatementSummery.rdl" />
+    <Report Include="HO_LoanAgingHO.rdl" />
+    <Report Include="HO_LoanDisbursementRealizationAndOutStanding.rdl" />
+    <Report Include="HO_LoanDisbursementRealizationAndOutStandingSummery.rdl" />
+    <Report Include="HO_LoanPortfolioStatementSummery.rdl" />
+    <Report Include="HO_LoanTerm.rdl" />
+    <Report Include="HO_LoanTermReport.rdl" />
+    <Report Include="HO_Loan_Portfolio_1.rdl" />
+    <Report Include="HO_MIS_Ledger_Book.rdl" />
+    <Report Include="HO_MIS_LoanPortfolioMarch.rdl" />
+    <Report Include="HO_MIS_Loan_Aging.rdl" />
+    <Report Include="HO_Monthly_Statistics_Report.rdl" />
+    <Report Include="HO_Receipt_PaymentsDetail.rdl" />
+    <Report Include="HO_SavingsPortfolioStatement.rdl" />
+    <Report Include="HO_SectoralBreakDownOfLoan.rdl" />
+    <Report Include="IncomeExpense.rdl" />
+    <Report Include="InterestReportMemberWise.rdl" />
+    <Report Include="InterestsReportProductWise.rdl" />
+    <Report Include="InterestsReportSamityWise.rdl" />
+    <Report Include="LegalInfo.rdl" />
+    <Report Include="LoanAgingHO.rdl" />
+    <Report Include="LoanBalanceProductWise.rdl" />
+    <Report Include="LoanCollectionSheet.rdl" />
+    <Report Include="LoanCollectionSheet_HW.rdl" />
+    <Report Include="LoanDisbursement.rdl" />
+    <Report Include="LoanDisbursementRealizationAndOutStanding.rdl" />
+    <Report Include="LoanProposalApprovalAndDisbursement.rdl" />
+    <Report Include="Loan_Aging.rdl" />
+    <Report Include="Loan_Aging__Mamla.rdl" />
+    <Report Include="MC.rdl" />
+    <Report Include="mCollection.rdl" />
+    <Report Include="MemberInfoWithLoanAndSavingsBalance.rdl" />
+    <Report Include="MFIMonthlyInfo.rdl" />
+    <Report Include="Miscellaneous_Transaction_Report.rdl" />
+    <Report Include="MIS_Advance_Statement.rdl" />
+    <Report Include="MIS_CenterList.rdl" />
+    <Report Include="MIS_General_Savings-1_Collection_Statement.rdl" />
+    <Report Include="MIS_General_Savings-1_Collection_Statement_HW.rdl" />
+    <Report Include="MIS_Ledger_Book.rdl" />
+    <Report Include="MIS_LoanPortfolioMarch.rdl" />
+    <Report Include="MIS_Loan_Aging.rdl" />
+    <Report Include="MIS_Loan_Disbursement_Realization_Outstanding.rdl" />
+    <Report Include="MIS_MemberList.rdl" />
+    <Report Include="MIS_Monthly_Rebeat_List.rdl" />
+    <Report Include="MIS_Proc_RPT_BuroSavimngsPortfolioStatement.rdl" />
+    <Report Include="MonthlyCollectionSheetForProsika.rdl" />
+    <Report Include="Monthly_Overdue_List.rdl" />
+    <Report Include="Monthly_Statistics_Report.rdl" />
+    <Report Include="PassBookCheckRegister.rdl" />
+    <Report Include="POMISEmployment.rdl" />
+    <Report Include="ProgramOrganizerLoan_Portfolio_Report.rdl" />
+    <Report Include="ProvisionCalculation_LLPVoucher.rdl" />
+    <Report Include="RecoverableRecovery.rdl" />
+    <Report Include="RecoverableRecovery_Area_Zone_TEST.rdl" />
+    <Report Include="RecoverableRecovery_Area_Zone_TEST_Center.rdl" />
+    <Report Include="Recoverable_Register.rdl" />
+    <Report Include="Report3.rdl" />
+    <Report Include="Rpt_Acc_TrialBalance_Branch_Wise_VERC.rdl" />
+    <Report Include="RPT_Member_Rebate_Info.rdl" />
+    <Report Include="Rpt_Supplementary_Product.rdl" />
+    <Report Include="SavingsRefundRegister.rdl" />
+    <Report Include="SavingsTodaysSummary.rdl" />
+    <Report Include="secondledger.rdl" />
+    <Report Include="SectoralBreakDownOfLoan.rdl" />
+    <Report Include="StaffwiseStatementDSKNew.rdl" />
+    <Report Include="Sub_Report.rdl" />
+    <Report Include="Summary.rdl" />
+    <Report Include="TodaysSummary.rdl" />
+    <Report Include="TrialBalance.rdl" />
+    <Report Include="VoucherNoWise.rdl" />
+    <Report Include="VoucherNoWise_Journal_CashContra_Voucher.rdl" />
+    <Report Include="Weekly_planning.rdl" />
+    <Report Include="WorkingAreaInfo.rdl" />
+    <Report Include="Yearly_Target_bu.rdl" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Reporting Services\Microsoft.ReportingServices.MSBuilder.targets" />
+</Project>

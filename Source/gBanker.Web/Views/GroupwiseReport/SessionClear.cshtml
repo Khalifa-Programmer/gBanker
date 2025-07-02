@@ -1,0 +1,101 @@
+﻿
+@{
+    ViewBag.Title = "Session Clear";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        loadButton();
+        function loadButton() {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '/GroupWiseReport/SessionClearButton',
+                dataType: 'json',
+                async: true,
+                success: function (response) {
+                    if (response.Msg == "NO_DATA") {
+                        $('#btnSessionClear').show();
+                        $('#btnSessionRollBack').hide();
+                    }
+                    else {
+                        $('#btnSessionClear').hide();
+                        $('#btnSessionRollBack').show();
+                    }
+                },
+                error: function (request, status, error) {
+                    $.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+
+        $('#btnSessionClear').click(function () {
+          
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '/GroupWiseReport/SessionClearProcess',
+                dataType: 'json',
+                async: true,
+                success: function (response) {
+                    $.alert.open(response.Msg);
+                    loadButton();
+                },
+                error: function (request, status, error) {
+                    $.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+                    loadButton();
+                }
+            });
+        })
+
+        $('#btnSessionRollBack').click(function () {
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '/GroupWiseReport/SessionRollBack',
+                dataType: 'json',
+                async: true,
+                success: function (response) {
+                    $.alert.open(response.Msg);
+                    loadButton();
+                },
+                error: function (request, status, error) {
+                    $.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+                    loadButton();
+                }
+            });
+        })
+    });
+    
+
+</script>
+
+<h2 class="page-title">Session Clear </h2>
+
+<div class="">
+ 
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="form-group form-action">
+                <input type="submit" value="Session Clear" class="btn btn-primary" id="btnSessionClear" />
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group form-action">
+                <input type="submit" value="Session Roll Back" class="btn btn-primary" id="btnSessionRollBack" />
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

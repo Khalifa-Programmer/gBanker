@@ -1,0 +1,176 @@
+﻿@model gBanker.Web.ViewModels.BudgetViewModel
+
+@{
+    ViewBag.Title = "Budget Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var IsFinancial = '@Model.IsFinancial';
+        if (IsFinancial == "True") {
+            $("#financial").prop('checked', true);
+            $("#program").prop('checked', false);
+        } else {
+            $("#financial").prop('checked', false);
+            $("#program").prop('checked', true);
+        }
+
+        //var isFinancial = $('#IsFinancial').is(':checked');
+        //console.log(isFinancial);
+
+
+
+        $("input[name='rdobtnfinancialprogram']").click(function () {
+            $("#txtAccCode").text('');
+            $("#txtAccCode").val('');
+            $("#AccID").val();
+        });
+
+
+        $("#TrxDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+
+        $("#txtAccCode").val($("#AccName").val());
+
+        $("#txtAccCode").autocomplete({
+            source: function (request, response) {
+                var rdobtnfinancialprogram = $("input[name='rdobtnfinancialprogram']:checked").val();
+                if (rdobtnfinancialprogram =='financial') {
+                    $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccCode", "Budget", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { acc_code: request.term, OfficeLevel: $("#OfficeLevel").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.AccID,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+                } else {
+                    $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccCodeForProgram", "Budget", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { acc_code: request.term, OfficeLevel: $("#OfficeLevel").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.AccID,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+                }
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Budget Edit</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="row">
+        <div class="col-md-12">
+            <input type="radio" id="financial" name="rdobtnfinancialprogram" value="financial" checked="checked">
+            <label for="financial">Financial</label>
+            <input type="radio" id="program" name="rdobtnfinancialprogram" value="program">
+            <label for="program">Program</label><br><br>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BudgetYear, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(model => model.BudgetYear, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BudgetYear, "", new { @class = "text-danger" })
+                @Html.HiddenFor(model => model.OfficeLevel)
+                @Html.HiddenFor(model => model.BudgetID)
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.TrxDate, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(model => model.TrxDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.TrxDate, "", new { @class = "text-danger" })
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AccID, htmlAttributes: new { @class = "control-label" })
+                @Html.TextBox("txtAccCode", "", new { @class = "form-control" })
+                @Html.TextBoxFor(model => model.AccID, new { style = "display:none;" })
+                @Html.HiddenFor(model => model.AccName)
+                @Html.ValidationMessageFor(model => model.AccID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BudgetAmount, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(model => model.BudgetAmount, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BudgetAmount, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group form-action">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

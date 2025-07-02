@@ -1,0 +1,139 @@
+﻿
+@model gBanker.Web.ViewModels.MemberWisePassbookBalanceEntryViewModel
+
+@{
+    ViewBag.Title = "Product Employment Add";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var productlist = Model == null ? null : Model.ProductList;
+    var centerListItems = Model == null ? null : Model.centerListItems;
+    var officeListItems = Model == null ? null : Model.officeListItems;
+
+
+}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#MainProductCode").change(function () {
+            var selectedText = $("#MainProductCode option:selected").text();
+            $("#MainProductName").val(selectedText);
+        });
+
+
+        $("#btnCreate").click(function (e) {
+
+            //Form Data
+            var model = {
+                'MemberWisePassbookBalanceEntryId': $('#MemberWisePassbookBalanceEntryId').val(),
+                'OfficeID': $('#OfficeId').val(),
+                'CenterID': $('#CenterId').val(),
+                'MemberID': $('#MemberId').val(),
+                'ProductID': $('#ProductId').val(),
+                'Amount': $('#Amount').val(),
+            }
+
+            $.ajax({
+                url: "/MemberWisePassbookBalanceEntry/CreateEntry",
+                type: "POST",
+                async: true,
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: model,
+                success: function (data) {
+                    $.alert.open(data);
+                    employeeProdApp.reloadGrid();
+                }
+            });
+
+        });
+
+    });
+
+</script>
+@Html.ActionLink("Back to List", "Create", null, new { @class = "pull-right" })
+<h2 class="page-title">MemberWise Passbook Balance Entry</h2>
+
+@Html.AntiForgeryToken()
+@*@Html.HiddenFor(model => model.MainProductName)*@
+@Html.HiddenFor(model => model.MemberWisePassbookBalanceEntryId)
+@Html.HiddenFor(model => model.MemberId)
+<div class="">
+
+    @*<div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.OfficeId, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.OfficeId, officeListItems, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.OfficeId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>*@
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.CenterId, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterId, centerListItems, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CenterId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    @*<div class="row" id="memberAutoCompleteSec">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberId)
+                    @Html.TextBoxFor(model => model.MemberId, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>*@
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.MemberName, htmlAttributes: new { @class = "control-label" })
+
+                @*@Html.EditorFor(model => model.MemberCode, new { htmlAttributes = new { @class = "form-control" } })*@
+                @Html.TextBox("MemberCodeReadonly", Model.MemberName, new { @class = "form-control", @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.MemberName, "", new { @class = "text-danger" })
+                @Html.HiddenFor(model => model.MemberName)
+                @Html.HiddenFor(model => model.MemberName)
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProductId, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.ProductId, productlist, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.ProductId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="control-label">Amount</label>
+                @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="form-group form-action">
+            <input type="submit" id="btnCreate" value="Update" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+
+<div id="grid"></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

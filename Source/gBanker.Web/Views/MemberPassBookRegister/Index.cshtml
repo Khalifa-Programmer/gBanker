@@ -1,0 +1,215 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberPassBookRegisterViewModel>
+
+@{
+    ViewBag.Title = "Member Passbook Register List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#DateFromValue").datepicker(
+             {
+                 dateFormat: "dd-M-yy",
+                 showAnim: "scale",
+                 changeMonth: true,
+                 changeYear: true,
+                 yearRange: "1920:2100"
+
+             });
+        $("#DateToValue").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+           changeMonth: true,
+           changeYear: true,
+           yearRange: "1920:2100"
+
+       });
+        confirmDayInitiated();
+        $('#grid').jtable({
+            // title: 'Approved  List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberPassBookRegister/GetMemberPassBookRegister?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+                //listAction: '/LoanApproval/GetLoanApprovals'
+
+            },
+            fields: {
+
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '10%'
+
+                },
+                OfficeName: {
+                    title: 'Office Name',
+                    width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '10%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '10%'
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    width: '10%'
+                },
+                LotNo: {
+                    title: 'Lot No',
+                    width: '10%'
+                },
+                MemberPassBookNO: {
+                    title: 'MemberPassBook NO',
+                    width: '10%'
+                },
+
+
+                PassBookStartDateMSG: {
+                    title: 'Issue Date',
+                    //type: 'date',
+                    //displayFormat: 'd-M-yy',
+                    width: '12%'
+                }
+
+                ,
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+
+                        return "<div class='text-center'><a href='/MemberPassBookRegister/Edit/" + data.record.MemberPassBookRegisterID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                }
+                //,
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        //return '<a href="/LoanApproval/Delete/' + data.record.LoanSummaryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //        //return '<div class="text-center delete-link"><a href="/LoanApproval/Delete/' + data.record.LoanSummaryID + '" ' + 'onclick="return confirm(' + '"' + 'Are you sure you want to delete this item?' + '"' + ');"><i class="fa fa-trash-o"></i></a></div>';
+                //        return '<div class="text-center delete-link"><a href="/MemberPassBookRegister/Delete/' + data.record.MemberPassBookRegisterID + '" ' + ' OnClick="return confirm(' + "'" + 'Are you sure you want to delete this item?' + "'" + ');"' + '><i class="fa fa-trash-o"></i></a></div>';
+                //    }
+                //}
+            }
+        });
+        reloadGrid();
+
+
+    });
+    function reloadGridSubmit() {
+        //if ($("#DateFromValue").change() == "") {
+        //    $("#filterValuePurpose").val('');
+        //    $("#filterValueVoucherType").val('');
+        //}
+        //if ($("#DateToValue").change() == "") {
+        //    $("#filterValuePurpose").val('');
+        //    $("#filterValueVoucherType").val('');
+        //}
+        if ($("#DateFromValue").val() == "") {
+            alert("Please Give FromDate Date.");
+            return false;
+        }
+        if ($("#DateToValue").val() == "") {
+            alert("Please Give ToDate Date.");
+            return false;
+        }
+
+        else if ($('#filterColumn :selected').val() == 0 || $('#filterColumn :selected').val() == '0') {
+            alert("Please Select Filter.");
+            return false;
+        }
+        else {
+            reloadGrid();
+
+        }
+
+
+    }
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), DateFromValue: $('#DateFromValue').val(), DateToValue: $('#DateToValue').val() });
+    }
+
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">MemberPassbook List</h2>
+
+
+<div class="row">
+    <div class="col-md-4">
+        <label class="control-label" style="padding-top:0px;">Date From:</label>
+        <input type="text" id="DateFromValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label class="control-label" style="padding-top:0px;">Date To:</label>
+        <input type="text" id="DateToValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-2">
+        <select id="filterColumn" class="form-control">
+            <option value="ViewAll">View All</option>
+            <option value="MemberCode">Member Code</option>
+
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGridSubmit();" />
+    </div>
+</div>
+
+
+<h2 class="page-title"></h2>
+
+
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

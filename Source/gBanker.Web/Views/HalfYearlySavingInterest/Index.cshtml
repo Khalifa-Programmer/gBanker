@@ -1,0 +1,198 @@
+﻿@model gBanker.Web.ViewModels.HalfYearlySavingInterestViewModel
+
+@{
+    ViewBag.Title = "HalfYearlySavingInterest Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+}
+
+
+
+<script type="text/javascript">
+
+    function displayLoanSummaryReport()
+    {
+
+        var startDate = $("#startDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=LoanSummary&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+    function displayProductReport() {
+
+        var processtDate = $("#processtDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=Product&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+    function rundayEnd(checkInfo) {
+        //  e.preventDefault();
+        var officeId = $("#OfficeId").val();
+        var businessDate = $("#BusinessDate").val();
+
+        $("#loading").show();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("HalyYearlySavingInterest", "HalfYearlySavingInterest", "http")',
+            data: { officeId: officeId, businessDate: businessDate, checkInfo: checkInfo },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+                $("#loading").hide();
+                var msg = "Work process successful";
+                var css = "success";
+                if (data.Message != null) {
+                    msg = data.Message;
+                    css = "failed"
+                }
+
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (data.Message == null)
+                    $("#dvMessage").toggle('fade', 1500);
+
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+
+    }
+    $(document).ready(function () {
+
+        //confirmDayInitiated();
+        $("#confirmDlg").dialog({
+            autoOpen: false,
+            height: 150,
+            width: 400,
+            modal: true,
+            title: 'Confirmation',
+           
+            buttons: {
+
+                "Yes": function () {
+                    var allCheck = $("#checkboxAll").is(":checked");
+                    if (allCheck == true) {
+                        var checkInfo;
+                        checkInfo = 1;
+                        rundayEnd(checkInfo);
+                    }
+                    else
+                    {
+                        var checkInfo;
+                        checkInfo = 0;
+                        rundayEnd(checkInfo);
+                    }
+                   
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        $('#BusinessDate').bind('focus', function (e) {
+            $("#dvMessage").hide();
+        });
+        $("#OfficeId").change(function () {
+            var officeId = $("#OfficeId").val();
+        });
+
+        $('#btnProcess').click(function (e) {
+            e.preventDefault();
+            // var bdate = $("#BusinessDate").val();
+            var bdate = "30 Jun 2016";
+            var msg = "Do you want to run the Process? " + bdate.toString("dd-MMM-yy");
+            $("#lblMsg").text(msg);
+            $("#confirmDlg").dialog('open');
+
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //  $("#BusinessDate").datepicker();
+        gBankerDatePicker("BusinessDate");
+    });
+
+
+</script>
+
+
+<h2 class="page-title">HalyYearly SavingInterest Process</h2>
+
+
+<div id="confirmDlg" style="display:none">
+    <div class="form-group">
+        <label id="lblMsg"></label>
+
+    </div>
+
+</div>
+
+<div>
+    <br />
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="row" style="display:none">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeId, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.EditorFor(model => model.CenterID, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.DropDownListFor(model => model.OfficeId, office, new { @class = "form-control" })
+                    @Html.Hidden("hfOfficeId")
+                    @Html.ValidationMessageFor(model => model.OfficeId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="display:none">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.BusinessDate, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.EditorFor(model => model.BusinessDate, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                        @Html.ValidationMessageFor(model => model.BusinessDate, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+         <div>
+             <input type="checkbox" id="checkboxAll" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lblAll">All</label> <br />
+                    </div>
+
+    }
+    @* BusinessDate Date:  <input type="text" id="BusinessDate" /> <br />*@
+    <div class="col-md-6">
+        <input id="btnProcess" type="submit" value="Process" class="btn btn-primary" />
+    </div>
+    @* <input type="button" value="Process" onclick="displayProductReport();" />*@
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

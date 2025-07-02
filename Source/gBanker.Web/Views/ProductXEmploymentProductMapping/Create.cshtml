@@ -1,0 +1,177 @@
+﻿@model gBanker.Web.ViewModels.ProductXEmploymentProductMappingViewModel
+
+@{
+    ViewBag.Title = "Product Employment Add";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var productlist = Model == null ? null : Model.ProductList;
+
+}
+<script type="text/javascript">
+
+    var employeeProdApp = {
+        employeeProdDeleteAction: (id) => {
+
+            fetch(`/ProductXEmploymentProductMapping/Delete/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data.Result !== 'OK') {
+                        $.alert.open("Error", data.Message);
+                        return;
+                    }
+
+                    //reload grid data
+                    employeeProdApp.reloadGrid();
+                    $.alert.open("Success", data.Message);
+                })
+                .catch((error) => {
+                    $.alert.open("Error", error);
+                });
+        },
+        DeleteAction: (id) => {
+            $.alert.open('confirm', 'Are you sure you want to delete this one?', function (button) {
+                if (button == 'yes') {
+                    employeeProdApp.employeeProdDeleteAction(id);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+        },
+        reloadGrid: function () {
+            $('#grid').jtable('load');
+        }
+    }
+
+    $(document).ready(function () {
+        $("#MainProductCode").change(function () {
+            var selectedText = $("#MainProductCode option:selected").text();
+            $("#MainProductName").val(selectedText);
+        });
+
+        $('#grid').jtable({
+            //  title: 'Purpose List',
+            paging: true,
+            pageSize: 5,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+
+                listAction: function (postData, jtParams) {
+
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/ProductXEmploymentProductMapping/GetEmploymentMappingList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+
+            },
+            fields: {
+                MappingId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                DisplayOrder: {
+                    title: 'Order',
+                    width: '5%'
+                },
+                MainProductCode: {
+                    title: 'Main Product Code',
+                    width: '15%'
+                },
+                MainProductName: {
+                    title: 'Main Product Name',
+                    width: '40%'
+                },
+                EmploymentProductName: {
+                    title: 'Employment Product Name',
+                    width: '40%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/ProductXEmploymentProductMapping/Edit/" + data.record.MappingId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return `<div class="text-center delete-link"><a onclick="employeeProdApp.DeleteAction(${data.record.MappingId})"><i class='fa fa-trash-o'></i></a></div>`;
+                    }
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        employeeProdApp.reloadGrid();
+
+    });
+
+</script>
+
+<h2 class="page-title">Employment Product Mapping</h2>
+@using (Html.BeginForm("Create", "ProductXEmploymentProductMapping", FormMethod.Post, new { enctype = "multipart/form-data", id = "empMapform" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.MainProductName)
+    @Html.HiddenFor(model => model.MappingId)
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                @Html.LabelFor(model => model.EmploymentProductName, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.EmploymentProductName, DropdownListHelper.GetDropdownList(DropdownListTypes.EmploymentProduct, Model.EmploymentProductName), new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MainProductName, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.MainProductCode, productlist, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MainProductName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Display Order <span style="font-size:7px">(This will be applied to show products's order in report)</span></label>
+                    @Html.EditorFor(model => model.DisplayOrder, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.DisplayOrder, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <div id="grid"></div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

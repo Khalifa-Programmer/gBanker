@@ -1,0 +1,154 @@
+﻿@model gBanker.Web.ViewModels.MRAReportViewModel
+
+@{
+    ViewBag.Title = "MRA Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $(".DateFrom").hide();
+        $(".DateTo").hide();
+        $("#DateFrom").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: "1920:2100"
+
+         });
+        $("#DateTo").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+              changeMonth: true,
+              changeYear: true,
+              yearRange: "1920:2100"
+
+          });
+        $("#MRAReportID").change(function () {
+            var reportNo = $("#MRAReportID").val();
+            if (reportNo == '1') {
+                $(".DateTo").show();
+                $(".DateFrom").hide();
+            }
+            else if (reportNo == '3') {
+                $(".DateTo").show();
+                $(".DateFrom").hide();
+            }
+            else if (reportNo == '4(E)') {
+                $(".DateFrom").show();
+                $(".DateTo").show();
+            }
+            else if (reportNo == '5') {
+                $(".DateFrom").hide();
+                $(".DateTo").show();
+            }
+            else if (reportNo == '6') {
+                $(".DateFrom").hide();
+                $(".DateTo").show();
+            }
+            else if (reportNo == '7') {
+                $(".DateFrom").hide();
+                $(".DateTo").show();
+            }
+            else if (reportNo == '8') {
+                $(".DateFrom").hide();
+                $(".DateTo").show();
+            }
+            else {
+                $(".DateFrom").hide();
+                $(".DateTo").hide();
+            }
+        });
+
+        $("#btnPrint").click(function () {
+            debugger;
+            var reportNo = $("#MRAReportID").val();
+            if (reportNo == '1') {
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_1_Report?dateTo=' + dateTo;
+            }
+            if (reportNo == '3') {
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_3_Report?dateTo=' + dateTo;
+            }
+            if (reportNo == '4(E)') {
+                var dateFrom = $("#DateFrom").val();
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_4E_Report?dateFrom=' + dateFrom + '&dateTo=' + dateTo;
+            }
+            if (reportNo == '5') {
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_5_Report?dateTo=' + dateTo;
+            }
+            if (reportNo == '6') {
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_6_Report?dateTo=' + dateTo;
+            }
+            if (reportNo == '7') {
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_7_Report?dateTo=' + dateTo;
+            }
+            if (reportNo == '8') {
+                var dateTo = $("#DateTo").val();
+                var url = '/MRAReport/Print_MRA_DBMS_8_Report?dateTo=' + dateTo;
+            }
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+
+</script>
+
+<h2 class="page-title">MRA Report</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @*@Html.HiddenFor(model => model.MRAReportID)*@
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="control-label col-md-2">MRA Report</label>
+                <div class="col-md-8">
+                    @Html.DropDownListFor(model => model.MRAReportID, Model.MRAReportList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row DateFrom">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Date From</label>
+                <div class="col-sm-8">
+                    @Html.TextBoxFor(model => model.DateFrom, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row DateTo">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Date To</label>
+                <div class="col-sm-8">
+                    @Html.TextBoxFor(model => model.DateTo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Print" id="btnPrint" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

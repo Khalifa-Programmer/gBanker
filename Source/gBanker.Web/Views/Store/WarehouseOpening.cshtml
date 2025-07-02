@@ -1,0 +1,291 @@
+﻿@{
+    ViewBag.Title = "Warehouse Opening";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<script>
+    function GetByID(ids, sts) {
+        var data = GenerateAjaxRequist('/Store/GetByID?id=' + ids + '&sts=' + sts, null, "POST")
+        if (sts == 0) {
+            $("#hdnID").val(data.Records.StoreItemID)
+            $("#ddlItem").val(data.Records.ItemID)
+            $("#txtQty").val(data.Records.Qty)
+            $("#txtPrice").val(data.Records.Price)
+        }
+        else if (sts == 1) {
+            $.alert.open("Status", data.message);
+            reloadGrid();
+        }
+        //$.ajax({
+        //    contentType: "application/json; charset=utf-8",
+        //    url: '/Store/GetByID?id=' + ids + '&sts='+sts,
+        //    type: "Get",
+        //    dataType: 'json',
+        //    async: true,
+        //    success: function (data) {
+        //        if (sts == 0) {
+        //            $("#hdnID").val(data.Records.StoreItemID)
+        //            $("#ddlItem").val(data.Records.ItemID)
+        //            $("#txtQty").val(data.Records.Qty)
+        //            $("#txtPrice").val(data.Records.Price)
+        //        }
+        //        else if (sts == 1) {
+        //            $.alert.open("Status", data.message);
+        //            reloadGrid();
+        //        }
+        //    },
+        //    error: function (data) {
+        //        $.alert.open("Error", data.message);
+        //    }
+        //});
+    }
+    var data = GenerateAjaxRequist('/Store/GetStoreInfo', null, "POST")
+    for (var i = 0; i < data.Records.length; i++) {
+        //alert(data.Records.length)
+        $("#ddlWharehouse").append('<option value=' + data.Records[i].WarehouseID + '>'
+            + data.Records[i].WarehouseName + '</option>')
+    }
+    //$.ajax({
+    //    contentType: "application/json; charset=utf-8",
+    //    url: '/Store/GetStoreInfo',
+    //    type: "Get",
+    //    dataType: 'json',
+    //    async: true,
+    //    success: function (data) {
+    //        //$("#ddlWharehouse").append("<option value=''> -- Select -- </option>")
+    //        for (var i = 0; i < data.Records.length; i++) {
+    //            //alert(data.Records.length)
+    //            $("#ddlWharehouse").append('<option value=' + data.Records[i].WarehouseID + '>'
+    //                + data.Records[i].WarehouseName + '</option>')
+    //        }
+    //    },
+    //    error: function (data) {
+    //        $.alert.open("Error", data.message);
+    //    }
+    //});
+    $(document).ready(function () {
+        $("#btnSave").on("click", function () {
+            var ids = 0;
+            if ($("#hdnID").val())
+                ids = $("#hdnID").val();
+            if (!$("#ddlItem").val())
+                $.alert.open("Error", 'Item Select');
+            else if (!$("#txtQty").val())
+                $.alert.open("Error", 'Quantity required');
+            else if (!$("#txtPrice").val())
+                $.alert.open("Error", 'Price required');
+            else {
+                var dataObject = {
+                    StoreItemID: ids,
+                    WarehouseID: $("#ddlWharehouse").val(),
+                    ItemID: $("#ddlItem").val(),
+                    Qty: $("#txtQty").val(),
+                    Price: $("#txtPrice").val(),
+                }
+                var data = GenerateAjaxRequist('/Store/SaveStoreItem', JSON.stringify({ obj: dataObject }), "POST")
+                $.alert.open("Success", data.message);
+                ClearFields();
+                $("#hdnID").val('0')
+                //$.ajax({
+                //    contentType: "application/json; charset=utf-8",
+                //    url: '/Store/SaveStoreItem',
+                //    type: "POST",
+                //    dataType: 'json',
+                //    async: true,
+                //    data: JSON.stringify({ obj: dataObject }),
+                //    success: function (data) {
+                //        $.alert.open("Success", data.message);
+                //        $("#ddlItem").val('')
+                //        $("#txtQty").val('')
+                //        $("#txtPrice").val('')
+                //        $("#hdnID").val('0')
+                //    },
+                //    error: function (data) {
+                //        $.alert.open("Error", data.message);
+                //    }
+                //});
+                reloadGrid();
+            }
+        });
+
+        $('#grid').jtable({
+
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            // url: '/Product/GetProducts?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            url: '/Store/GetStoreGrid',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                StoreItemID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CategoryName: {
+                    title: 'Category',
+                    width: '15%'
+
+                },
+                SubcategoryName: {
+                    title: 'Subcategory',
+                    width: '15%'
+
+                },
+                ItemCode: {
+                    title: 'Item Code',
+                    width: '10%'
+
+                },
+                ItemName: {
+                    title: 'Item Name',
+                    width: '20%'
+                },
+                WarehouseName: {
+                    title: 'Warehouse Name',
+                    width: '25%'
+                },
+                Qty: {
+                    title: 'Qty.',
+                    width: '5%'
+                },
+                Price: {
+                    title: 'Unit Price',
+                    width: '10%'
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="#" onclick="GetByID(' + data.record.StoreItemID + ',0)"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="#" onclick="GetByID(' + data.record.StoreItemID + ',1)"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+
+    var data = GenerateAjaxRequist('/Store/GetAllItem', null, "POST")
+    var _optionFirstText = '<option value="">Please Select</option>';
+
+    $("#ddlItem").html('').trigger('chosen:updated');
+    if (data.Records.length > 0) {
+        $.each(data.Records, function (i, v) {
+            _optionFirstText = _optionFirstText + '<option value="' + v.ItemID + '">' + v.ItemCode + ' ' + v.ItemName + '</option>';
+        });
+        $("#ddlItem").html(_optionFirstText).trigger('chosen:updated');
+
+    } else {
+        $("#ddlItem").html('').trigger('chosen:updated');
+    }
+    //$.ajax({
+    //    contentType: "application/json; charset=utf-8",
+    //    url: '/Store/GetAllItem',
+    //    type: "POST",
+    //    dataType: 'json',
+    //    success: function (data) {
+    //        var _optionFirstText = '<option value="">Please Select</option>';
+
+    //        $("#ddlItem").html('').trigger('chosen:updated');
+    //        if (data.Records.length > 0) {
+    //            $.each(data.Records, function (i, v) {
+    //                _optionFirstText = _optionFirstText + '<option value="' + v.ItemID + '">' + v.ItemCode + ' ' + v.ItemName + '</option>';
+    //            });
+    //            $("#ddlItem").html(_optionFirstText).trigger('chosen:updated');
+
+    //        } else {
+    //            $("#ddlItem").html('').trigger('chosen:updated');
+    //        }
+    //    },
+    //    error: function (data) {
+    //        $.alert.open("Error", data.message);
+    //    }
+    //});
+    //$("#ddlItem").chosen();
+
+</script>
+<h2 class="page-title">Item open in store</h2>
+<input type="hidden" id="hdnID" />
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="control-label">Warehouse</label>
+                <select class="form-control" id="ddlWharehouse"></select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="control-label">Item</label>
+                <select class="form-control input-sm" id="ddlItem"></select>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="control-label">Quantity</label>
+                <input type="number" min="0" class="form-control" id="txtQty" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="control-label">Price</label>
+                <input type="number" min="0" class="form-control" id="txtPrice" />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-md-4"></div>
+        <div class="col-md-4"><input type="button" id="btnSave" value="Save" class="btn btn-primary"></div>
+    </div>
+</div>
+<br />
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+
+

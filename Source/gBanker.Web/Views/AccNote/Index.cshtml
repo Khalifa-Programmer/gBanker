@@ -1,0 +1,68 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.AccNoteViewModel>
+
+@{
+    ViewBag.Title = "Acc Note List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'NoteNo ASC',
+            actions: {
+                listAction: '/AccNote/GetAccNoteList',                
+                updateAction: '/AccNote/Edit'
+            },
+            fields: {
+                NoteID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                SlNo: {
+                    title: 'SL',
+                    create: false,
+                    edit: false,
+                    width:'5%'
+                },
+                NoteNo: {
+                    title: 'Note No',
+                    create: false,
+                    edit: true,
+                    width: '5%'
+                },
+                NoteName: {
+                    title: 'Note Name',
+                    create: false,
+                    edit: true,
+                    width: '25%'
+                },              
+                IsActive: {
+                    title: 'Is Active',
+                    create: false,
+                    edit: true,
+                    type: 'checkbox',
+                    values: { 'false': 'In Active', 'true': 'Active' },
+                }
+            }
+        });
+
+        $('#grid').jtable('load');
+
+
+    });
+
+
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Account Note List</h2>
+<div id="grid"></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,113 @@
+﻿
+@{
+    ViewBag.Title = "Member Age Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetCenter();
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var url;
+            var StartValue = $("#StartValue").val();
+            var EndValue = $("#EndValue").val();
+            var exportType = $("#ddlExportType").val();
+
+            if (StartValue > 0 && EndValue > 0) {
+                url = '/GroupwiseReport/GenerateMemberAgeReport?StartValue=' + StartValue + '&EndValue=' + EndValue + '&ExportType=' + exportType;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            } else {
+                alert("Please Select Start and End Value");
+            }
+            //e.preventDefault();
+            //var url;
+            //var StartValue = $("#StartValue").val();
+            //var EndValue = $("#EndValue").val();
+            //if (StartValue > 0 && EndValue > 0) {
+            //    url = '/GroupwiseReport/GenerateMemberAgeReport?StartValue=' + StartValue + '&EndValue=' + EndValue;
+            //    window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            //} else {
+            //    alert("Please Select Start and End Value");
+            //}
+            
+        });
+    });
+</script>
+<h2 class="page-title">Member Age Report</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Age From", new { @class = "control-label" })
+                    <input type="number" id="StartValue" name="StartValue" value="" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Age To", new { @class = "control-label" })
+                    <input type="number" id="EndValue" name="EndValue" value="" />
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                @Html.Label("Export Type", htmlAttributes: new { @class = "control-label" })
+
+                @Html.DropDownList("ddlExportType", new List<SelectListItem> {
+                new SelectListItem { Text = "PDF", Value = "pdf", Selected = true },
+                new SelectListItem { Text = "Excel", Value = "excel" }
+            }, new { @class = "form-control" })
+            </div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+

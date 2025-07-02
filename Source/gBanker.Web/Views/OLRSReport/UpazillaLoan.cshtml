@@ -1,0 +1,113 @@
+﻿
+@model gBanker.Core.Filters.PRA_LN_DIST_WISE_DISB_ReportSearchFilter
+
+@{
+    ViewBag.Title = "Upazilla Loan Data";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">@ViewBag.Title</h2>
+<style>
+    .chzn-container-single .chzn-single {
+        padding-top: 5px !important;
+        height: 35px !important;
+    }
+</style>
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control", @autocomplete = "off", @placeholder = "mm/yyyy" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MFI_District_Code, htmlAttributes: new { @class = "control-label" })
+        @Html.DropDownListFor(model => model.MFI_District_Code, Model.MFI_DistrictList, new { @class = "form-control chosen-district" })
+        @Html.ValidationMessageFor(model => model.MFI_District_Code)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MFI_Thana_Code, htmlAttributes: new { @class = "control-label required" })
+        @Html.DropDownListFor(model => model.MFI_Thana_Code, Model.MFI_ThanaList, new { @class = "form-control chosen-thana" })
+        @Html.ValidationMessageFor(model => model.MFI_Thana_Code)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.SYNCED_STATUS, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control chosen-district" id="SYNCED_STATUS" name="M_F_flag">
+            <option value="">Any</option>
+            <option value="1">NOT SYNCED</option>
+            <option value="2">SYNCED</option>
+        </select>
+    </div>
+    <div class="col-md-5" >
+        <button type="button" id="btnSearchUl" class="btn btn-primary"><i class="fa fa-search"></i> Search</button>
+        <button type="button" id="btnRefreshUl" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+
+<div class="raw">
+    <div id="gridUl"></div>
+</div>
+
+
+<!-- Popup -->
+<div id="PopupDiv" title="Update Data " style="display:none">
+    @*khalid*@
+    <div class="ui-widget">
+        <div class="col-sm-12">
+            <div class="form-group">
+                @Html.Label("CUM_DISB", htmlAttributes: new { @class = "control-label" })
+                <input type="number" class="form-control" id="CUM_DISB" value="0" />
+                <input type="hidden" class="form-control" id="CUM_DISB_HDN" value="0" />
+
+                <input type="hidden" id="hdnPO_CODE" value="0" />
+                <input type="hidden" id="hdnMNYR" value="0" />
+
+            </div>
+        </div>
+
+        
+
+        <div class="col-sm-12">
+            <div class="form-group">
+                @Html.Label("MEMBER", htmlAttributes: new { @class = "control-label" })
+                <input type="number" class="form-control" id="MEMBER" value="0" />
+                <input type="hidden" class="form-control" id="MEMBER_HDN" value="0" />
+            </div>
+        </div>
+
+        <div class="col-sm-12">
+            <div class="form-group">
+                @Html.Label("BORROWER", htmlAttributes: new { @class = "control-label" })
+                <input type="number" class="form-control" id="BORROWER" value="0" />
+                <input type="hidden" class="form-control" id="BORROWER_HDN" value="0" />
+
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="form-group">
+                @Html.Label("LOAN_FY", htmlAttributes: new { @class = "control-label" })
+                <input type="number" class="form-control" id="LOAN_FY" value="0" />
+                <input type="hidden" class="form-control" id="LOAN_FY_HDN" value="0" />
+
+            </div>
+        </div>
+
+        <div class="col-sm-12">
+            <div class="form-group">
+                @Html.Label("CUM_BORR", htmlAttributes: new { @class = "control-label" })
+                <input type="number" class="form-control" id="CUM_BORR" value="0" />
+                <input type="hidden" class="form-control" id="CUM_BORR_HDN" value="0" />
+            </div>
+        </div>
+
+    </div>
+    
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <link href="~/Assets/plugins/choosen/chosen.css" rel="stylesheet" />
+    <script src="~/Assets/plugins/choosen/chosen.jquery.js"></script>
+    <script src="~/Assets/js/olrs/olrsReportManager.js"></script>
+}

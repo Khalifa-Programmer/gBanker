@@ -1,0 +1,185 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.AspNetSecurityModuleViewModel>
+
+@{
+    ViewBag.Title = "Organization Wise Role SetUp";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+
+
+    function reloadGrid() {
+        $('#grid').jtable('load');
+        $('.jtable-column-header').hide();
+        $('.jtable .jtable-title').find('div').hide();
+    }
+    $(document).ready(function () {
+
+        $("#RoleId").change(function () {
+            //var centerId = $("#CenterID").val();
+            reloadGrid();
+        });
+        $('#grid').jtable({
+          //  title: 'Security Modules',
+            paging: false,
+            actions: {
+                listAction: '/OrganizationWisePageSetUp/RoleSecurityGrid'
+            },
+            fields: {
+                RoleModuleId: {
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                RoleName: {
+                    list: true,
+                    display: function (row) {
+                        var chkBox = "<input type='checkbox' />";
+                        var $product = $('<div class="jtable-title"> <div class="jtable-title-text"> Menu Name - ' + row.record.LinkText + '</div></div>');
+
+                        $product.show(function () {
+                            $('#grid').jtable('openChildTable',
+                                            $product.closest('tr'),
+                                            {
+                                                actions: {
+                                                    listAction: '/OrganizationWisePageSetUp/RoleSecurityGrid?parentMenuId=' + row.record.AspNetSecurityModuleId 
+                                                },
+
+                                                fields: {
+
+                                                    IsSelected: {
+
+                                                            display: function(row)
+                                                            {
+                                                                var checked = row.record.IsSelectedForRole == true ? "checked='checked'" : "";
+                                                                var id = " id = 'chk_" + row.record.AspNetSecurityModuleId ;
+                                                                return "<input type='checkbox' " + checked + id + "' />";
+                                                            }
+                                                    }
+                                                    ,
+
+                                                    LinkText: {
+                                                        title: 'Page Name',
+                                                    },
+                                                    //SecurityLevelId: {
+                                                    //    title: 'Security Level',
+
+                                                    //    display: function (row) {
+                                                    //        var myOptions = {
+                                                    //            '1': 'Readonly', '2': 'Add', '3': 'Update', '4': 'Delete', '5': 'Supervisor'
+                                                    //        };
+                                                    //        var mySelect = $("<select id='ddl_" + row.record.AspNetSecurityModuleId + "'> </select>");
+                                                    //        $.each(myOptions, function (val, text) {
+                                                    //            mySelect.append(
+                                                    //                $('<option></option>').val(val).html(text)
+                                                    //            );
+                                                    //        });
+
+                                                    //        mySelect.val(row.record.SecurityLevelId);
+                                                    //        return mySelect;
+                                                    //    }
+
+                                                    //}
+
+                                                }
+                                            }, function (data) { //opened handler
+                                                data.childTable.jtable('load');
+                                 });
+
+                        });
+
+                        return $product;
+                    }
+                }
+            }
+        });
+        var role = $("#RoleId").val();
+        if (role != "0") {
+            $('#grid').jtable('load');
+            $('.jtable-column-header').hide();
+            $('.jtable .jtable-title').find('div').hide();
+        }
+
+    });
+
+    function Save() {
+        var role = $("#RoleId").val();
+        if (role == "0")
+        {
+            var css = "failed";
+            $("#dvMessage").attr('class', css);
+            $("#dvMessage").html("Please select a role to save.");
+            $("#dvMessage").show();
+
+            return;
+        }
+        var allCollection = new Array();
+        var $allInputs = $('input[type="checkbox"]');
+        $allInputs.each(function () {
+            var id = $(this).attr('id');
+            var value = $('#' + id).is(':checked')
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allCollection[allCollection.length] = obj;
+        });
+
+        var allSecurityLevel = new Array();
+
+        $('select[id^="ddl"]').each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allSecurityLevel[allSecurityLevel.length] = obj;
+        });
+
+        var allTrx = new Object();
+        allTrx.SelectedList = allCollection;
+        allTrx.SecurityList = allSecurityLevel;
+        allTrx.roleId = $("#RoleId").val();
+
+        var json = JSON.stringify(allTrx);
+        $("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("RoleSecurityCreate", "OrganizationWisePageSetUp")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (result) {
+
+                $("#loading").hide();
+                $("#dvMessage").attr('class', "success");
+                $("#dvMessage").html("Organization Wise Page saved successfully.");
+                $("#dvMessage").show();
+                $("#dvMessage").toggle('fade', 1500);
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+            }
+        });
+    }
+</script>
+<input type="button" value="Save" class="btn btn-info btn-sm pull-right" onclick="Save();" />
+<h2 class="page-title">Organization Wise Role SetUp</h2>
+<div id="grid"></div>
+
+
+<input type="button" value="Save" class="btn btn-info btn-sm pull-right" onclick="Save();" />
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

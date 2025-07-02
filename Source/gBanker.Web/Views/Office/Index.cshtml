@@ -1,0 +1,171 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.OfficeViewModel>
+
+@{
+    ViewBag.Title = "Office List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'OfficeName ASC',
+            actions: {
+                listAction: '/Office/GetOfficeInfo',
+                //updateAction: '/Office/Edit',
+                deleteAction: '/Office/Delete'
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Code',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Name',
+                    width: '10%',
+                    create: false,
+                    edit: true
+                },
+                OfficeLevel: {
+                    title: 'Level',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                FirstLevel: {
+                    title: 'First',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                SecondLevel: {
+                    title: 'Second Level',
+                    width: '5%',
+                    create: false,
+                    options: '/Office/GetOfficeSecondLevel',
+                    edit: true
+                },
+                ThirdLevel: {
+                    title: 'Third Level',
+                    width: '5%',
+                    create: false,
+                    options: '/Office/GetOfficeThirdLevel',
+                    edit: true
+                },
+                FourthLevel: {
+                    title: 'Fourth',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                OperationStartDate: {
+                    title: 'Op Start',
+                    width: '10%',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false,
+                    edit: true
+                },
+                LocationName: {
+                    title: 'Location',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                OfficeAddress: {
+                    title: 'Address',
+                    width: '15%',
+                    create: false,
+                    edit: true
+                },
+                PostCode: {
+                    title: 'Post Code',
+                    width: '5%',
+                    create: false,
+                    edit: true
+                },
+                GeoLocationID: {
+                    title: 'Geo Location',
+                    width: '15%',
+                    create: false,
+                    edit: true,
+                    options: '/Office/GetGeoLocation',
+                    list: false
+                },
+                Email: {
+                    title: 'Email',
+                    width: '10%',
+                    create: false,
+                    edit: true
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '5%',
+                    create: false,
+                    edit: true
+                }, 
+                UnionID: {
+                    title: 'Union',
+                    width: '5%',
+                    create: false,
+                    edit: true,
+                    list: false,
+                    options: '/Office/GetUnions',
+                },
+                UnionName: {
+                    title: 'Union',
+                    width: '5%',
+                    create: false,                    
+                    edit: false
+                },
+                InvestorID: {
+                    title: 'Investor',
+                    width: '5%',
+                    create: false,
+                    edit: true,
+                    list: false,
+                    options: '/Office/GetInvestors'
+                },
+                InvestorName: {
+                    title: 'Investor',
+                    width: '5%',
+                    create: false,                    
+                    edit: false
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {                        
+                        return "<div class='text-center'><a href='/Office/Edit/" + data.record.OfficeID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+            }
+        });
+        $('#grid').jtable('load');
+    });
+
+
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Office List</h2>
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

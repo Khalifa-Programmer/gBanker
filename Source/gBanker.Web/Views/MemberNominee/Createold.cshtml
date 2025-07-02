@@ -1,0 +1,1256 @@
+﻿@model gBanker.Web.ViewModels.MemberNomineeSavingViewModel
+
+@{
+    ViewBag.Title = "Member Nominee";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var country = Model == null ? null : Model.CountryList;
+    var div = Model == null ? null : Model.DivisionList;
+    var dist = Model == null ? null : Model.DistrictList;
+    var upo = Model == null ? null : Model.UpozillaList;
+    var uni = Model == null ? null : Model.UnionList;
+    var vill = Model == null ? null : Model.VillageList;
+    var IdT = Model == null ? null : Model.IdTypeList;
+
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+
+    .required:after {
+        content: " *";
+        color: red;
+    }
+
+
+    #multiSection {
+        width: 40px;
+    }
+
+    table.jambo_table thead {
+        background: rgba(52, 73, 94, 0.94);
+        color: #ECF0F1;
+    }
+
+    <a href="~/Views/MemberNominee/Create.cshtml" > ~ /Views/MemberNominee/Create.cshtml</a > .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+        padding: 11px;
+        line-height: 1.42857143;
+        vertical-align: top;
+        border-top: 1px solid #ddd;
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) {
+        background-color: #eee;
+    }
+
+    .table > tbody > tr:hover {
+        background-color: #9E9E9E;
+    }
+
+    .table {
+        width: 100%;
+        counter-reset: rowNumber;
+    }
+
+        .table > tbody > tr {
+            counter-increment: rowNumber;
+        }
+
+            .table > tbody > tr > td:first-child::before {
+                content: counter(rowNumber);
+            }
+
+    .txtcapitalize {
+        text-transform: capitalize;
+    }
+
+    .thumb-img {
+        width: 60%;
+        height: auto;
+    }
+
+
+    /* css for image */
+    #container {
+        position: relative;
+    }
+
+    #video, #canvas {
+        width: 320px;
+        position: absolute;
+    }
+
+    #capture {
+        background-color: red;
+        position: relative;
+    }
+
+
+    /* css for image */
+
+    .big-checkbox {
+        width: 20px;
+        height: 20px;
+    }
+</style>
+
+<script src="http://malsup.github.com/jquery.form.js"></script>
+<script src="@Url.Content("~/Scripts/jquery.webcam.js")"></script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        //start of Webcam
+        $("#captureImage, #captureImageFingerThumb").click(function (e) {
+
+            window.captureType = $(this).attr('data-type');
+            initiateWebCam();
+            $("#imgcontainer").show();
+            popupCamera();
+
+        });
+        //End of Webcam
+
+
+
+        var EditMemberCodeCheck = "@ViewData["EditMemberCode"]";
+        if (EditMemberCodeCheck != "")
+        {
+            var Employees_ViewData = $("#Employees_ViewData").val();
+            $("#txtMemberCode").val(Employees_ViewData);
+            var member_Code = $("#txtMemberCode").val();
+            $("#MemberCode").val(member_Code);
+            if (member_Code != "") {
+                LoadMemberInfoByCode(member_Code);
+            }
+        }
+
+
+        $("#NomineeBirthdate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "c-50:c+50",
+            });
+        $("#NomineeBirthdate").datepicker(
+            'setDate', new Date());
+
+        $("#HiddenCountryID").val(18);
+        LoadDivisionByCountry(18);
+        $("#CountryID").change(function () {
+            var country_id = $("#CountryID").val();
+            if (country_id > 0) {
+                LoadDivisionByCountry(country_id);
+            }
+        });
+        $("#DivisionCode").change(function () {
+            var div_id = $("#DivisionCode").val();
+            if (div_id > 0) {
+                LoadDistrictByDivision(div_id);
+                $('#hfDivisionCode').val(div_id);
+            }
+        });
+        $("#DistrictCode").change(function () {
+            var dis_id = $("#DistrictCode").val();
+            if (dis_id > 0) {
+                LoadUpozillaByDistrict(dis_id);
+                // $('#PerDistrictCode').val(dis_id);
+            }
+        });
+        $("#UpozillaCode").change(function () {
+            var upo_id = $("#UpozillaCode").val();
+            if (upo_id > 0) {
+                LoadUnionByUpozilla(upo_id);
+            }
+        });
+        $("#UnionCode").change(function () {
+            var uni_id = $("#UnionCode").val();
+            if (uni_id > 0) {
+                LoadVillageByUnion(uni_id);
+                //$("#PerUnionCode").val(uni_id);
+            }
+        });
+        $("#VillageCode").change(function () {
+            var Vil_id = $("#VillageCode").val();
+            if (Vil_id > 0) {
+                $("#PerVillageCode").val(Vil_id);
+            }
+        });
+
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+        $("#btnSave").show();
+        $("#txtMemberCode").blur(function () {
+            var member_Code = $("#txtMemberCode").val();
+            $("#MemberCode").val(member_Code);
+            if (member_Code != "") {
+                LoadMemberInfoByCode(member_Code);
+            }
+        });
+    });
+
+
+
+    // image code
+    var video;
+    var isCaptured = false;
+    var canvas;
+    var ctx;
+    var width = 300;
+    var height = 200;
+    var localstream;
+
+    function initiateWebCam() {
+        isCaptured = false;
+        canvas = document.getElementById('canvas');
+        video = document.getElementById('video');
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+        ctx = canvas.getContext('2d');
+        if (isCaptured == false) {
+            canvas.style.display = 'none';
+        }
+
+        navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia ||
+
+            navigator.mediaDevices.getUserMedia ||
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia || navigator.oGetUserMedia;
+
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia({ audio: false, video: { width: width, height: height } },
+                function (stream) {
+                    localstream = stream;
+
+                    if (isCaptured == false) {
+                        video = document.querySelector('video');
+                        video.srcObject = stream;
+                        video.onloadedmetadata = function (e) {
+                            video.play();
+                        };
+                    }
+                },
+                function (err) {
+                    console.log("WEBCAM - error occurred: " + err.name);
+                }
+            );
+        } else {
+            console.log("WEBCAM - getUserMedia API not supported");
+        }
+
+
+    }
+
+
+    function onCapture() {
+        debugger;
+        isCaptured = true;
+        canvas.style.display = 'block';
+        video.style.display = 'none';
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        //canvas.toBlob((blob) => {
+        //    console.log(blob);
+        //});
+        let base64Image = canvas.toDataURL();
+        console.log(window.jQuery);
+        if (window.captureType == 'image') {
+
+            var targetNomini_imgsrc = base64Image;
+            //alert(youtubeimgsrc);
+            var targetNominiSplit = targetNomini_imgsrc.split(",");
+
+            var NomineePhoto = targetNominiSplit[1]; //$("#NomineePhoto").val();
+
+            $('#txtNomineePhotoBinary').val(NomineePhoto);
+
+            document.getElementById('thumbnil').src = base64Image;
+
+        } else {
+            var target2Nomini_imgsrc = base64Image;
+
+            var target2NominiSplit = target2Nomini_imgsrc.split(",");
+
+            var ApplicantSignature = target2NominiSplit[1]; // $("#ApplicantSignature").val();
+
+            $('#txtApplicantSignatureBinary').val(ApplicantSignature);
+            document.getElementById('thumbnilSignature').src = base64Image;
+        }
+
+        video.pause();
+        video.src = "";
+        localstream.getTracks()[0].stop();
+        window.jQuery("#webcamDiv").dialog('close')
+
+    }
+
+
+
+    function popupCamera() {
+        $("#webcamDiv").dialog({
+            autoOpen: false,
+            height: 350,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Capture": function () {
+                    onCapture();
+                },
+                "Close": function () {
+                    video.pause();
+                    video.src = "";
+                    localstream.getTracks()[0].stop();
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#webcamDiv").dialog('open');
+        }
+    }//End of Show Popup Camera
+
+
+    function LoadDivisionByCountry(country_id) {
+        var ddlDivision = $("#DivisionCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDivisionList", "Member", "http")',
+            data: { country_id: country_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlDivision.html('');
+                $.each(data, function (id, option) {
+                    ddlDivision.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                var countryid = $("#HiddenCountryID").val();
+                $("#CountryID").val(countryid);
+                var divisionid = $("#HiddenDivisionID").val();
+                $("#DivisionCode").val(divisionid);
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadDistrictByDivision(div_id) {
+        var ddlDistrict = $("#DistrictCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Member", "http")',
+            data: { div_id: div_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlDistrict.html('');
+                $.each(data, function (id, option) {
+                    ddlDistrict.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                var dist = $("#HiddenDistrictID").val();
+                $("#DistrictCode").val(dist);
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadUpozillaByDistrict(dis_id) {
+        var ddlUpozilla = $("#UpozillaCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUpozillaList", "Member", "http")',
+            data: { dis_id: dis_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlUpozilla.html('');
+                $.each(data, function (id, option) {
+                    ddlUpozilla.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                var upzid = $("#HiddenUpozillaID").val();
+                $("#UpozillaCode").val(upzid);
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadUnionByUpozilla(upo_id) {
+
+        var ddlUnion  = $("#UnionCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUnionList", "Member", "http")',
+            data: { upo_id: upo_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlUnion.html('');
+                $.each(data, function (id, option) {
+                    ddlUnion.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                var uuid = $("#HiddenUnionID").val();
+                $("#UnionCode").val(uuid);
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadVillageByUnion(uni_id) {
+        var ddlVillage = $("#VillageCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetVillageList", "Member", "http")',
+            data: { uni_id: uni_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlVillage.html('');
+                $.each(data, function (id, option) {
+                    ddlVillage.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                var vlgid = $("#HiddenVillageID").val();
+                $("#VillageCode").val(vlgid);
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function getEmployeeNominee() {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        $('#gridNominee').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'InventoryId ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        var MemberId = $("#MemberId").val();
+                        $.ajax({
+                            url: '/MemberNominee/ListMemberNomineeInformation?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&MemberId=' + MemberId,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                Id: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                SNO: {
+                    title: 'SL',
+                    width: '5%'
+                },
+                NomineeImage: {
+                    title: 'Image',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return "<div class='text-center'><img src='/MemberNominee/RetrieveNomineeImage/" + data.record.MemberNomineeId + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+                NomineeSignatureImage: {
+                    title: 'Image Signature',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return "<div class='text-center'><img src='/MemberNominee/RetrieveNomineeSignatureImage/" + data.record.MemberNomineeId + "' alt='No Image' height=50 width=50 class='img-circle' /></div>";
+                    }
+                },
+                NomineeName: {
+                    title: 'NomineeName',
+                    width: '15%'
+                },
+                NomineeRelation: {
+                    title: 'Relation',
+                    width: '15%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="EditNomineeInformation(' + "'" + data.record.MemberNomineeId + "'" + ',' + "'" + data.record.NomineeName + "'" + ',' + "'" + data.record.NomineeFather + "'" + ',' + "'" + data.record.NomineeMother + "'" + ',' + "'" + data.record.NomineeHusbandWife + "'" + ',' + "'" + data.record.NomineeBirthdateStr + "'" + ',' + "'" + data.record.NomineeMobileNo + "'" + ',' + "'" + data.record.NomineeRelation + "'" + ',' + "'" + data.record.IdType + "'"  + ',' + "'" + data.record.NomineeNationalId + "'" + ',' + "'" + data.record.CountryID + "'" + ',' + "'" + data.record.DivisionCode + "'" + ',' + "'" + data.record.DistrictCode + "'" + ',' + "'" + data.record.UpozillaCode + "'" + ',' + "'" + data.record.UnionCode + "'" + ',' + "'" + data.record.VillageCode + "'" + ',' + "'" + data.record.ZipCode + "'" + ',' + "'" + data.record.AddressLine1 + "'" + ',' + "'" + data.record.MemberId + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+
+                Delete: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="InformationDelete(' + data.record.MemberNomineeId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                },
+            }
+        });
+        $('#gridNominee').jtable('load');
+    }
+
+    function EditNomineeInformation(MemberNomineeId, NomineeName, NomineeFather, NomineeMother, NomineeHusbandWife, NomineeBirthdateStr, NomineeMobileNo, NomineeRelation, IdType, NomineeNationalId, CountryID, DivisionCode, DistrictCode, UpozillaCode, UnionCode, VillageCode, ZipCode, AddressLine1, MemberId) {
+        debugger;
+        $("#MemberNomineeId").val(MemberNomineeId);
+        $("#NomineeName").val(NomineeName);
+        $("#NomineeFather").val(NomineeFather);
+        $("#NomineeMother").val(NomineeMother);
+        $("#NomineeHusbandWife").val(NomineeHusbandWife);
+        $("#NomineeBirthdate").val(NomineeBirthdateStr);
+        $("#NomineeMobileNo").val(NomineeMobileNo);
+        $("#NomineeRelation").val(NomineeRelation);
+        $("#IdType").val(IdType);
+        $("#NomineeNationalId").val(NomineeNationalId);
+
+
+        $("#HiddenCountryID").val(18);
+        $("#HiddenDivisionID").val(DivisionCode);
+        $("#HiddenDistrictID").val(DistrictCode);
+        $("#HiddenUpozillaID").val(UpozillaCode);
+        $("#HiddenUnionID").val(UnionCode);
+        $("#HiddenVillageID").val(VillageCode);
+
+
+        LoadDivisionByCountry(18);
+
+        var country_id = 18;
+        LoadDivisionByCountry(country_id);
+
+
+        var div_id = DivisionCode;
+        LoadDistrictByDivision(div_id);
+
+
+        var dis_id = DistrictCode;
+        LoadUpozillaByDistrict(dis_id);
+
+
+        var upo_id = UpozillaCode;
+        LoadUnionByUpozilla(upo_id);
+
+
+        var uni_id = UnionCode;
+        LoadVillageByUnion(uni_id);
+
+
+        //$("#CountryID").val(CountryID).prop("selected", true);
+        //$("#DivisionCode").val(DivisionCode).prop("selected", true);
+        //$("#DistrictCode").val(DistrictCode).prop("selected", true)
+        //$("#UpozillaCode").val(UpozillaCode);
+        //$("#UnionCode").val(UnionCode);
+        //$("#VillageCode").val(VillageCode);
+
+
+
+        $("#ZipCode").val(ZipCode);
+        $("#AddressLine1").val(AddressLine1);
+        $("#MemberId").val(MemberId);
+        if (MemberNomineeId > 0) {
+            GetNomineeImage(MemberNomineeId);
+            GetNomineeSignatureImage(MemberNomineeId);
+        }
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+
+    function InformationDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("InformationDeleteNomineeInformation", "MemberNominee", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $('#gridNominee').jtable('load');
+
+                            $.alert.open("Success", data.message);
+                        } else {
+
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+
+    function SaveMemberNomineeInformations() {
+        var mebMasterId = $("#MemberId").val();
+        var NomineeName = $("#NomineeName").val();
+        var NomineeFather = $("#NomineeFather").val();
+        var NomineeMother = $("#NomineeMother").val();
+        var NomineeHusbandWife = $("#NomineeHusbandWife").val();
+        var NomineeBirthdate = $("#NomineeBirthdate").val();
+        var NomineeMobileNo = $("#NomineeMobileNo").val();
+        var IdType = $("#IdType option:selected").val();
+        var NomineeNationalId = $("#NomineeNationalId ").val();
+
+        var CountryID = $("#CountryID ").val();
+        var DivisionCode = $("#DivisionCode ").val();
+        var DistrictCode = $("#DistrictCode ").val();
+        var UpozillaCode = $("#UpozillaCode ").val();
+        var UnionCode = $("#UnionCode ").val();
+        var VillageCode = $("#VillageCode ").val();
+
+
+        if (mebMasterId > 0 && NomineeName != "" && NomineeFather != "" && NomineeMother != ""
+            && NomineeHusbandWife != "" && NomineeBirthdate != "" && NomineeMobileNo != ""
+            && IdType != "" && NomineeNationalId != ""
+            && CountryID != 0 && DivisionCode != 0
+            && DistrictCode != 0 && UpozillaCode != 0
+            && UnionCode != 0 && VillageCode != 0) {
+            var memberNominee = GenerateEmployeeNomineeInformation();
+            var img = document.getElementById("NomineeImage").value;
+            var imgSig = document.getElementById("NomineeSignatureImage").value;
+
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: false,
+                cache: false,
+                url: '@Url.Action("SaveMemberNomineeInformation", "MemberNominee")',
+                data: JSON.stringify({ memberNominee: memberNominee }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+
+                    if (data.result > 0) {
+                        var MemberNomineeId = data.result;
+                        var xhr = new XMLHttpRequest();
+                        var fd = new FormData();
+                        fd.append("file", document.getElementById("NomineeImage").files[0]);
+                        fd.append("MemberNomineeId", MemberNomineeId);
+                        xhr.open("POST", "/MemberNominee/UploadNomineeImage/", true);
+                        xhr.send(fd);
+                        xhr.addEventListener("load", function (event) {
+                            if (event.target.response > 0) {
+                                $(".panel-body .create-success").show(800).fadeToggle(3000);
+                            } else {
+                                $.alert.open("Error", "Image couldn't Save");
+                            }
+                        }, false);
+
+
+
+                        var xhrs = new XMLHttpRequest();
+                        var fds = new FormData();
+                        fds.append("file", document.getElementById("NomineeSignatureImage").files[0]);
+                        fds.append("MemberNomineeId", MemberNomineeId);
+                        xhrs.open("POST", "/MemberNominee/UploadNomineeSignatureImage/", true);
+                        xhrs.send(fds);
+                        xhrs.addEventListener("load", function (event) {
+                            if (event.target.response > 0) {
+                                $(".panel-body .create-success").show(800).fadeToggle(3000);
+                            } else {
+                                $.alert.open("Error", "Image couldn't Save");
+                            }
+                        }, false);
+
+
+
+                        $.alert.open('Success', data.message);
+                        $('#gridNominee').jtable('load');
+                        ClearControl();
+                    } else {
+                        $.alert.open('Error', data.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        } else {
+            $.alert.open("Error", "Please Insert Required Fields");
+        }
+    }
+
+    function GenerateEmployeeNomineeInformation() {
+
+        var mebMasterId = $("#MemberId").val();
+        var item = {};
+        item.MemberId = mebMasterId;
+        item.MemberNomineeId = $("#MemberNomineeId").val();
+        item.NomineeName = $("#NomineeName").val();
+        item.NomineeFather = $("#NomineeFather").val();
+        item.NomineeMother = $("#NomineeMother").val();
+        item.NomineeHusbandWife = $("#NomineeHusbandWife").val();
+        item.NomineeBirthdate = $("#NomineeBirthdate").val();
+        item.NomineeMobileNo = $("#NomineeMobileNo").val();
+        item.NomineeNationalId = $("#NomineeNationalId").val();
+        item.IdType = $("#IdType option:selected").val();
+        item.CountryID = $("#CountryID").val();
+        item.DivisionCode = $("#DivisionCode").val();
+        item.DistrictCode = $("#DistrictCode").val();
+        item.UpozillaCode = $("#UpozillaCode").val();
+        item.UnionCode = $("#UnionCode").val();
+        item.VillageCode = $("#VillageCode").val();
+        item.ZipCode = $("#ZipCode").val();
+        item.AddressLine1 = $("#AddressLine1").val();
+        item.NomineeRelation = $("#NomineeRelation").val();
+        item.NomineeImagePath = document.getElementById("NomineeImage").value;
+        item.NomineeSignatureImagePath = document.getElementById("NomineeSignatureImage").value;
+        return item;
+    }
+
+    function ResetNominee() {
+        $("#btnUpdate").hide();
+        $("#btnSave").show();
+        $("#btnReset").hide();
+        ClearControl();
+    }
+
+    function ClearControl() {
+        $("#MemberNomineeId").val('');
+        $("#NomineeName").val('');
+        $("#NomineeFather").val('');
+        $("#NomineeMother").val('');
+        $("#NomineeHusbandWife").val('');
+        $("#NomineeBirthdate").val('');
+        $("#NomineeMobileNo").val('');
+        $("#NomineeNationalId").val('');
+        $("#IdType").val('');
+        $("#CountryID").val('');
+        $("#DivisionCode").val('');
+        $("#DivisionCode").val('');
+        $("#UpozillaCode").val('');
+        $("#UnionCode").val('');
+        $("#VillageCode").val('');
+        $("#ZipCode").val('');
+        $("#AddressLine1").val('');
+        $("#NomineeRelation").val('');
+        $("#NomineeImage").val('');
+        $("#NomineeSignatureImage").val('');
+        $("#thumbnil").attr("src", "/Images/blank-headshot.jpg");
+        $("#thumbnilSignature").attr("src", "/Images/blank-headshot.jpg");
+    }
+
+    function LoadMemberInfoByCode(member_Code) {
+        $("#MemberId").val(0);
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemInfoByCode", "MemberNominee", "http")',
+            data: { member_Code: member_Code },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.each(data.data, function (index, data) {
+                        debugger;
+                        $("#MemberId").val(data.MemberId);
+                        $("#MemberName").val(data.MemberName);
+
+                        //$("#CountryID").val(data.CountryID);
+                        //$("#DivisionCode").val(data.DivisionCode);
+                        //$("#DistrictCode").val(data.DistrictCode);
+                        //$("#UpozillaCode").val(data.UpozillaCode);
+                        //$("#UnionCode").val(data.UnionCode);
+                        //$("#VillageCode").val(data.VillageCode);
+                        //$("#ZipCode").val(data.ZipCode);
+                        //$("#AddressLine1").val(data.AddressLine1);
+
+
+                        $("#HiddenCountryID").val(data.CountryID);
+                        $("#HiddenDivisionID").val(data.DivisionCode);
+                        $("#HiddenDistrictID").val(data.DistrictCode);
+                        $("#HiddenUpozillaID").val(data.UpozillaCode);
+                        $("#HiddenUnionID").val(data.UnionCode);
+                        $("#HiddenVillageID").val(data.VillageCode);
+
+                        LoadDivisionByCountry(data.CountryID);
+
+                        var country_id = data.CountryID;
+                        LoadDivisionByCountry(country_id);
+
+
+                        var div_id = data.DivisionCode;
+                        LoadDistrictByDivision(div_id);
+
+
+                        var dis_id = data.DistrictCode;
+                        LoadUpozillaByDistrict(dis_id);
+
+
+                        var upo_id = data.UpozillaCode;
+                        LoadUnionByUpozilla(upo_id);
+
+
+                        var uni_id = data.UnionCode;
+                        LoadVillageByUnion(uni_id);
+
+                        $("#ZipCode").val(data.ZipCode);
+                        $("#AddressLine1").val(data.AddressLine1);
+
+                    });
+                    getEmployeeNominee();
+                }
+
+                else {
+                    ClearControl();
+                    $.alert.open("Error", "Invalid code");
+                }
+            },
+        });
+    }
+
+    function showNomineeImage(fileInput) {
+        $("#blaImage").show();
+        $("#imgNominee").hide();
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                var size = Math.round(file.size / 1024);
+                if (size <= 200) {
+                    var img = document.getElementById("thumbnil");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image file cannot be greater than 200 KB.');
+            }
+            else {
+                $("#NomineeImage").replaceWith($("#NomineeImage").clone(true));
+                alert('Please select a valid image file');
+            }
+        }
+    }
+
+    function showNomineeSignatureImage(fileInput) {
+        $("#blaSignatureImage").show();
+        $("#imgNomineeSignature").hide();
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                var size = Math.round(file.size / 1024);
+                if (size <= 200) {
+                    var img = document.getElementById("thumbnilSignature");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image Signature file cannot be greater than 200 KB.');
+            }
+            else {
+                $("#NomineeSignatureImage").replaceWith($("#NomineeSignatureImage").clone(true));
+                alert('Please select a valid Signature image file');
+            }
+        }
+    }
+
+    function GetNomineeImage(MemberNomineeId) {
+        var urlString = 'url(/MemberNominee/RetrieveNomineeImage/' + MemberNomineeId + ')';
+        var img = document.getElementById('thumbnil').src = '/MemberNominee/RetrieveNomineeImage/' + MemberNomineeId;
+    }
+
+    function GetNomineeSignatureImage(MemberNomineeId) {
+        var urlString = 'url(/MemberNominee/RetrieveNomineeSignatureImage/' + MemberNomineeId + ')';
+        var img = document.getElementById('thumbnilSignature').src = '/MemberNominee/RetrieveNomineeSignatureImage/' + MemberNomineeId;
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+
+<br />
+@*<div class="pull-right"><a href="/SavingsAccountOpening/Create" class="btn btn-info" role="button">Back</a></div>*@
+<div class="pull-right"><a href="#" onclick="goBack()" class="btn btn-info" role="button">Back</a></div>
+<h2 class="page-title text-info">Member Info</h2>
+@*<h2>UsingViewData</h2> @ViewData["EditMemberCode"]*@
+<input type="hidden" id="Employees_ViewData" value="@ViewData["EditMemberCode"]" />
+
+@using (Html.BeginForm("Create", "MemberNominee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal", id = "NomineeCreate" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="create-success create-content alert alert-success alert-dismissible" role="alert" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p class="message-content">  </p>
+    </div>
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="container-fluid">
+
+        <fieldset>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MemberCode, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                        <div class="col-sm-8">
+                            @Html.TextBox("txtMemberCode", "", new { @class = "form-control", id = "txtMemberCode" })
+                            @Html.HiddenFor(model => model.MemberCode)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MemberName, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.MemberName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @*<div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.OfficeName, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.OfficeName, new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                        </div>
+                    </div>
+                </div>*@
+        </fieldset>
+
+    </div>
+}
+
+
+@using (Html.BeginForm("CreateNomineeDetails", "MemberNominee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal", id = "NomineeDetails" }))
+{
+    <div class="row">
+        <div class="col-md-12">
+            &nbsp;
+        </div>
+    </div>
+    @Html.Hidden("HiddenCountryID")
+    @Html.Hidden("HiddenDivisionID")
+    @Html.Hidden("HiddenDistrictID")
+    @Html.Hidden("HiddenUpozillaID")
+    @Html.Hidden("HiddenUnionID")
+    @Html.Hidden("HiddenVillageID")
+
+    <fieldset id="fldNomineeInfo">
+        <legend class="text-info">Nominee Information</legend>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeName, new { @class = "control-label col-md-4 required" })
+                    <div class="col-md-8">
+                        @Html.HiddenFor(model => model.MemberId)
+                        @Html.HiddenFor(model => model.MemberNomineeId)
+                        @Html.EditorFor(model => model.NomineeName, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeFather, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.NomineeFather, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeMother, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.NomineeMother, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeHusbandWife, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.NomineeHusbandWife, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeBirthdate, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.NomineeBirthdate, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeMobileNo, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.NomineeMobileNo, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeRelation, new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.NomineeRelation, new { htmlAttributes = new { @class = "form-control txtcapitalize" } })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IdType, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.IdType, IdT, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NomineeNationalId, new { @class = "control-label col-md-4 required" })
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.NomineeNationalId, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CountryID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                        @Html.DropDownListFor(model => model.CountryID, country, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DivisionCode, htmlAttributes: new { @class = "control-label required" })
+                        @Html.DropDownListFor(model => model.DivisionCode, div, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DistrictCode, htmlAttributes: new { @class = "control-label required" })
+                        @Html.DropDownListFor(model => model.DistrictCode, dist, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.UpozillaCode, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                        @Html.DropDownListFor(model => model.UpozillaCode, upo, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.UnionCode, htmlAttributes: new { @class = "control-label required" })
+                        @Html.DropDownListFor(model => model.UnionCode, uni, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <lable class="control-label required">Village / Street</lable>
+                        @Html.DropDownListFor(model => model.VillageCode, vill, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ZipCode, htmlAttributes: new { @class = "control-label" })
+                        @Html.EditorFor(model => model.ZipCode, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label" })
+                        @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control", @placeholder = "House/Holding No, Road No, Village Name, Post office etc.", @autocomplete = "off" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ImgFile_NomineeImage, new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        <input type="button" id="captureImage" data-type="image" value="Capture Image" class="btn btn-facebook" />
+                        <div id="imgNominee">
+
+                        </div>
+                        <div id="blaImage">
+                            <img id="thumbnil" style="width:100px; height:100px;" src="~/Images/blank-headshot.jpg" alt="Member Image" class="img-responsive" />
+                        </div>
+                        @Html.TextBoxFor(model => model.ImgFile_NomineeImage, new { type = "file", @id = "NomineeImage", @onchange = "showNomineeImage(this);", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ImgFile_NomineeSignatureImage, new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        <input type="button" id="captureImageFingerThumb" data-type="thumb" value="Capture Thumb" class="btn btn-facebook" />
+                        <div id="imgNomineeSignature">
+
+                        </div>
+                        <div id="blaSignatureImage">
+                            <img id="thumbnilSignature" style="width:100px; height:100px;" src="~/Images/blank-headshot.jpg" alt="Member Image" class="img-responsive" />
+                        </div>
+                        @Html.TextBoxFor(model => model.ImgFile_NomineeSignatureImage, new { type = "file", @id = "NomineeSignatureImage", @onchange = "showNomineeSignatureImage(this);", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            @*<div class="col-sm-7">
+                </div>*@
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <input type="button" value="Save" id="btnSave" class="btn btn-primary" onclick="SaveMemberNomineeInformations()" />
+                        <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="SaveMemberNomineeInformations()" />
+                        <input type="button" value="Reset" id="btnReset" style="margin-left: 20px" class="btn btn-primary" onclick="ResetNominee()" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <!-- END PHOTO UPLOAD -->
+    <!-- TEST -->
+
+    <form id="friendform">
+        <input id="txtNomineePhotoBinary" name="NomineePhotoBinary" type="hidden" />
+        <input id="txtApplicantSignatureBinary" name="ApplicantSignatureBinary" type="hidden" />
+        <input id="txtCurrentMemberId" name="CurrentMemberId" type="hidden" />
+    </form>
+
+    <!-- END TEST-->
+
+
+    <!-- Popup for Capture Image -->
+    <div id="webcamDiv" title="Capture Image" style="display:none">
+
+        <div id="container imgcontainer">
+            <video id="video"></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+
+    </div>
+    <!-- End Of  -->
+
+    <fieldset id="fldNomineeList">
+        <legend class="text-info">Nominee List</legend>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="gridNominee"></div>
+            </div>
+        </div>
+    </fieldset>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+
+
+
+
+
+
+
+
+

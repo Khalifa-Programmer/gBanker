@@ -1,0 +1,99 @@
+﻿@model gBanker.Web.ViewModels.SurveyMemberMasterViewModel
+@{
+    var RelationshipIdList = Model == null ? null : Model.RelationshipIdList;
+    var OccupationIdList = Model == null ? null : Model.OccupationIdList;
+    var IsEarningCapableList = Model == null ? null : Model.IsEarningCapableList;
+    var IsAnyOtherPrivateBusinessList = Model == null ? null : Model.IsAnyOtherPrivateBusinessList;
+
+
+}
+
+
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-horizontal content-padding">
+        <div>
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2 required">SurveyCode</label>
+                    <div class="col-md-4">
+                        @Html.TextBoxFor(model => model.SurveyCode, new { @class = "form-control required", @readonly = "true" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.RelationshipId, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.RelationshipId, RelationshipIdList, new { @class = "form-control" })
+                    </div>
+
+                    <label class="control-label col-md-2" for="NoOfPerson">No Of Person</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.NoOfPerson, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.NoOfPerson, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OccupationId, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.OccupationId, OccupationIdList, new { @class = "form-control" })
+                    </div>
+
+                    @*<label class="control-label col-md-2" for="IncomeMonthly">Income Monthly</label>
+                        <div class="col-md-4">
+                            @Html.EditorFor(model => model.IncomeMonthly, new {htmlAttributes = new {@class = "form-control"}})
+                            @Html.ValidationMessageFor(model => model.IncomeMonthly, "", new {@class = "text-danger"})
+                        </div>*@
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IsEarningCapable, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.IsEarningCapable, IsEarningCapableList, new { @class = "form-control" })
+                    </div>
+
+                    <label class="control-label col-md-2" for="IncomeMonthly">Income Monthly</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.IncomeMonthly, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.IncomeMonthly, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IsAnyOtherPrivateBusiness, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.IsAnyOtherPrivateBusiness, IsAnyOtherPrivateBusinessList, new { @class = "form-control" })
+                    </div>
+
+                    <label class="control-label col-md-2" for="IncomeMonthlyFromPrivateBusiness">Income Monthly From Private Business</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.IncomeMonthlyFromPrivateBusiness, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.IncomeMonthlyFromPrivateBusiness, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="Remarks">Remarks</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @class = "form-control FamilyInformationRemarks" } })
+                        @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>

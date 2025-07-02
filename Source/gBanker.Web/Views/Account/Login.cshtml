@@ -1,0 +1,112 @@
+﻿@model gBanker.Web.Models.LoginModel
+
+@{
+    ViewBag.Title = "Log in";
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+
+<style>
+    #togglePassword{
+        cursor:pointer;
+    }
+</style>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('#togglePassword').click(function () {
+            var PasswordField = $('#Password');
+            var PasswordFieldType = PasswordField.attr('type');
+            var eyeIcon = $('#eyeIcon');
+
+            if (PasswordFieldType === 'password') {
+                PasswordField.attr('type', 'text');
+                eyeIcon.removeClass('glyphicon-eye-open').addClass('glyphicon-eye-close');
+            } else {
+                PasswordField.attr('type', 'password');
+                eyeIcon.addClass('glyphicon-eye-open').removeClass('glyphicon-eye-close');
+            }
+        });
+
+
+        var v = $('#hdnServiceMessage').val();
+        if (v != "") {
+            $("#KheaderMessage").show();
+            $("#lblKServiceMessage").text(v);
+        }
+
+        $('a[href="#btnForgotpassword"]').on('click', () => {
+            var userCode = $('#UserName').val();
+            let rnd = (Math.random() + 1).toString(36).substring(7);
+            if (!userCode) {
+                window.location.href = "/account/login";
+                return;
+            }
+
+            window.location.href = `/ForgotPassword?gb_fgt_psd=${rnd}&user_id_fire=${userCode}`;
+        })
+    });
+
+
+
+</script>
+
+@using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    @*<input type="hidden" id="hdnServiceMessage" value="@ViewBag.ServiceMessages">*@
+    @*<marquee width="60%" direction="left" id="marqueeMessage" height="100px">
+            @ViewBag.ServiceMessages
+        </marquee>*@
+    <fieldset>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @placeholder = "Username" })
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="input-group input-group-lg center">
+                    @Html.ValidationMessageFor(m => m.UserName)
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div><br />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", @placeholder = "Password" })
+                    <span class="input-group-addon" id="togglePassword">
+                        <i class="glyphicon glyphicon-eye-open" id="eyeIcon"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="input-group input-group-lg center">
+                    @Html.ValidationMessageFor(m => m.Password)
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div><br />
+        <div class="row">
+            <div class="col-md-5 col-sm-5 col-xs-8 center">
+                <button type="submit" name="login" id="login" class="btn btn-primary">Login</button>
+            </div>
+        </div>
+    </fieldset>
+}
+
+<br />
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 center">
+        @*<button class = "btn btn-success" type="button" id="btnForgotpassword">Forgot Password</button>*@
+        <a href="#btnForgotpassword" id="btnForgotpassword">Forgot Password</a> <span> || </span>
+        @Html.ActionLink("Change Password", "ChangeCurrentPassword", "Account")
+    </div>
+</div>
+

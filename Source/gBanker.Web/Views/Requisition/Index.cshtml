@@ -1,0 +1,297 @@
+﻿@{
+    ViewBag.Title = "Items Setup";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    function GetByID(rID, commandStatus, rowStatus) {
+        /*Send & Cancel*/
+        /* Store in*/
+        if (commandStatus == 's' || commandStatus == 'c' || commandStatus == 'i') {
+            var data = GenerateAjaxRequist('/Requisition/UpdateRequsitionMaster', JSON.stringify({ ids: rID, status: commandStatus }), 'POST');
+            if (data.Result == 0)
+                $.alert.open("warining", data.message);
+            else if (data.Result == 1) {
+                $.alert.open("Success", data.message);
+                reloadGrid();
+                $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/ItemXStoreDetailsReport?masterID=" + data.VID + "&type=I")
+                //$("#ifrReportv").attr('src', "http://" + window.location.host + "/InventoryReport/VoucherReport?masterID=" + data.VID + "")
+            }
+            else if (data.Result == 2) {
+                $.alert.open("Error", data.message);
+                location.reload(true);
+            }
+        }
+
+
+        else if (commandStatus == 'v') {
+            $("#spnViewType").text(
+                ((rowStatus == 'a' || rowStatus == 'A') ? "Approved" :
+                 (rowStatus == 'c' || rowStatus == 'C') ? "Canceled" :
+                 (rowStatus == 'p' || rowStatus == 'P') ? "Pending" :
+                 (rowStatus == 'r' || rowStatus == 'R') ? "Rejected" :
+                 (rowStatus == 's' || rowStatus == 'S') ? "Posted" : ""));
+            //debugger
+            $('#gridDetails').jtable({
+                // title: 'Product List',
+                paging: false,
+                //pageSize: ,
+                sorting: true,
+                defaultSorting: 'RequsitionDetailsID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+
+                            $.ajax({
+                                url: "/Requisition/GetAllRequsitionDetails?requsitionMasterID=" + rID + "&status=" + rowStatus,
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                },
+                fields: {
+                    RequsitionDetailsID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    RequsitionMasterID: {
+                        title: 'RequsitionMasterID',
+                        width: '10%',
+                        list: false
+                    },
+                    ItemID: {
+                        title: 'ItemID',
+                        width: '10%',
+                        list: false
+                    },
+
+                    ItemName: {
+                        title: 'Item Name',
+                        width: '40%'
+                    },
+                    Qty: {
+                        title: 'Qty',
+                        width: '15%'
+                    },
+                    ApprovedQty: {
+                        title: 'App. Qty',
+                        width: '15%'
+                    },
+                    Remarks: {
+                        title: 'Remarks',
+                        width: '25%'
+                    },
+                    AprovedStatus: {
+                        title: 'Status',
+                        display: function (data) {
+                            return ((data.record.AprovedStatus == 'a' || data.record.AprovedStatus == 'A') ? "Approved" :
+                                (data.record.AprovedStatus == 'c' || data.record.AprovedStatus == 'C') ? "Canceled" :
+                                (data.record.AprovedStatus == 'p' || data.record.AprovedStatus == 'P') ? "Pending" :
+                                (data.record.AprovedStatus == 'r' || data.record.AprovedStatus == 'R') ? "Rejected" :
+                                (data.record.AprovedStatus == 's' || data.record.AprovedStatus == 'S') ? "Posted" : "")
+                        },
+                        width: '20%'
+                    },
+                    CommandLink: {
+                        title: "Command",
+                        display: function (data) {
+                            return '<div class="text-center view-link">' +
+                                (((data.record.AprovedStatus == 'a' || data.record.AprovedStatus == 'A') /*&& (data.record.AprovedStatus == 'a' || data.record.AprovedStatus == 'A')*/) ?
+                                '<a href="#" title="Store In" onclick="GetDetailUpdate(' + data.record.RequsitionDetailsID + ",'in','" + data.record.AprovedStatus + "'" + ')"><i class="fa fa fa-plus"></i></a>' :
+                                ((data.record.AprovedStatus == 'p' || data.record.AprovedStatus == 'P')) ?
+                                ('<a href="#" title="Quantity Update" onclick="GetDetailUpdate(' + data.record.RequsitionDetailsID + ",'u','" + data.record.AprovedStatus + "'" + ')"><i class="fa fa-check"></i></a>&nbsp;&nbsp;' +
+                                '<a href="#" title="Delete" onclick="GetDetailUpdate(' + data.record.RequsitionDetailsID + ",'d','" + data.record.AprovedStatus + "'" + ')"><i class="fa fa-trash-o"></i></a>')
+                                : "")
+                            '</div>';
+                        }
+                    }
+                }
+            });
+            $('#gridDetails').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            $('#dvModel').modal('show');
+        }
+    }
+
+    function GetDetailUpdate(detailID, commandStatus, rowStatus) {
+
+    }
+    $(document).ready(function () {
+
+        $('#ddlRequsitionStatus').on('change', function () {
+            reloadGrid();
+        });
+        //
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'RequsitionDate ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Requisition/GetAllRequsition?reqType=' + $("#ddlRequsitionStatus").val() + '&isSelfStore=true&jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                RequsitionID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                RequsitionNo: {
+                    title: 'RequsitionNo',
+                    width: '10%'
+
+                },
+                RequsitionDate: {
+                    title: 'RequsitionDate',
+                    type: 'date',
+                    displayFormat: 'dd-mm-yy',
+                    width: '10%'
+                },
+
+                FromStoreName: {
+                    title: 'Store(From)',
+                    width: '20%'
+                },
+                ToStoreName: {
+                    title: 'Store(To)',
+                    width: '25%'
+                },
+                RequsitionStatus: {
+                    title: 'Status',
+                    display: function (data) {
+                        return ((data.record.RequsitionStatus == 'a' || data.record.RequsitionStatus == 'A') ? "Approved" :
+                            (data.record.RequsitionStatus == 'c' || data.record.RequsitionStatus == 'C') ? "Canceled" :
+                            (data.record.RequsitionStatus == 'd' || data.record.RequsitionStatus == 'D') ? "Deleted" :
+                            (data.record.RequsitionStatus == 'i' || data.record.RequsitionStatus == 'I') ? "Store in" :
+                            (data.record.RequsitionStatus == 'p' || data.record.RequsitionStatus == 'P') ? "Pending" :
+                            (data.record.RequsitionStatus == 'r' || data.record.RequsitionStatus == 'R') ? "Rejected" :
+                            (data.record.RequsitionStatus == 's' || data.record.RequsitionStatus == 'S') ? "Posted" : "")
+                    },
+                    width: '10%'
+                },
+
+                ViewLink: {
+                    title: "Command",
+                    display: function (data) {
+                        return '<div class="text-center view-link">' + ((data.record.RequsitionStatus == 'a' || data.record.RequsitionStatus == 'A') ?
+                            ('<a href="#" title="Store In" onclick="GetByID(' + data.record.RequsitionID + ",'i','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa fa-plus"></i></a>') :
+                            (data.record.RequsitionStatus == 'p' || data.record.RequsitionStatus == 'P') ?
+                            ('<a href="#" title="View" onclick="GetByID(' + data.record.RequsitionID + ",'v','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-book"></i></a>&nbsp;&nbsp;' +
+                            '<a href="#" title="Post" onclick="GetByID(' + data.record.RequsitionID + ",'s','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-paper-plane"></i></a>&nbsp;&nbsp;' +
+                            '<a href="#" title="Cancel" onclick="GetByID(' + data.record.RequsitionID + ",'c','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-times"></i></a>') :
+                            (data.record.RequsitionStatus == 'r' || data.record.RequsitionStatus == 'R') ?
+                            '<a href="#" title="View" onclick="GetByID(' + data.record.RequsitionID + ",'v','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-book"></i></a>' : "")
+                             //(data.record.RequsitionStatus == 'c' || data.record.RequsitionStatus == 'C') ? "" :
+                            //(data.record.RequsitionStatus == 'd' || data.record.RequsitionStatus == 'D') ? "" :
+                            // (data.record.RequsitionStatus == 's' || data.record.RequsitionStatus == 'S') ? "" : "")
+                        + '</div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+<h2 class="page-title">Requisition List</h2>
+<br />
+<table>
+    <tr>
+        <td>Requisition Status</td>
+        <td>:</td>
+        <td>
+            <select id="ddlRequsitionStatus" style="padding:7px;">
+                <option value="a">Approved Requisition</option>
+                <option value="c">Canceled Requisition</option>
+                <option value="p">Pending Requisition</option>
+                <option value="s">Posted Requisition</option>
+                <option value="r">Reject Requisition</option>
+                <option value="i">Store In</option>
+
+            </select>
+        </td>
+    </tr>
+</table>
+<br />
+<div id="grid"></div>
+@*Pop Up*@
+<div class="modal fade" id="dvModel" tabindex="-1" role="dialog" aria-labelledby="dvModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 id="hdItem">Details (<span id="spnViewType"></span>)</h4>
+            </div>
+            <div class="modal-body">
+                <div id="dvmessage"></div>
+                <input type="hidden" id="hdnMID" />
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <div id="gridDetails"></div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <iframe id="ifrReport" width="520" height="300" frameBorder="0"></iframe>
+    </div>
+    @*<div class="col-md-6">
+        <iframe id="ifrReportv" width="520" height="300" frameBorder="0"></iframe>
+    </div>*@
+</div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

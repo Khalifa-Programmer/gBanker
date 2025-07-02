@@ -1,0 +1,160 @@
+﻿
+@{
+    ViewBag.Title = "Monthly Summary Report Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+}
+
+<style type="text/css">
+</style>
+
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+        $("#myload").hide();
+        var OfficeNameNew = $("#OfficeNameNew").text();
+        $("#ProcessOffice").val(OfficeNameNew);
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetYearList", "MonthlyProjectStatementReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //alert("success");
+                data = $.map(data, function (item, a) {
+                    return "<option value=" + item.Value + ">" + item.Text + "</option>";
+                });
+                $("#ddlYear").html(data.join(""));
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var ProcessYear = $("#ddlYear option:selected").val();
+            var ProcessMonth = $("#ddlMonth option:selected").val();
+            debugger;
+                if (ProcessYear != 0 && ProcessMonth != 0) {
+                    $("#myload").show();
+                        $.ajax({
+                            type: 'GET',
+                            contentType: "application/json; charset=utf-8",
+                            url: '@Url.Action("GenerateMonthlySummaryReportProcess", "GroupwiseReport", "http")',
+                            data: { ProcessYear: ProcessYear, ProcessMonth: ProcessMonth},
+                            dataType: 'json',
+                            async: true,
+                            success: function (data) {
+                                alert("success");
+                                $("#myload").hide();
+                                location.reload();
+                            },
+                            error: function (request, status, error) {
+                                //alert("The previous month cannot be processed!");
+                                //alert(request.statusText + "/" + request.status + "/" + error);
+                                $("#myload").hide();
+                                location.reload();
+                            }
+                        });
+                } else {
+                    alert("Please Select required field");
+                }
+        });
+
+
+
+    });
+
+</script>
+
+<h2 class="page-title">Monthly Summary Report Process</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <span id="myload"><i class="fa fa-spinner fa-4x fa-spin"></i></span>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Process Year", new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownList("YearList", null, new { @ID = "ddlYear", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">
+                &nbsp;
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Process Month ", new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownList("ProcessMonth", new[] {
+                       new SelectListItem() {Text="January", Value="1"},
+                       new SelectListItem() {Text="February",Value="2"},
+                       new SelectListItem() {Text="March",Value="3"},
+                       new SelectListItem() {Text="April",Value="4"},
+                       new SelectListItem() {Text="May",Value="5"},
+                       new SelectListItem() {Text="June",Value="6"},
+                       new SelectListItem() {Text="July",Value="7"},
+                       new SelectListItem() {Text="August",Value="8"},
+                       new SelectListItem() {Text="September",Value="9"},
+                       new SelectListItem() {Text="October",Value="10"},
+                       new SelectListItem() {Text="November",Value="11"},
+                       new SelectListItem() {Text="December",Value="12"}},
+                       "Please Select", new { @ID = "ddlMonth", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">
+                &nbsp;
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Process Office", new { @class = "control-label" })
+                    <input type="text" id="ProcessOffice" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-8">
+                &nbsp;
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="form-group form-action">
+                    <input type="submit" value="Process" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

@@ -1,0 +1,323 @@
+﻿@model gBanker.Web.ViewModels.AccChartViewModel
+@{
+    ViewBag.Title = "Acc Code Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var cat = Model == null ? null : Model.CategoryList;
+    var offc = Model == null ? null : Model.OfficeList;
+    var modeList = Model == null ? null : Model.ModuleList;
+    var noteList = Model == null ? null : Model.AccNoteList;
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#txtParentCodeAutoComplete").blur(function () {
+            var ParentCode =  $("#txtParentCodeAutoComplete").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetParentCodeDetail", "AccChart", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { ParentCode: ParentCode },
+                success: function (result) {
+                    //alert(result.FirstLevel);
+                    $("#FirstLevel").val(result.FirstLevel);
+                    $("#SecondLevel").val(result.SecondLevel);
+                    $("#ThirdLevel").val(result.ThirdLevel);
+                    $("#FourthLevel").val(result.FourthLevel);
+                    $("#FifthLevel").val(result.FifthLevel);
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        });
+        @*$("#txtParentCode").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetParentList", "AccChart", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { OfficeCode: request.term },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.OfficeID,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtParentCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtParentCode").val(ui.item.label);
+                $("#ParentId").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#txtParentCode").val(ui.item.label);
+                $("#ParentId").val(ui.item.value);
+                return false;
+            }
+        });*@
+        $("#btnSave").click(function (e) {
+            $("#loading").show();
+            e.preventDefault();
+            var ParentCode = $("#txtParentCode").val();
+            var FirstLevel = $("#FirstLevel").val();
+            var SecondLevel = $("#SecondLevel").val();
+            var ThirdLevel = $("#ThirdLevel").val();
+            var FourthLevel = $("#FourthLevel").val();
+            var AccCode = $("#AccCode").val();
+            var AccName = $("#AccName").val();
+            var AccLevel = $("#AccLevel").val();
+            var Nature = $("#Nature").val();
+            Nature = Nature.replace(/\s/g, '');
+            var IsTransaction = $("#IsTransaction").is(":checked") ? "true" : "false";
+            var CategoryID = $("#CategoryID").val();
+            var OfficeLevel = $("#OfficeLevel").val();
+            var ModuleID = $("#ModuleID").val();
+            var NoteID = $("#NoteID").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveAccCodeNW", "AccChart", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { ParentCode: ParentCode, FirstLevel: FirstLevel, SecondLevel: SecondLevel, ThirdLevel: ThirdLevel, FourthLevel: FourthLevel, AccCode: AccCode, AccName: AccName, AccLevel: AccLevel, Nature: Nature, IsTransaction: IsTransaction, CategoryID: CategoryID, OfficeLevel: OfficeLevel, ModuleID: ModuleID, NoteID: NoteID },
+                success: function (result) {
+                    $("#loading").hide();
+                    var msg, css;
+                    if (result == 'S') {
+                        $("#txtParentCode").val = '';
+                        $("#AccCode").val = '';
+                        $("#AccName").val = '';                        
+                        msg = "Saved Successfully";
+                        css = "success";
+                    }
+                    else if (result == 'F') {
+                        msg = "Failed to Save";
+                        css = "failed";
+                    }
+                    else if (result == 'A') {                        
+                        msg = "Account code already exists";
+                        css = "failed";
+                    }
+                    $("#dvMessage").attr('class', css);
+                    $("#dvMessage").html(msg);
+                    $("#dvMessage").show();
+                    if (result == null)
+                        $("#dvMessage").toggle('fade', 1500);
+                },
+                error: function (request, status, error) {                    
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html(request.statusText);
+                    $("#dvMessage").show();
+                }
+            });
+        });
+
+
+        $("#txtParentCodeAutoComplete").autocomplete({
+
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetChartList", "AccChart", "http")', //GetChartList
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AccCode: request.term }, // AccCode: request.term
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.AccCode,
+                                label: item.AccName   
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#AccName").val($("#hdnAccInfo").val().split("|")[1]);
+                $("#txtParentCodeAutoComplete").val(ui.item.value);
+
+                $("#AccLevel").val(1 + parseInt(ui.item.label.split("|")[2]));
+                $("#Nature").val(ui.item.label.split("|")[3]);
+
+                return ;
+            },
+            select: function (event, ui) {
+
+                $("#hdnAccInfo").val(ui.item.label);
+
+                $("#AccName").val($("#hdnAccInfo").val().split("|")[1]);
+                $("#txtParentCodeAutoComplete").val(ui.item.value);
+
+                $("#AccLevel").val(1 + parseInt(ui.item.label.split("|")[2]));
+                $("#Nature").val(ui.item.label.split("|")[3]);
+
+            $("#AccLevel").prop("disabled", true);
+            $("#Nature").prop("disabled", true);
+
+            let CategoryId = $("#hdnAccInfo").val().split("|")[4];
+            $("#CategoryID option[value=" + CategoryId + "]").prop('selected', 'selected');
+             
+            $("#CategoryID").prop("disabled", true);
+
+                return ;
+            },
+            change: function (event, ui) {
+
+                $("#txtParentCodeAutoComplete").val(ui.item.value);
+
+                $("#AccLevel").val(1 + parseInt(ui.item.label.split("|")[2]));
+                $("#Nature").val(ui.item.label.split("|")[3]);
+
+
+                return ;
+            }
+        });
+
+
+
+
+
+
+
+    });// END Document Ready
+</script>
+
+<input type="hidden" id="hdnAccInfo" value="" />
+@Html.ActionLink("Back to List", "IndexNW", null, new { @class = "pull-right" })
+<h2 class="page-title">Account Code Create</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-6">
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ParentCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBox("txtParentCodeAutoComplete", "", new { @class = "form-control" })
+                    @*@Html.TextBox("txtParentCode", "", new { @class = "form-control" })*@
+                    @Html.HiddenFor(model => model.ParentID)
+                    @Html.HiddenFor(model => model.FirstLevel)
+                    @Html.HiddenFor(model => model.SecondLevel)
+                    @Html.HiddenFor(model => model.ThirdLevel)
+                    @Html.HiddenFor(model => model.FourthLevel)
+                    @Html.HiddenFor(model => model.FifthLevel)
+                    @Html.ValidationMessageFor(model => model.ParentCode, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AccCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.AccCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.AccCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AccName, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.AccName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.AccName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AccLevel, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.AccLevel, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.AccLevel, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IsTransaction, htmlAttributes: new { @class = "control-label" })
+                    @Html.CheckBoxFor(model => model.IsTransaction, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.IsTransaction, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Nature, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Nature, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Nature, "", new { @class = "text-danger" })
+
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ModuleID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.ModuleID, modeList, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeLevel, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeLevel, offc, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeLevel, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CategoryID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CategoryID, cat, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.CategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NoteID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.NoteID, noteList, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.NoteID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="button" value="Save" class="btn btn-primary" id="btnSave" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

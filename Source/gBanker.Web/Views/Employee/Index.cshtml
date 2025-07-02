@@ -1,0 +1,240 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.EmployeeViewModel>
+
+@{
+    ViewBag.Title = "Employee List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+    function displayEmployeeReport() {
+
+        //var startDate = $("#startDate").val();
+        //var endDate = $("#endDate").val();
+        //var reportParam = startDate + ',' + endDate;
+        var reportParam = '';
+        var url = '/Report/Print?reportId=Employee&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+    function deleteConfirm(status) {
+        if (status == "true") {
+            return confirm('Are you sure you want to delete this record');
+        }
+        else {
+            alert("You cannot delete this record because it is already disabled.");
+            return false;
+        }
+    }
+    function GetEmpList() {
+        var ddlEmp = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmpList", "Center", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        ////////
+        //GetEmpList();
+        $('#grid').jtable({
+           // title: 'Employee List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Employee/GetEmployee?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+               // listAction: '/Employee/GetEmployee'
+                //updateAction: '/Product/Edit',
+                //deleteAction: '/Product/Delete'
+            },
+            fields: {
+                EmployeeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EmployeeCode: {
+                    title: 'Employee Code',
+                    width: '5%'
+
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '5%'
+
+                },
+                EmpName: {
+                    title: 'Employee Name',
+                    width: '5%'
+                },
+                GuardianName: {
+                    title: 'Guardian Name',
+                    width: '5%'
+                },
+                EmpAddress: {
+                    title: 'Emp Address',
+                    width: '5%'
+                },
+                PhoneNo: {
+                    title: 'Phone No',
+                    width: '5%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '10%'
+                },
+               
+                Gender: {
+                    title: 'Gender',
+                    width: '5%'
+                },
+                BirthDate: {
+                    title: 'Birth Date',
+                    type: 'date',
+                    displayFormat: 'dd-mm-yy',
+                    width: '8%'
+                },
+                Designation: {
+                    title: 'Designation',
+                    width: '5%'
+                },
+                JoiningDate: {
+                    title: 'Br.Joining Date',
+                    type: 'date',
+                    displayFormat: 'dd-mm-yy',
+                    width: '8%'
+                },
+                EmployeeStatus: {
+                    title: 'Employee Status',
+                    width: '2%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/Employee/Edit/" + data.record.EmployeeID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                        //return "<a href='/Employee/Edit/" + data.record.EmployeeID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                       // return '<a href="/Employee/Edit/' + data.record.EmployeeID + '">Edit</a>';
+                    }
+                }
+                //,
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<div class="text-center delete-link"><a href="/Employee/Delete/' + data.record.EmployeeID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                //       // return '<a href="/Employee/Delete/' + data.record.EmployeeID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //    }
+                //}
+            }
+        });
+        $('#grid').jtable('load');
+        /////////////
+        $('#btnEmployee').click(function (e) {
+        e.preventDefault();
+        //var fromDate = $("#startDate").val();
+        //var toDate = $("#endDate").val();
+
+        //alert("sdsf");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GenerateReport", "Employee", "http")',
+            data: { fromDate: 'asd', toDate: 'gfh' },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //alert("success");
+                window.open('@Url.Action("Index", "ReportViewer", "http")', 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+
+            }
+        });
+        });
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { filterValue: $('#filterValue').val() });
+        $("#loading").hide();
+    }
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Employee List</h2>
+
+
+<div class="col-md-4">
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-3">
+                @Html.Label("EmployeeCode:", new { @class = "control-label" })
+              
+            </div>
+            <div class="col-md-5">
+              
+                <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+            </div>
+
+            <div class="col-md-1" style="padding-top:1px; padding-left: 0px;">
+                <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+            </div>
+
+        </div>
+    </div>
+</div>
+    <div id="grid"></div>
+    @section Scripts {
+
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/jtable")
+    }
+
+
+    @* <input type="button" value="Employee" onclick="displayEmployeeReport();" />*@
+    @*<input id="btnEmployee" type="submit" value="Employee Info" />*@

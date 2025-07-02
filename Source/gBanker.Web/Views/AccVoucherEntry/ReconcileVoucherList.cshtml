@@ -1,0 +1,305 @@
+﻿@model gBanker.Web.ViewModels.AccTrxMasterViewModel
+@{
+    ViewBag.Title = "ReconcileVoucher List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    @*<link href="~/Content/jtable-custom.css" rel="stylesheet" />*@
+}
+
+
+
+<style type="text/css">
+    .tHead {
+        /*background-color: #D8D8D8;*/
+        font-family: Calibri;
+        color: Black;
+        font-weight: bold;
+        font-size: 15px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+        background: -webkit-linear-gradient(top, #FFFFFF, #ACACAC);
+        margin: 50px;
+        /*vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;*/
+    }
+
+    .tFoot {
+        background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+        border-color: #2b5177;
+        font-family: Arial;
+        color: #fff;
+        font-weight: bold;
+        font-size: 12px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+    }
+
+    .OtherColumn {
+        background: linear-gradient(to top,#78b1ed 0%,#417bb5 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+        border-color: #2b5177;
+        font-family: Arial;
+        color: darkmagenta;
+        font-weight: bold;
+        font-size: 17px;
+        padding: 3px 17px 1px 10px;
+     
+    }
+
+    #tableRow {
+        font-family: Arial;
+        color: Black;
+        font-size: 12px;
+        /*height:25px;*/
+    }
+
+        #tableRow:nth-child(odd) {
+            background-color: #E2E4FF;
+        }
+
+        #tableRow:nth-child(even) {
+            background-color: white;
+        }
+</style>
+<script type="text/javascript">
+
+    @*function grid_load() {
+        var dtTable = $('#tblTrxDetails');
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetVoucherList", "AccVoucherEntry", "http")',
+                data: {},
+                dataType: 'json',
+                async: true,
+                success: function (List_AccTrxMaster) {
+                    var tableBody = dtTable.find('tbody');
+                    tableBody.empty();
+                    $.each(List_AccTrxMaster, function (index, acc) {
+                        var sl = index + 1;
+                        tableBody.append('<tr id="tableRow">' +
+                                             '<td style="text-align:center;">' + sl + '</td>' +
+                                             '<td>' + acc.VoucherNo + '</td>' +
+                                             '<td>' + acc.TrxDtMsg + '</td>' +
+                                             '<td style="text-align:right;">' + acc.VoucherType + '</td>' +
+                                             '<td style="text-align:right;">' + acc.VoucherDesc + '</td>' +
+                                             '<td>' + acc.Reference + '</td>' +
+                                             '<td></td>' +
+                                             '</tr>')
+                    })
+                    $("#DivTableView").show();
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        }*@
+    function VoucherDelete(TrxMasterID) {
+        if (confirm('Are you sure, you want to delete?') == true) {
+            $.ajax({
+                //contentType: "application/json; charset=utf-8",
+                //url: 'VoucherDelete?TrxMasterID=' + TrxMasterID,
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("VoucherDelete", "AccVoucherEntry", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { TrxMasterID: TrxMasterID },
+                success: function (result) {
+
+                    $('#grid').jtable('load');
+                    //reloadGrid();
+                },
+                error: function (err) {
+                    alert(err);
+                    //$('#grid').jtable('load');
+                }
+            });
+        }
+    }
+    function ISReconVoucherDelete(TrxMasterID) {
+        if (confirm('Are you sure, you want to delete?') == true) {
+            $.ajax({
+                //contentType: "application/json; charset=utf-8",
+                //url: 'VoucherDelete?TrxMasterID=' + TrxMasterID,
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("IsReconVoucherDelete", "AccVoucherEntry", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { TrxMasterID: TrxMasterID },
+                success: function (result) {
+
+                    $('#grid').jtable('load');
+                    //reloadGrid();
+                },
+                error: function (err) {
+                    alert(err);
+                    //$('#grid').jtable('load');
+                }
+            });
+        }
+    }
+    function CheckLedgerPost()
+    {
+        if ($('#OfficeLevel').val() == 1) {
+            $('#btnLedgerPost').show();
+        }
+        else if ($('#LastWorkingDate').val() == $('#TrxDate').val() && $('#TrxDate').val() != '1/1/0001 12:00:00 AM')
+        {
+            $('#btnLedgerPost').show();
+        }
+    }
+    $(document).ready(function () {
+
+        $("#DivTableView").hide();
+        $("#loading").hide();
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'VoucherNo ASC',
+            actions: {
+                listAction: '/AccVoucherEntry/GetReconcileVoucherList?trxDate=' + $("#TrxDate").val()
+            },
+            fields: {
+                TrxMasterID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                VoucherNo: {
+                    title: 'Voucher No',
+                    create: false,
+                    edit: false,
+                    width: '10%',
+                }
+                ,
+                TrxDtMsg: {
+                    title: 'Trx Date',
+                    create: false,
+                    edit: false
+                },
+
+                VoucherType: {
+                    title: 'Type',
+                    create: false,
+                    edit: false
+                },
+                VoucherDesc: {
+                    title: 'Description',
+                    create: false,
+                    edit: false
+                },
+                Reference: {
+                    title: 'Reference',
+                    create: false,
+                    edit: false
+                },
+                TotDebit: {
+                    title: 'Debit',
+                    create: false,
+                    edit: false
+                },
+                TotCredit: {
+                    title: 'Credit',
+                    create: false,
+                    edit: false
+                },
+                IsAutoVoucher: {
+                    title: 'Auto Voucher',
+                    create: false,
+                    edit: false
+                },
+                DeleteLink: {
+                        title: "Delete",
+                        display: function (data) {
+                            if (data.record.IsAutoVoucher == true) {
+                                return null;
+                            }
+                            else {
+                                return '<div class="text-center delete-link"><a href="javascript:void" onclick="return ISReconVoucherDelete(' + data.record.TrxMasterID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                            }
+                        }
+                    },
+                EditLink: {
+                    title: function() {
+                        return "<font class='OtherColumn'> Received   </fon>";  //"Received",
+                        },
+                    display: function (data) {
+                        //return "<a href='/AccVoucherEntry/Edit/" + data.record.TrxMasterID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";  <span style='height:100px'  class='glyphicon glyphicon-registration-mark'></span>
+                        return "<div class='text-center'><a href='/AccVoucherEntry/ReconcileVoucherReceive/" + data.record.TrxMasterID + "'> <img height=35px width=35px src='../../Content/images/Receive.png' >   </a></div>";
+                    }
+                }
+            }
+        });
+
+        $('#grid').jtable('load');
+        $('#btnLedgerPost').hide();
+        CheckLedgerPost();
+
+        $('#btnLedgerPost').click(function (e) {
+            $("#loading").show();
+            e.preventDefault();
+            var lastDate = $('#LastWorkingDate').val();
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveLedgerPost", "AccVoucherEntry", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { lastDate: lastDate },
+                success: function (result) {
+                    $("#loading").hide();
+                    var msg, css;
+                    if (result > 0) {
+                        msg = "Ledger Posted Successfully.";
+                        css = "success";
+                    }
+                    else {
+                        msg = "Failed to Posted";
+                        css = "failed";
+                    }
+                    $("#dvMessage").attr('class', css);
+                    $("#dvMessage").html(msg);
+                    $("#dvMessage").show();
+                    if (result == null)
+                        $("#dvMessage").toggle('fade', 1500);
+                },
+                error: function (request, status, error) {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html(request.statusText);
+                    $("#dvMessage").show();
+                }
+            });
+        });
+    });
+
+
+</script>
+
+@Html.ActionLink("Send", "ReconcileVoucherSend", null, new { @class = "btn btn-info btn-sm pull-right" })
+
+@*<input type="button" value="Ledger Post" id="btnLedgerPost" class="btn btn-info btn-sm pull-right" style="margin-right:10px;" />*@
+
+@Html.Label("" + ViewData["TransactionDate"], new { htmlAttributes = new { @class = "form-control" } })
+@Html.HiddenFor(model => model.TrxDate)
+
+<h2 class="page-title">Voucher List</h2>
+<div id="grid"></div>
+
+@Html.HiddenFor(model => model.OfficeLevel)
+@Html.HiddenFor(model => model.LastWorkingDate)
+
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

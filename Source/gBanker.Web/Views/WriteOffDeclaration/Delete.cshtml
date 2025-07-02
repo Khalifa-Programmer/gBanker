@@ -1,0 +1,448 @@
+﻿@model gBanker.Web.ViewModels.WriteOffDeclarationViewModel
+
+@{
+    ViewBag.Title = "Delete WriteOffDeclaration";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>WriteOffDeclarationViewModel</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanSummaryID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanSummaryID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OfficeID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OfficeID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OfficeCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OfficeCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OfficeName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OfficeName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProductName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProductName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CenterID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CenterID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CenterCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CenterCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CenterName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CenterName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberCategoryID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberCategoryID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanTerm)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanTerm)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PurposeID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PurposeID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Purpose)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Purpose)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PrincipalLoan)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PrincipalLoan)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ApproveDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ApproveDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DisburseDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DisburseDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Duration)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Duration)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IntInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IntInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InterestRate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InterestRate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InstallmentStartDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InstallmentStartDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InstallmentDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InstallmentDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TransType)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TransType)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanStatus)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanStatus)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EmployeeId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EmployeeId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EmployeeCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EmployeeCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EmployeeName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EmployeeName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanRepaid)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanRepaid)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IntCharge)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IntCharge)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IntPaid)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IntPaid)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InstallmentNo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InstallmentNo)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DropInstallment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DropInstallment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Holidays)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Holidays)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ContinuousDrop)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ContinuousDrop)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Balance)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Balance)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Advance)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Advance)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DueRecovery)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DueRecovery)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LoanCloseDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LoanCloseDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OverdueDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OverdueDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ExcessPay)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ExcessPay)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CurLoan)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CurLoan)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PreLoan)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PreLoan)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CumLoanDue)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CumLoanDue)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.WriteOffLoan)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.WriteOffLoan)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.WriteOffInterest)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.WriteOffInterest)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AddPay)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AddPay)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.InvestorID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.InvestorID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.memName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.memName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.searchData)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.searchData)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

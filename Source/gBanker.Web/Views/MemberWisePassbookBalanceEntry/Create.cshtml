@@ -1,0 +1,285 @@
+﻿
+@model gBanker.Web.ViewModels.MemberWisePassbookBalanceEntryViewModel
+
+@{
+    ViewBag.Title = "Product Employment Add";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var productlist = Model == null ? null : Model.ProductList;
+    var centerListItems = Model == null ? null : Model.centerListItems;
+    var officeListItems = Model == null ? null : Model.officeListItems;
+
+
+}
+<script type="text/javascript">
+
+    var employeeProdApp = {
+        employeeProdDeleteAction: (id) => {
+
+            fetch(`/MemberWisePassbookBalanceEntry/Delete/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data.Result !== 'OK') {
+                        $.alert.open("Error", data.Message);
+                        return;
+                    }
+
+                    //reload grid data
+                    employeeProdApp.reloadGrid();
+                    $.alert.open("Success", data.Message);
+                })
+                .catch((error) => {
+                    $.alert.open("Error", error);
+                });
+        },
+   
+        DeleteAction: (id) => {
+            $.alert.open('confirm', 'Are you sure you want to delete this one?', function (button) {
+                if (button == 'yes') {
+                    employeeProdApp.employeeProdDeleteAction(id);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+        },
+        reloadGrid: function () {
+            $('#grid').jtable('load');
+        }
+    }
+
+    $(document).ready(function () {
+        $("#MainProductCode").change(function () {
+            var selectedText = $("#MainProductCode option:selected").text();
+            $("#MainProductName").val(selectedText);
+        });
+
+        $('#grid').jtable({
+            //  title: 'Purpose List',
+            paging: true,
+            pageSize: 5,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+
+                listAction: function (postData, jtParams) {
+
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberWisePassbookBalanceEntry/GetList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+
+            },
+            fields:
+            {
+
+                //MappingId: {
+                //    key: true,
+                //    list: false,
+                //    create: false,
+                //    edit: false
+                //},
+                OfficeName: {
+                    title: 'Office Name',
+                    width: '15%'
+                },
+                CenterName: {
+                    title: 'Center Name',
+                    width: '15%'
+                },
+                Member: {
+                    title: 'Member',
+                    width: '30%'
+                },
+                ProductName: {
+                    title: 'Product Name',
+                    width: '20%'
+                },
+                Amount: {
+                    title: 'Amount',
+                    width: '20%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/MemberWisePassbookBalanceEntry/Edit/" + data.record.MemberWisePassbookBalanceEntryId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                       /* return `<div class="text-center delete-link"><a onclick="employeeProdApp.employeeProdEditAction(${data.record.MemberWisePassbookBalanceEntryId})"><i class='fa fa-pencil-square-o'></i></a></div>`;*/
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return `<div class="text-center delete-link"><a onclick="employeeProdApp.DeleteAction(${data.record.MemberWisePassbookBalanceEntryId})"><i class='fa fa-trash-o'></i></a></div>`;
+                    }
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        employeeProdApp.reloadGrid();
+
+         $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "MemberWisePassbookBalanceEntry", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $('#CenterId').val(), officeId: $('#OfficeId').val(),},
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages : {
+                noResults : '',
+                results: function (resultsCount) {
+
+                }
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+               /* $("#MemberId").val(ui.item.value);*/
+                $("#MemberId").val(476167);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberId").val(ui.item.value);
+               /// GetMemberPhotoSignature(ui.item.value);
+                return false;
+            }
+         });
+        $("#btnCreate").click(function (e) {
+
+            //Form Data
+            var model = {
+                'EmployeeId': $('#EmployeeId').val(),
+                'CenterID': $('#CenterId').val(),
+                'MemberID': $('#MemberId').val(),
+                'ProductID': $('#ProductId').val(),
+                'Amount': $('#Amount').val(),
+            }
+
+            $.ajax({
+                url: "/MemberWisePassbookBalanceEntry/CreateEntry",
+                type: "POST",
+                async: true,
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: model,
+                success: function (data) {
+                    $.alert.open(data);
+                    employeeProdApp.reloadGrid();
+                }
+            });
+
+        });
+
+    });
+
+</script>
+
+<h2 class="page-title">MemberWise Passbook Balance Entry</h2>
+@*@using (Html.BeginForm("Create", "MemberWisePassbookBalanceEntry", FormMethod.Post, new { enctype = "multipart/form-data", id = "empMapform" }))*@
+@*@using (Html.BeginForm(new { enctype = "multipart/form-data"}))*@
+@Html.AntiForgeryToken()
+@*@Html.HiddenFor(model => model.MainProductName)*@
+@Html.HiddenFor(model => model.MemberWisePassbookBalanceEntryId)
+
+<div class="">
+
+    @*<div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.OfficeId, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.OfficeId, officeListItems, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.OfficeId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>*@
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.CenterId, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterId, centerListItems, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CenterId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <div class="row" id="memberAutoCompleteSec">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                @Html.HiddenFor(model => model.MemberId)
+                @Html.TextBoxFor(model => model.MemberId, new { @style = "display:none" })
+                @Html.ValidationMessageFor(model => model.MemberId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProductId, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.ProductId, productlist, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.ProductId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="control-label">Amount</label>
+                @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="form-group form-action">
+            <input type="submit" id="btnCreate" value="Save" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+
+<div id="grid"></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

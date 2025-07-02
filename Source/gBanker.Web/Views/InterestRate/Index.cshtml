@@ -1,0 +1,393 @@
+﻿@model gBanker.Web.ViewModels.InterestRateViewModel
+
+@{
+    ViewBag.Title = "Insurance Slot";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    function Edit(InterestRateID, Duration, EffectDateMsg, EffextYear, EStatus, InterestRate)
+    {
+
+      //  alert(EffextYear);
+        
+        // Assign Values
+
+        $("#hdnInterestRateID").val(InterestRateID);
+        $("#txtDuration").val(Duration);
+        $("#txtInterestRate").val(InterestRate);
+        $("#txtEffectDate").val(EffectDateMsg);
+        //$("#ddlEffextYear").val(EffextYear);
+       // $('#ddlEffextYear  option[value= EffextYear ]').prop("selected", true);
+
+        $("#ddlEffextYear option[value='" + EffextYear + "']").prop('selected', 'selected');
+         
+        //POPUP Form
+        PopupForm();
+
+
+    }// END Edit
+
+    function PopupForm()
+    {
+
+        $('html, body').animate({ scrollTop: $('#InsuranceDiv').offset().top }, 'slow');
+        $("#InsuranceDiv").dialog({
+            autoOpen: false,
+            height: 350,
+            width: 450,
+            modal: true,
+            buttons: {
+
+                "Close": function () {
+
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#InsuranceDiv").dialog('open');
+        }
+
+    }
+
+    function Clear()
+    {
+        
+        $("#hdnInterestRateID").val("");
+        $("#txtDuration").val("");
+        $("#txtInterestRate").val("");
+        $("#txtEffectDate").val("");
+        
+        $("#ddlEffextYear").prop('selectedIndex', 0);
+
+    }
+
+    function GetEffextYear() {
+        var ddlHO = $("#ddlEffextYear");
+        
+        ddlHO.html('');
+        ddlHO.append($('<option></option>').val(0).html('Please Select'));
+        for (var v = 1; v <= 12; v++) {
+            ddlHO.append($('<option></option>').val(v).html(v));
+        }
+               
+    }// End Function
+
+
+    $(document).ready(function () {
+
+
+
+        $("#txtEffectDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: "1920:2100"
+
+         });
+        $("#txtEffectDate").datepicker(
+        'setDate', new Date());
+
+
+        //var x = document.getElementById("txtDuration");
+        //x.setAttribute("type", "number");
+        GetEffextYear(); // Populate EffextYear
+
+        $('#txtDuration').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+
+
+
+        $("#btnAddNew").click(function () {
+            Clear();
+            PopupForm();
+
+        });
+
+
+
+        $("#btnInterestRateSave").click(function () {
+
+            var Duration = $("#txtDuration").val();
+            var id = $("#hdnInsuranceSlotID").val();
+            if (name == '') {
+                alert("Please Give Duration.");
+                return false;
+            }
+            SaveUpdate();
+
+        });
+        //Save
+        function SaveUpdate() {
+
+            var hdnInterestRateID = $("#hdnInterestRateID").val();
+            var txtDuration = $("#txtDuration").val();
+            var txtInterestRate = $("#txtInterestRate").val();
+            var txtEffectDate = $("#txtEffectDate").val();
+            var txtEffextYear = $("#ddlEffextYear option:selected").val();
+
+            
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("CreateUpdate", "InterestRate",  "http")', //CreateWorkArea(string WorkAreaName)
+                data: {
+
+                    hdnInterestRateID: hdnInterestRateID
+                   , txtDuration: txtDuration
+                   , txtInterestRate: txtInterestRate
+                   , txtEffectDate: txtEffectDate
+                   , txtEffextYear: txtEffextYear
+
+                },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                   // clearProfession();
+                    alert(  "Data Saved Successfully");
+                    reloadGrid();
+                    Clear();
+                },
+                error: function (request, status, error) {
+                    alert( "Data Not Saved");
+                    reloadGrid();
+
+                }
+
+            });
+
+        }// End of Function
+
+
+
+        //////////////////////////
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/InterestRate/GenerateInsuranceRateList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                InterestRateID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                Duration: {
+                    title: 'Duration',
+                    // width: '8%'
+
+                },
+
+                InterestRates: {
+                    title: 'Interest Rate',
+                   // width: '8%'
+
+                },
+                EffectDateMsg: {
+                    title: 'Effect Date',
+                    // width: '10%'
+                    //    title: 'Insuarnce Date',
+                    //displayFormat: 'dd-mm-yy',
+                    //type: 'date',
+
+                },
+                EffextYear: {
+                    title: 'Effext Year',
+                   // width: '12%'
+
+                },
+                EStatus: {
+                    title: 'EStatus',
+                    // width: '12%'
+
+                },
+                
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+
+                        return '<div class="text-center"><a href="javascript:void(0)" name="service"' + ' id = "button' + data.record.InsuranceSlotID + '"  OnClick="Edit(' + data.record.InterestRateID + ',' + data.record.Duration + ',\'' + data.record.EffectDateMsg + '\',\'' + data.record.EffextYear + '\',\'' + data.record.EStatus + '\',\'' + data.record.InterestRates + '\' )"><i ' + ' id = "select' + data.record.InterestRateID + '"  class="fa fa-pencil-square-o"></i></a></div>';
+
+                    }
+                },
+
+
+            }
+        });
+
+        // Load Grid
+         reloadGrid();
+         //$('#grid').jtable('load');
+        //////////////////////////
+    }); // END Document Ready
+    function reloadGrid() {
+        $('#grid').jtable('load', { Duration: 0,  PaymentFrequency:0 });
+       // $('#grid').jtable('load', { DateFrom: $('#txtDateFrom').val(), MemberId: $('#MemberID').val()});
+    }
+    $('#btnSearch').click(function (e) {
+        e.preventDefault();
+        reloadGrid();
+     });
+</script>
+
+
+<h2 class="page-title">Interest Rate</h2>
+
+<input type="button" value="Add New" id="btnAddNew" class="btn btn-primary" />
+
+<div class="row" style="display:none;">
+
+    <div class="col-md-3" style="padding-top:20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+
+
+
+
+
+
+@*</div>
+
+    </div>*@
+
+
+
+<div id="grid"></div>
+
+
+<!-- Popup Insurance Edit Insert Entry -->
+<div id="InsuranceDiv" title="Interest Rate Entry & Edit" style="display:none">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Duration    </label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtDuration" class="form-control" placeholder="Duration" />
+                    <input type="hidden" id="hdnInterestRateID" value="0" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Interest Rate    </label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtInterestRate" class="form-control" placeholder="Interest Rate" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Effect Date</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtEffectDate" class="form-control" placeholder="Effect Date" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Effext Year </label>
+                <div class="col-sm-8">
+                   
+                    <select id="ddlEffextYear"  class="form-control" >
+                        
+                    </select>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Save" id="btnInterestRateSave" class="btn btn-success" />
+                    @*&nbsp;
+                        <input type="button" value="Reset" id="btnInsuranceReset" class="btn btn-primary" />*@
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            &nbsp;
+        </div>
+    </div>
+
+
+</div>
+
+<!-- End Of Insurance Edit Insert Entry Div -->
+
+
+
+
+
+
+
+
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

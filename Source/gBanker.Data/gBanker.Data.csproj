@@ -1,0 +1,625 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.props')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4A5B6386-FDCF-4C77-9791-E9A63BCC1D2E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>gBanker.Data</RootNamespace>
+    <AssemblyName>gBanker.Data</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CodeFirstStoreFunctions, Version=1.2.0.0, Culture=neutral, PublicKeyToken=46c4868af4307d2c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.CodeFirstStoreFunctions.1.2.0\lib\net45\CodeFirstStoreFunctions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.3\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.3\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationUser.cs" />
+    <Compile Include="AssetValuer.cs" />
+    <Compile Include="CodeFirstMigration\AccCategory.cs" />
+    <Compile Include="CodeFirstMigration\AccChart.cs" />
+    <Compile Include="CodeFirstMigration\AccCorrection.cs" />
+    <Compile Include="CodeFirstMigration\AccLastVoucher.cs" />
+    <Compile Include="CodeFirstMigration\AccMappingForFundTransfer.cs" />
+    <Compile Include="CodeFirstMigration\ArchiveDbMapping.cs" />
+    <Compile Include="CodeFirstMigration\FundTransferMapping.cs" />
+    <Compile Include="CodeFirstMigration\InterbranchTransactionTracking.cs" />
+    <Compile Include="CodeFirstMigration\MemberBlackList.cs" />
+    <Compile Include="CodeFirstMigration\MemberWisePassbookBalanceEntry.cs" />
+    <Compile Include="CodeFirstMigration\ProductXEmploymentProductMapping.cs" />
+    <Compile Include="CodeFirstMigration\ConsentForm.cs" />
+    <Compile Include="CodeFirstMigration\FamilyMemberSameHousehold.cs" />
+    <Compile Include="CodeFirstMigration\LegalInfo.cs" />
+    <Compile Include="CodeFirstMigration\MISConsolidationProcess.cs" />
+    <Compile Include="CodeFirstMigration\PKSFFundLoan.cs" />
+    <Compile Include="CodeFirstMigration\PO_INFO_MAPPING.cs" />
+    <Compile Include="CodeFirstMigration\LOAN_PRODUCT.cs" />
+    <Compile Include="CodeFirstMigration\Indicator.cs" />
+    <Compile Include="CodeFirstMigration\InventoryDailyVoucher.cs" />
+    <Compile Include="CodeFirstMigration\InventoryDailyVoucherHistory.cs" />
+    <Compile Include="CodeFirstMigration\InvStoreItem.cs" />
+    <Compile Include="CodeFirstMigration\InvWarehouse.cs" />
+    <Compile Include="CodeFirstMigration\Inv_CategoryOrSubCategory.cs" />
+    <Compile Include="CodeFirstMigration\Inv_ConsolidateDisposeRequest.cs" />
+    <Compile Include="CodeFirstMigration\Inv_ItemPriceDetails.cs" />
+    <Compile Include="CodeFirstMigration\Inv_Items.cs" />
+    <Compile Include="CodeFirstMigration\Inv_RequisitionConsulateDetails.cs" />
+    <Compile Include="CodeFirstMigration\Inv_RequisitionConsulateMaster.cs" />
+    <Compile Include="CodeFirstMigration\Inv_RequsitionDetails.cs" />
+    <Compile Include="CodeFirstMigration\Inv_RequsitionDispose.cs" />
+    <Compile Include="CodeFirstMigration\Inv_RequsitionMaster.cs" />
+    <Compile Include="CodeFirstMigration\Inv_Settings.cs" />
+    <Compile Include="CodeFirstMigration\Inv_Store.cs" />
+    <Compile Include="CodeFirstMigration\Inv_TempStore.cs" />
+    <Compile Include="CodeFirstMigration\Inv_TrxDetail.cs" />
+    <Compile Include="CodeFirstMigration\Inv_TrxMaster.cs" />
+    <Compile Include="CodeFirstMigration\Inv_Vendor.cs" />
+    <Compile Include="CodeFirstMigration\OLRSAccChartMapping.cs" />
+    <Compile Include="CodeFirstMigration\AccNote.cs" />
+    <Compile Include="CodeFirstMigration\AccountingInterface.cs" />
+    <Compile Include="CodeFirstMigration\AccReconcile.cs" />
+    <Compile Include="CodeFirstMigration\AccTrxDetail.cs" />
+    <Compile Include="CodeFirstMigration\AccTrxMaster.cs" />
+    <Compile Include="CodeFirstMigration\ApplicationLog.cs" />
+    <Compile Include="CodeFirstMigration\ApplicationSetting.cs" />
+    <Compile Include="CodeFirstMigration\ApproveCelling.cs" />
+    <Compile Include="CodeFirstMigration\PO_INFO.cs" />
+    <Compile Include="CodeFirstMigration\POLoanCode.cs" />
+    <Compile Include="CodeFirstMigration\POProductMapping.cs" />
+    <Compile Include="CodeFirstMigration\ProMiniBalanSet.cs" />
+    <Compile Include="CodeFirstMigration\ReportType.cs" />
+    <Compile Include="CodeFirstMigration\ReportTypeMapping.cs" />
+    <Compile Include="CodeFirstMigration\SMS_SentLog.cs" />
+    <Compile Include="CodeFirstMigration\Area.cs" />
+    <Compile Include="CodeFirstMigration\AspNetOrgModule.cs" />
+    <Compile Include="CodeFirstMigration\AspNetRole.cs" />
+    <Compile Include="CodeFirstMigration\AspNetRoleModule.cs" />
+    <Compile Include="CodeFirstMigration\AspNetSecurityLevel.cs" />
+    <Compile Include="CodeFirstMigration\AspNetSecurityModule.cs" />
+    <Compile Include="CodeFirstMigration\AspNetUser.cs" />
+    <Compile Include="CodeFirstMigration\AspNetUserClaim.cs" />
+    <Compile Include="CodeFirstMigration\AspNetUserLogin.cs" />
+    <Compile Include="CodeFirstMigration\AssetClientInfo.cs" />
+    <Compile Include="CodeFirstMigration\AssetGroupInfo.cs" />
+    <Compile Include="CodeFirstMigration\AssetInfo.cs" />
+    <Compile Include="CodeFirstMigration\AssetOut.cs" />
+    <Compile Include="CodeFirstMigration\AssetOverhauling.cs" />
+    <Compile Include="CodeFirstMigration\AssetPartialOut.cs" />
+    <Compile Include="CodeFirstMigration\AssetProcessInfo.cs" />
+    <Compile Include="CodeFirstMigration\AssetRegister.cs" />
+    <Compile Include="CodeFirstMigration\AssetRevaluation.cs" />
+    <Compile Include="CodeFirstMigration\AssetTransfer.cs" />
+    <Compile Include="CodeFirstMigration\AssetUser.cs" />
+    <Compile Include="CodeFirstMigration\AssetUserDepartment.cs" />
+    <Compile Include="CodeFirstMigration\AssetUserDesignation.cs" />
+    <Compile Include="CodeFirstMigration\AutoVoucherCollectionResult.cs" />
+    <Compile Include="CodeFirstMigration\BatchPostingProcess.cs" />
+    <Compile Include="CodeFirstMigration\Branch.cs" />
+    <Compile Include="CodeFirstMigration\Budget.cs" />
+    <Compile Include="CodeFirstMigration\BuroCenterInfo.cs" />
+    <Compile Include="CodeFirstMigration\BuroStaffInfo.cs" />
+    <Compile Include="CodeFirstMigration\Center.cs" />
+    <Compile Include="CodeFirstMigration\ClientType.cs" />
+    <Compile Include="CodeFirstMigration\Country.cs" />
+    <Compile Include="CodeFirstMigration\CreditScore.cs" />
+    <Compile Include="CodeFirstMigration\CumAI.cs" />
+    <Compile Include="CodeFirstMigration\CumMi.cs" />
+    <Compile Include="CodeFirstMigration\CumMisItem.cs" />
+    <Compile Include="CodeFirstMigration\DailyLoanTrx.cs" />
+    <Compile Include="CodeFirstMigration\DailySavingTrx.cs" />
+    <Compile Include="CodeFirstMigration\DailyTransaction.cs" />
+    <Compile Include="CodeFirstMigration\DashBoard.cs" />
+    <Compile Include="CodeFirstMigration\DepreciationMethod.cs" />
+    <Compile Include="CodeFirstMigration\DepriciationRateChange.cs" />
+    <Compile Include="CodeFirstMigration\District.cs" />
+    <Compile Include="CodeFirstMigration\Division.cs" />
+    <Compile Include="CodeFirstMigration\Employee.cs" />
+    <Compile Include="CodeFirstMigration\EmployeeDetail.cs" />
+    <Compile Include="CodeFirstMigration\EmployeeOfficeMapping.cs" />
+    <Compile Include="CodeFirstMigration\ExpireInfo.cs" />
+    <Compile Include="CodeFirstMigration\FamilyGrace.cs" />
+    <Compile Include="CodeFirstMigration\FileUpload.cs" />
+    <Compile Include="CodeFirstMigration\FixAssetUpdates.cs" />
+    <Compile Include="CodeFirstMigration\gBankerDbContext.cs" />
+    <Compile Include="CodeFirstMigration\GeoLocation.cs" />
+    <Compile Include="CodeFirstMigration\getCenterMeetingSchedule_Result.cs" />
+    <Compile Include="CodeFirstMigration\GetCreditScore_Result.cs" />
+    <Compile Include="CodeFirstMigration\getDailyMember_Result.cs" />
+    <Compile Include="CodeFirstMigration\getDailyProduct_Result.cs" />
+    <Compile Include="CodeFirstMigration\getDailySavingProduct_Result.cs" />
+    <Compile Include="CodeFirstMigration\getExpireInfo_Result.cs" />
+    <Compile Include="CodeFirstMigration\getFamilyGrace_Result.cs" />
+    <Compile Include="CodeFirstMigration\getGetLoanLedgerMemberWise_Result.cs" />
+    <Compile Include="CodeFirstMigration\getLoanProposalListRoleWise_Result.cs" />
+    <Compile Include="CodeFirstMigration\getMemberPassBookStock_Result.cs" />
+    <Compile Include="CodeFirstMigration\getPassBookRegister_Result.cs" />
+    <Compile Include="CodeFirstMigration\GetRepaymentSchedule_Result.cs" />
+    <Compile Include="CodeFirstMigration\getSavingCloseAccountInfo_Result.cs" />
+    <Compile Include="CodeFirstMigration\getSavingLastBalance_Result.cs" />
+    <Compile Include="CodeFirstMigration\getSavingsCorrection_Result.cs" />
+    <Compile Include="CodeFirstMigration\getSavingStopInterestAccountInfo_Result.cs" />
+    <Compile Include="CodeFirstMigration\GetSetSLCTxtKeyPress_Result.cs" />
+    <Compile Include="CodeFirstMigration\getTodaysTransaction_Result.cs" />
+    <Compile Include="CodeFirstMigration\getTransferHistory_Result.cs" />
+    <Compile Include="CodeFirstMigration\getWriteOffList_Result.cs" />
+    <Compile Include="CodeFirstMigration\get_lastDayendDate_Result.cs" />
+    <Compile Include="CodeFirstMigration\Group.cs" />
+    <Compile Include="CodeFirstMigration\Holiday.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\DatabaseFactoryCodeFirst.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\IDatabaseFactoryCodeFirst.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\IUnitOfWorkCodeFirst.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\RepositoryBaseCodeFirst.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\UnitOfWorkCodeFirst.cs" />
+    <Compile Include="CodeFirstMigration\Institute.cs" />
+    <Compile Include="CodeFirstMigration\InstituteType.cs" />
+    <Compile Include="CodeFirstMigration\InsuranceSlot.cs" />
+    <Compile Include="CodeFirstMigration\InterestRate.cs" />
+    <Compile Include="CodeFirstMigration\Investor.cs" />
+    <Compile Include="CodeFirstMigration\LastAssetCodeInfo.cs" />
+    <Compile Include="CodeFirstMigration\LgVillage.cs" />
+    <Compile Include="CodeFirstMigration\LoanCorrection.cs" />
+    <Compile Include="CodeFirstMigration\LoanCorrectionTrx.cs" />
+    <Compile Include="CodeFirstMigration\LoanSummary.cs" />
+    <Compile Include="CodeFirstMigration\LoanSummaryCorrection.cs" />
+    <Compile Include="CodeFirstMigration\LoanTrx.cs" />
+    <Compile Include="CodeFirstMigration\LTSPenaltySlot.cs" />
+    <Compile Include="CodeFirstMigration\Member.cs" />
+    <Compile Include="CodeFirstMigration\MemberAssetInfo.cs" />
+    <Compile Include="CodeFirstMigration\MemberCategory.cs" />
+    <Compile Include="CodeFirstMigration\MemberCorrection.cs" />
+    <Compile Include="CodeFirstMigration\MemberOtherInfo.cs" />
+    <Compile Include="CodeFirstMigration\MemberFamilyInfo.cs" />
+    <Compile Include="CodeFirstMigration\MemberHouseInfo.cs" />
+    <Compile Include="CodeFirstMigration\MemberLandInfo.cs" />
+    <Compile Include="CodeFirstMigration\MemberLastCode.cs" />
+    <Compile Include="CodeFirstMigration\MemberNominee.cs" />
+    <Compile Include="CodeFirstMigration\MemberPassBookRegister.cs" />
+    <Compile Include="CodeFirstMigration\MemberPassBookStock.cs" />
+    <Compile Include="CodeFirstMigration\MFIInformation.cs" />
+    <Compile Include="CodeFirstMigration\Miscellaneou.cs" />
+    <Compile Include="CodeFirstMigration\MobileErrorLog.cs" />
+    <Compile Include="CodeFirstMigration\MobileSyncLog.cs" />
+    <Compile Include="CodeFirstMigration\MobileSyncLogDetail.cs" />
+    <Compile Include="CodeFirstMigration\MonthWiseSavingInterest.cs" />
+    <Compile Include="CodeFirstMigration\MRAActivityList.cs" />
+    <Compile Include="CodeFirstMigration\Office.cs" />
+    <Compile Include="CodeFirstMigration\Organization.cs" />
+    <Compile Include="CodeFirstMigration\Particular.cs" />
+    <Compile Include="CodeFirstMigration\PNMConfirm.cs" />
+    <Compile Include="CodeFirstMigration\PNMOrder.cs" />
+    <Compile Include="CodeFirstMigration\Prcs_DayEnd_Result.cs" />
+    <Compile Include="CodeFirstMigration\Prcs_DayInitial_Result.cs" />
+    <Compile Include="CodeFirstMigration\PrimaryRegistration.cs" />
+    <Compile Include="CodeFirstMigration\ProcessInfo.cs" />
+    <Compile Include="CodeFirstMigration\Proc_GetRptTodaySummary_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_GetSavingBalanceForCate_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_GetZeroBalance_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_Get_AccountDetails_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_Get_CUMAIS_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_Get_CUMMIS_Result.cs" />
+    <Compile Include="CodeFirstMigration\proc_get_LoanCorrection_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_get_LoanDisburse_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_get_MaxLoanTerm_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_get_MaxNoOfAccount_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_get_Miscellaneou_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_get_SavingLastBalance.cs" />
+    <Compile Include="CodeFirstMigration\proc_get_SpecialLoanCollection_Result.cs" />
+    <Compile Include="CodeFirstMigration\proc_get_SpecialSavingCollection_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_Rpt_LoanLedger_Result.cs" />
+    <Compile Include="CodeFirstMigration\Proc_set_savingSummary.cs" />
+    <Compile Include="CodeFirstMigration\Product.cs" />
+    <Compile Include="CodeFirstMigration\ProjectInfo.cs" />
+    <Compile Include="CodeFirstMigration\Purpose.cs" />
+    <Compile Include="CodeFirstMigration\RDOffice.cs" />
+    <Compile Include="CodeFirstMigration\ReconPurpose.cs" />
+    <Compile Include="CodeFirstMigration\RemittanceActivity.cs" />
+    <Compile Include="CodeFirstMigration\RepaymentSchedule.cs" />
+    <Compile Include="CodeFirstMigration\ReportSpName.cs" />
+    <Compile Include="CodeFirstMigration\SavingCorrectionTrx.cs" />
+    <Compile Include="CodeFirstMigration\SavingSummary.cs" />
+    <Compile Include="CodeFirstMigration\SavingTrx.cs" />
+    <Compile Include="CodeFirstMigration\Scheduler.cs" />
+    <Compile Include="CodeFirstMigration\SchedulerDetail.cs" />
+    <Compile Include="CodeFirstMigration\SmsConfig.cs" />
+    <Compile Include="CodeFirstMigration\SmsLog.cs" />
+    <Compile Include="CodeFirstMigration\StatisticsDescription.cs" />
+    <Compile Include="CodeFirstMigration\StatisticsReport.cs" />
+    <Compile Include="CodeFirstMigration\StatisticsReportDetail.cs" />
+    <Compile Include="CodeFirstMigration\StopInterest.cs" />
+    <Compile Include="CodeFirstMigration\SurveyKnownMember.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberAccomodationInformation.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberAsset.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberExpenditure.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberFamilyEducationInformation.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberFamilyInformation.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberMaster.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberOperationwithOtherNGOInformation.cs" />
+    <Compile Include="CodeFirstMigration\SurveyMemberVerification.cs" />
+    <Compile Include="CodeFirstMigration\TargetAchievement.cs" />
+    <Compile Include="CodeFirstMigration\TargetAchievementBuro.cs" />
+    <Compile Include="CodeFirstMigration\Training.cs" />
+    <Compile Include="CodeFirstMigration\TransactionType.cs" />
+    <Compile Include="CodeFirstMigration\TransferHistory.cs" />
+    <Compile Include="CodeFirstMigration\DistrictThanaMapping.cs" />
+    <Compile Include="CodeFirstMigration\Union.cs" />
+    <Compile Include="CodeFirstMigration\Upozilla.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyKnownMember.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberAccomodationInformation.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberAsset.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberExpenditure.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberFamilyEducationInformation.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberFamilyInformation.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberMaster.cs" />
+    <Compile Include="CodeFirstMigration\View_SurveyMemberOperationwithOtherNGOInformation.cs" />
+    <Compile Include="CodeFirstMigration\WeekNo.cs" />
+    <Compile Include="CodeFirstMigration\WelfareActivityDetail.cs" />
+    <Compile Include="CodeFirstMigration\WorkingAreaLog.cs" />
+    <Compile Include="CodeFirstMigration\WriteOffHistory.cs" />
+    <Compile Include="DBDetailModels\BasicDataModel.cs" />
+    <Compile Include="DBDetailModels\DBFundLoanDetailsModel.cs" />
+    <Compile Include="DBDetailModels\ProductMainCodeModel.cs" />
+    <Compile Include="DBDetailModels\InvStoreExistPriceViewModel.cs" />
+    <Compile Include="DBDetailModels\InvStoreViewModel.cs" />
+    <Compile Include="DBDetailModels\Inv_ConsolidateDisposeRequestViewModel.cs" />
+    <Compile Include="DBDetailModels\Inv_ItemViewModel.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\CommonModels\POIndicatorRelatedAccCodeModel.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\CommonModels\POLoanCodeRelatedAccCodeModel.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\CommonModels\IMP_COST_LN_SC_INSERT_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\CommonModels\POLoanCodeWithProductModel.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_IMP_COST_LN_SC_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_IMP_COST_SV_INT_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_IMP_COST_MASTER.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_EMPLOYMENT_CLS_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_EMPLOYMENT_NEW_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_EMPLOYMENT_OLD_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PO_MONTHLY_ACC_BAL_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_LN_DIST_WISE_DISB_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_RPT_TAB_XL_BD_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_RPT_TAB_XL_FD_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_RPT_TAB_XL_PD_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\PRA_MN_INF_EQUITY_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubPayloads\TOP_SHEET_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\Reports\PRA_MN_RPT_TAB_XL_FD_Report_Model.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\SyncToPKSFResponse.cs" />
+    <Compile Include="DBDetailModels\OLRSHubs\OLRSHubTokenResponse.cs" />
+    <Compile Include="DBDetailModels\PO_A_ACC_HEADModel.cs" />
+    <Compile Include="DBDetailModels\FinancialDataModel.cs" />
+    <Compile Include="DBDetailModels\DBAccChartDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBAccVoucherEntry.cs" />
+    <Compile Include="DBDetailModels\DBApplicationSettingsDetail.cs" />
+    <Compile Include="DBDetailModels\DBAspOrgSecurityModule.cs" />
+    <Compile Include="DBDetailModels\DbCategoryTransfer.cs" />
+    <Compile Include="DBDetailModels\DBCategoryTransferDetails.cs" />
+    <Compile Include="DBDetailModels\DBCenterDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBFamilyGraceDeatails.cs" />
+    <Compile Include="DBDetailModels\DBGroupDeatil.cs" />
+    <Compile Include="DBDetailModels\DBholidayDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBLoanApproveDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBLoaneeTransferDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBMemberDetailModel.cs" />
+    <Compile Include="DBDetailModels\ReportSearchModel.cs" />
+    <Compile Include="DBDetailModels\SentLogSMSSummaryModel.cs" />
+    <Compile Include="DBDetailModels\SMSMobileNoInfoModel.cs" />
+    <Compile Include="DBDetailModels\DBOfficeDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBProductInvestorDetail.cs" />
+    <Compile Include="DBDetailModels\DBRepaymentScheduleDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBSavingSummaryDetails.cs" />
+    <Compile Include="DBDetailModels\DbSpecialLoanCollectionDetailModel.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\Disposable.cs" />
+    <Compile Include="CodeFirstMigration\InfrastructureBase\IRepository.cs" />
+    <Compile Include="DBDetailModels\DbVoucherEntryModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repository\AccAutoVoucherCollectionRepository.cs" />
+    <Compile Include="Repository\AccCategoryRepository.cs" />
+    <Compile Include="Repository\AccChartRepository.cs" />
+    <Compile Include="Repository\AccLastVoucherRepository.cs" />
+    <Compile Include="Repository\AccMappingForFundTransferRepository.cs" />
+    <Compile Include="Repository\DailyLoanTrxRepository.cs" />
+    <Compile Include="Repository\DailySavingTrxRepository.cs" />
+    <Compile Include="Repository\FundTransferMappingRepository.cs" />
+    <Compile Include="Repository\InterbranchTransactionTrackingRepository.cs" />
+    <Compile Include="Repository\MemberBlackListRepository.cs" />
+    <Compile Include="Repository\MemberWisePassbookBalanceEntryRepository.cs" />
+    <Compile Include="Repository\ProductXEmploymentProductMappingRepository.cs" />
+    <Compile Include="Repository\IPKSFFundLoanRepository.cs" />
+    <Compile Include="Repository\IFamilyMemberSameHouseholdRepository.cs" />
+    <Compile Include="Repository\IMisConsolidationRepository.cs" />
+    <Compile Include="Repository\ILegalInfoRepository.cs" />
+    <Compile Include="Repository\IStopInterestRepository.cs" />
+    <Compile Include="Repository\IArchiveDbMappingRepository.cs" />
+    <Compile Include="Repository\IConsentFormRepository.cs" />
+    <Compile Include="Repository\IIndicatorRepository.cs" />
+    <Compile Include="Repository\InvStoreItemRepository.cs" />
+    <Compile Include="Repository\InvStoreRepository.cs" />
+    <Compile Include="Repository\InvTrxDetailRepository.cs" />
+    <Compile Include="Repository\InvTrxMasterRepository.cs" />
+    <Compile Include="Repository\InvWarehouseRepository.cs" />
+    <Compile Include="Repository\Inv_CategoryOrSubCategoryRepository.cs" />
+    <Compile Include="Repository\Inv_ItemPriceDetailsRepository.cs" />
+    <Compile Include="Repository\Inv_ItemsRepository.cs" />
+    <Compile Include="Repository\Inv_RequisitionConsulateDetailsRepository.cs" />
+    <Compile Include="Repository\Inv_RequisitionConsulateMasterRepository.cs" />
+    <Compile Include="Repository\Inv_RequsitionDetailsRepository.cs" />
+    <Compile Include="Repository\Inv_RequsitionMasterRepository.cs" />
+    <Compile Include="Repository\Inv_TempStoreRepository.cs" />
+    <Compile Include="Repository\Inv_VendorRepository.cs" />
+    <Compile Include="Repository\IOLRSAccChartMappingRepository.cs" />
+    <Compile Include="Repository\IPO_INFORepository.cs" />
+    <Compile Include="Repository\IPOLoanCodeRepository.cs" />
+    <Compile Include="Repository\IPOProductMappingRepository.cs" />
+    <Compile Include="Repository\ISMSSenderRepository.cs" />
+    <Compile Include="Repository\AccNoteRepository.cs" />
+    <Compile Include="Repository\AccountCloseRepository.cs" />
+    <Compile Include="Repository\AccReconcileRepository.cs" />
+    <Compile Include="Repository\AccTrxDetailRepository.cs" />
+    <Compile Include="Repository\AccTrxMasterRepository.cs" />
+    <Compile Include="Repository\ApplicationLogRepository.cs" />
+    <Compile Include="Repository\ApplicationSettingRepository.cs" />
+    <Compile Include="Repository\ApproveCellingRepository.cs" />
+    <Compile Include="Repository\AreaRepository.cs" />
+    <Compile Include="Repository\AspNetOrgModuleRepository.cs" />
+    <Compile Include="Repository\AspNetRoleRepository.cs" />
+    <Compile Include="Repository\AssetProcessInfo.cs" />
+    <Compile Include="Repository\AssetUserDepartmentRepository.cs" />
+    <Compile Include="Repository\AssetUserDesignationRepository.cs" />
+    <Compile Include="Repository\AssetUserRepository.cs" />
+    <Compile Include="Repository\BatchPostingProcessRepository.cs" />
+    <Compile Include="Repository\BranchRepository.cs" />
+    <Compile Include="Repository\BudgetRepository.cs" />
+    <Compile Include="Repository\CategoryTransferRepository.cs" />
+    <Compile Include="Repository\MemberOtherInfoRepository.cs" />
+    <Compile Include="Repository\ProMiniBalanSetRepository.cs" />
+    <Compile Include="Repository\SMSSendMessage.cs" />
+    <Compile Include="Repository\CenterRepository.cs" />
+    <Compile Include="Repository\CountryRepository.cs" />
+    <Compile Include="Repository\CreditScoreRepository.cs" />
+    <Compile Include="Repository\CumAISRepository.cs" />
+    <Compile Include="Repository\CumMisItemRepository.cs" />
+    <Compile Include="Repository\CumMISRepository.cs" />
+    <Compile Include="Repository\DashBoardRepository.cs" />
+    <Compile Include="Repository\DayEndRepository.cs" />
+    <Compile Include="Repository\DayInitialRepository.cs" />
+    <Compile Include="Repository\EmployeeOfficeMappingRepository.cs" />
+    <Compile Include="Repository\EmployeeRepository.cs" />
+    <Compile Include="Repository\ExpireInfoRepository.cs" />
+    <Compile Include="Repository\FamilyGraceRepository.cs" />
+    <Compile Include="Repository\FileUploadRepository.cs" />
+    <Compile Include="Repository\GeoLocationRepository.cs" />
+    <Compile Include="Repository\GroupRepository.cs" />
+    <Compile Include="Repository\HolidayRepository.cs" />
+    <Compile Include="Repository\IAssetClientInfoRepository.cs" />
+    <Compile Include="Repository\IAssetGroupInfoRepository.cs" />
+    <Compile Include="Repository\IAssetInfoRepository.cs" />
+    <Compile Include="Repository\IAssetOutRepository.cs" />
+    <Compile Include="Repository\IAssetOverhaulingRepository.cs" />
+    <Compile Include="Repository\IAssetPartialOutRepository.cs" />
+    <Compile Include="Repository\IAssetRegisterRepository.cs" />
+    <Compile Include="Repository\IAssetRevaluationRepository.cs" />
+    <Compile Include="Repository\IAssetTransferRepository.cs" />
+    <Compile Include="Repository\IAssetValuerRepository.cs" />
+    <Compile Include="Repository\IClientTypeRepository.cs" />
+    <Compile Include="Repository\IDailyTransactionRepository.cs" />
+    <Compile Include="Repository\IDepreciationMethodRepository.cs" />
+    <Compile Include="Repository\IDepriciationRateChangeRepository.cs" />
+    <Compile Include="Repository\IDistrictRepositroy.cs" />
+    <Compile Include="Repository\IDivisionRepository.cs" />
+    <Compile Include="Repository\IFixAssetUpdatesRepository.cs" />
+    <Compile Include="Repository\ILastAssetCodeInfoRepository.cs" />
+    <Compile Include="Repository\IMFIInfoRepository.cs" />
+    <Compile Include="Repository\IMRAActivityListRepository.cs" />
+    <Compile Include="Repository\InstituteRepository.cs" />
+    <Compile Include="Repository\InstituteTypeRepository.cs" />
+    <Compile Include="Repository\InvestorRepository.cs" />
+    <Compile Include="Repository\IParticularRepository.cs" />
+    <Compile Include="Repository\IPrimaryRegistrationRepository.cs" />
+    <Compile Include="Repository\IProjectInfoRepository.cs" />
+    <Compile Include="Repository\IRemittanceActivityRepository.cs" />
+    <Compile Include="Repository\IStatisticsDescriptionRepository.cs" />
+    <Compile Include="Repository\IStatisticsReportDetailsRepository.cs" />
+    <Compile Include="Repository\IStatisticsReportRepository.cs" />
+    <Compile Include="Repository\ITargetAchievementRepository.cs" />
+    <Compile Include="Repository\ITrainingRepository.cs" />
+    <Compile Include="Repository\ITransactionTypeRepository.cs" />
+    <Compile Include="Repository\IUnionRepository.cs" />
+    <Compile Include="Repository\IUpozillaRepository.cs" />
+    <Compile Include="Repository\IWelfareActivityDetail.cs" />
+    <Compile Include="Repository\LgVillageRepository.cs" />
+    <Compile Include="Repository\LoanCollectionRepository.cs" />
+    <Compile Include="Repository\LoanCorrectionRepository.cs" />
+    <Compile Include="Repository\LoanLedgerRepository.cs" />
+    <Compile Include="Repository\LoanSummaryRepository.cs" />
+    <Compile Include="Repository\LoanTrxRepository.cs" />
+    <Compile Include="Repository\MemberAssetInfoRepository.cs" />
+    <Compile Include="Repository\MemberCategoryRepository.cs" />
+    <Compile Include="Repository\MemberFamilyInfoRepository.cs" />
+    <Compile Include="Repository\MemberHouseInfoRepository.cs" />
+    <Compile Include="Repository\MemberLandInfoRepository.cs" />
+    <Compile Include="Repository\MemberLastCodeRepository.cs" />
+    <Compile Include="Repository\MemberLedgerRepository.cs" />
+    <Compile Include="Repository\MemberNomineeRepository.cs" />
+    <Compile Include="Repository\MemberPassBookRegisterRepository.cs" />
+    <Compile Include="Repository\MemberPassBookStockRepository.cs" />
+    <Compile Include="Repository\MemberRepository.cs" />
+    <Compile Include="Repository\MemberSurveyRepository.cs" />
+    <Compile Include="Repository\MiscellaneouRepository.cs" />
+    <Compile Include="Repository\MobileErrorLogRepository.cs" />
+    <Compile Include="Repository\MobileSyncLogDetailRepository.cs" />
+    <Compile Include="Repository\MobileSyncLogRepository.cs" />
+    <Compile Include="Repository\MonthClosingRepository.cs" />
+    <Compile Include="Repository\OfficeRepository.cs" />
+    <Compile Include="Repository\OrganizationRepository.cs" />
+    <Compile Include="Repository\OrganizationWiseRoleSecurityReposiltory.cs" />
+    <Compile Include="Repository\PageWiseSecurityRepository.cs" />
+    <Compile Include="Repository\PNMConfirmRepository.cs" />
+    <Compile Include="Repository\PNMOrderRepository.cs" />
+    <Compile Include="Repository\ProcessInfoRepository.cs" />
+    <Compile Include="Repository\ProductRepository.cs" />
+    <Compile Include="Repository\PurposeRepository.cs" />
+    <Compile Include="Repository\RepaymentScheduleRepository.cs" />
+    <Compile Include="Repository\SavingCollectionRepository.cs" />
+    <Compile Include="Repository\SavingsAccountOpeningRepository.cs" />
+    <Compile Include="Repository\SavingSummaryRepository.cs" />
+    <Compile Include="Repository\SavingTrxRepository.cs" />
+    <Compile Include="Repository\SchedulerRepository.cs" />
+    <Compile Include="Repository\SecurityRepository.cs" />
+    <Compile Include="Repository\SmsConfigRepository.cs" />
+    <Compile Include="Repository\SmsLogRepository.cs" />
+    <Compile Include="Repository\SpecialLoanCollectionRepository.cs" />
+    <Compile Include="Repository\SavingCorrectionRepository.cs" />
+    <Compile Include="Repository\SpecialSavingCollectionRepository.cs" />
+    <Compile Include="Repository\SurveyKnownMemberRepository.cs" />
+    <Compile Include="Repository\SurveyMemberAccomodationInformationRepository.cs" />
+    <Compile Include="Repository\SurveyMemberAssetRepository.cs" />
+    <Compile Include="Repository\SurveyMemberExpenditureRepository.cs" />
+    <Compile Include="Repository\SurveyMemberFamilyEducationInformationRepository.cs" />
+    <Compile Include="Repository\SurveyMemberFamilyInformationRepository.cs" />
+    <Compile Include="Repository\SurveyMemberOperationwithOtherNGOInformationRepository.cs" />
+    <Compile Include="Repository\SurveyMemberVerificationRepository.cs" />
+    <Compile Include="Repository\TargetAchievementBuroRepository.cs" />
+    <Compile Include="Repository\TodaysSummaryRepository.cs" />
+    <Compile Include="Repository\UserRepository.cs" />
+    <Compile Include="Repository\View_SurveyKnownMemberRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberAccomodationInformationRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberAssetRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberExpenditureRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberFamilyEducationInformationRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberFamilyInformationRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberMasterRepository.cs" />
+    <Compile Include="Repository\View_SurveyMemberOperationwithOtherNGOInformationRepository.cs" />
+    <Compile Include="Repository\WeekNoRepository.cs" />
+    <Compile Include="Repository\WorkingAreaLogRepository.cs" />
+    <Compile Include="Repository\WriteOffHistoryRepository.cs" />
+    <Compile Include="SavingCorrection.cs" />
+    <Compile Include="UserManagementEntities.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.Config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Scripts\moment-with-locales.min.js.map" />
+    <None Include="Scripts\moment.min.js.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Infrastructure\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\moment-with-locales.js" />
+    <Content Include="Scripts\moment-with-locales.min.js" />
+    <Content Include="Scripts\moment.js" />
+    <Content Include="Scripts\moment.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BasicDataAccess\BasicDataAccess.csproj">
+      <Project>{845595ad-bf9f-4526-bb16-74c8e0239fc5}</Project>
+      <Name>BasicDataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gBanker.Core\gBanker.Core.csproj">
+      <Project>{F5231E48-D0C0-4ECB-B67A-1F6784E5E0FC}</Project>
+      <Name>gBanker.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\netcoreapp3.0\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

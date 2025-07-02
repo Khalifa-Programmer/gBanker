@@ -1,0 +1,149 @@
+﻿@model gBanker.Web.ViewModels.WelfareActivityViewModel
+
+@{
+    ViewBag.Title = "Welfare Activity Details";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        GetWelfareAcitivityList();
+    });
+    function GetWelfareAcitivityList() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MRAReport/GetWelfareAcitivityList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                WelfareActivityId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                DateTo: {
+                    width: '10%',
+                    title: 'Date',
+                },
+                ActivityId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                SurplusMicrofinance: {
+                    width: '5%',
+                    title: 'MicroCredit',
+                },
+                SurplusOtherActivities: {
+                    width: '5%',
+                    title: 'OtherActivities',
+                },
+                SurplusOwnFund: {
+                    width: '5%',
+                    title: 'OwnFund',
+                },
+                Donation: {
+                    width: '5%',
+                    title: 'Donation',
+                },
+                OtherSource: {
+                    width: '5%',
+                    title: 'OtherSource',
+                },
+                AreaCovered: {
+                    width: '3%',
+                    title: 'AreaCovered',
+                },
+                NumberOfBeneficiaries: {
+                    width: '3%',
+                    title: 'NoOfBeneficiaries',
+                },
+                DurationOfActivity: {
+                    width: '3%',
+                    title: 'Duration',
+                },
+                AcitivityExpenditure: {
+                    width: '3%',
+                    title: 'AcitivityExpenditure',
+                },
+                Surplus: {
+                    width: '3%',
+                    title: 'Surplus',
+                },
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        debugger;
+                        return "<div class='text-center'><a href='/MRAReport/EditWelfareActivities?WelfareActivityId=" + data.record.WelfareActivityId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteWelfareActivities(' + data.record.WelfareActivityId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    }
+    function DeleteWelfareActivities(WelfareActivityId) {
+        if (confirm("Are you sure you want to delete this record?") == true) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteWelfareActivities", "MRAReport", "http")',
+                data: { WelfareActivityId: WelfareActivityId },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    $('#grid').jtable('load');
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+            return true;
+        }
+        else {
+            hiddenField.value = 'false';
+            return false;
+        }
+    }
+</script>
+@Html.ActionLink("Add New", "CreateWelfareActivities", null, new { @class = "pull-right" })
+<h2 class="page-title">Welfare Activity List</h2>
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

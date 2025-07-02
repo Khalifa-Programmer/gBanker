@@ -1,0 +1,1043 @@
+﻿@model gBanker.Web.ViewModels.CollectionViewModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model.CenterListItems == null ? new List<SelectListItem>() { new SelectListItem() { Text = "Select Center", Value = "0" } } : Model.CenterListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var office = Model == null ? null : Model.officeListItems;
+}
+
+<script type="text/javascript">
+
+    //kk Start Test: SET Cursor End
+    jQuery.fn.putCursorAtEnd = function () {
+
+        return this.each(function () {
+
+            // Cache references
+            var $el = $(this),
+                el = this;
+
+            // Only focus if input isn't already
+            if (!$el.is(":focus")) {
+                $el.focus();
+            }
+
+            // If this function exists... (IE 9+)
+            if (el.setSelectionRange) {
+
+                // Double the length because Opera is inconsistent about whether a carriage return is one character or two.
+                var len = $el.val().length * 2;
+
+                // Timeout seems to be required for Blink
+                setTimeout(function () {
+                    el.setSelectionRange(len, len);
+                }, 1);
+
+            } else {
+
+                // As a fallback, replace the contents with itself
+                // Doesn't work in Chrome, but Chrome supports setSelectionRange
+                $el.val($el.val());
+
+            }
+
+            // Scroll to the bottom, in case we're in a tall textarea
+            // (Necessary for Firefox and Chrome)
+            this.scrollTop = 999999;
+
+        });
+
+    };
+
+    function purCursor(control) {
+        //alert(control);
+        //alert(21);
+        var searchInput = $("#" + control + '');
+
+        searchInput
+          .putCursorAtEnd() // should be chainable
+          .on("focus", function () { // could be on any event
+              searchInput.putCursorAtEnd()
+          });
+
+    };
+
+
+    //End Cursor..kk
+
+  
+
+
+
+
+
+
+    function Calculate(loanId)
+    {
+    // calculate(1, 18383066,'F',27);
+
+   var LoanSummaryId = $("#LoanSummary"+loanId).val();
+   // alert(LoanSummaryId);
+    var productId = $("#LoanProductId"+loanId).val();
+   // alert(productId);
+    
+   // calculateLoan(type, id, calcMethod, productid)
+
+    }
+
+
+
+
+
+
+
+    function getInstallment() {
+      
+        var memId = $("#ddlMember option:selected").val(); // $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInstallment", "Collection", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { officeId: officeId, centerId: centerId, MemId: memId },
+            success: function (result) {
+                //Saving Setting
+                var dtSavingTable = $("#tblSavings");
+                var tablesavingBody = dtSavingTable.find('tbody');
+                tablesavingBody.empty();
+                var SavingSINo = 1;
+
+
+
+                var dtTable = $("#tblLoan");
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var LoanSINo = 1;
+
+                var total = 0.00;
+
+                  
+
+
+                $.each(result, function (id, option) {
+     
+                    //alert(option.ProductName);
+                    if (option.ProductId == 1) {
+                           
+                    $("#DurationCommon").val(option.Duration);
+                    $("#DurationOverLoanDueCommon").val(option.DurationOverLoanDue); 
+                    $("#DurationOverIntDueCommon").val(option.DurationOverIntDue); 
+                    $("#CumInterestPaidCommon").val(option.CumInterestPaid); 
+                    $("#CumIntChargeCommon").val(option.CumIntCharge); 
+                    $("#CumLoanDueCommon").val(option.CumLoanDue); 
+                    $("#CumIntDueCommon").val(option.Duration); 
+                    $("#DOCCommon").val(option.DOC); 
+                    $("#OrgIDCommon").val(option.OrgID); 
+                    $("#principalLoanCommon").val(option.principalLoan); 
+                    $("#loanRepaidCommon").val(option.loanRepaid);
+
+                        var totalDues = option.LoanDue + option.IntDue;
+                        tableBody.append('<tr>' +
+                                                '<input type="hidden"  id="LoanSummary' + LoanSINo + '" value="' + option.SummaryID + '"/>' +
+
+                                                '<input type="hidden"  id="LoanProductId' + LoanSINo + '" value="' + option.ProductId + '"/>' +
+
+                                                '<input type="hidden" readonly = "readonly" id="LoanProductCode' + LoanSINo + '" value="' + option.ProductCode + '"/>' +
+
+                                               '<td style="text-align: center"> <input type="text" size="15" readonly = "readonly" id="productName' + LoanSINo + '" value="' + option.ProductName + '"/></td>' +
+
+                                               '<td style="text-align: center"><input type="numeric" size="10" onkeyup="Sum()" onBlur=Calculate('+ LoanSINo +') style="text-align: right;" onkeypress="return checkNumberic(event)" onfocus= purCursor("TotalPaid' + LoanSINo + '");  id="TotalPaid' + LoanSINo + '" value="' + option.TotalPaid + '"/></td>' +
+
+                                                '<input type="hidden"    id="LoanLoanDue' + LoanSINo + '" value="' + option.LoanDue + '"/>' +
+
+                                                '<input type="hidden"   id="LoanIntDue' + LoanSINo + '" value="' + option.IntDue + '"/>' +
+
+                                                '<td style="text-align: center; padding-left: 0px"><input type="numeric" size="10" readonly = "readonly"  style="text-align: right;  background-color: #e8f8fa;"   id="LoanPaid' + LoanSINo + '" value="' + 555 + '"/></td>' +
+                                                
+                                                '<td style="text-align: center; padding-left: 0px"><input type="numeric" size="10"  readonly = "readonly"  style="text-align: right;  background-color: #e8f8fa;"   id="SCPaid' + LoanSINo + '" value="' + 555 + '"/></td>' +
+
+                                                '<td style="text-align: center; padding-left: 0px"><input type="numeric" size="10" readonly = "readonly"  style="text-align: right;  background-color: lightblue;"   id="TotalDue' + LoanSINo + '" value="' + totalDues + '"/></td>' +
+
+                                                '<td style="text-align: center;padding-left: 0px"><input type="text" size="10" readonly = "readonly" style="text-align: right;  background-color: lightblue;"   id="Balance' + LoanSINo + '" value="' + option.Balance + '"/></td>' +
+
+                                                '<td style="text-align: center;padding-left: 0px"><input type="text"  size="10" readonly = "readonly" style="text-align: right;  background-color: lightblue; "  id="installmentNo' + LoanSINo + '" value="' + option.installmentNo + '"/></td>' +
+
+                                           '</tr>'
+                                   )
+                        LoanSINo += 1;
+                        total = total + option.TotalPaid;
+                    }
+
+
+                    if (option.ProductId == 2) {
+                        tablesavingBody.append('<tr>' +
+                                                    '<input type="hidden" readonly = "readonly" id="savingSummary' + SavingSINo + '" value="' + option.SummaryID + '"/>' +
+
+                                                    '<input type="hidden"  id="savingProductId' + SavingSINo + '" value="' + option.ProductId + '"/>' +
+
+                                                    '<input type="hidden" readonly = "readonly" id="savingProductCode' + SavingSINo + '" value="' + option.ProductCode + '"/>' +
+
+                                                   '<td style="text-align: center"> <input type="text" readonly = "readonly" id="productName' + SavingSINo + '" value="' + option.ProductName + '"/></td>' +
+
+                                                   '<td style="text-align: center"><input type="numeric" onkeyup="Sum()" onkeypress="return checkNumberic(event)" style="text-align: right;"  onfocus= purCursor("savingloanpaid' + SavingSINo + '");  id="savingloanpaid' + SavingSINo + '" value="' + option.LoanPaid + '"/></td>' +
+
+                                                   '<input type="hidden"    id="savingDue' + SavingSINo + '" value="' + option.LoanDue + '"/>' +
+
+                                                   '<input type="hidden"   id="savingIntDue' + SavingSINo + '" value="' + option.IntDue + '"/>' +
+
+                                                   
+                                                   '<td style="text-align: center"><input type="text" onkeyup="Sum()" onkeypress="return checkNumberic(event)" style="text-align: right;" onfocus= purCursor("savingwithdrawal' + SavingSINo + '"); id="savingwithdrawal' + SavingSINo + '" value="' + option.IntPaid + '"/></td>' +
+
+                                                   '<td style="text-align: center"><input type="text" size="15" readonly = "readonly"  style="text-align: right;  background-color: lightblue;" onfocus= purCursor("savingBalance' + SavingSINo + '"); id="savingBalance' + SavingSINo + '" value="' + option.Balance + '"/></td>' +
+
+                                               '</tr>'
+                                       )
+                        SavingSINo += 1;
+                        total = total + option.LoanPaid;
+                    }
+
+
+
+                    
+
+                    $("#grandTotal").val(total);
+
+                }); // End of Foreach
+
+
+
+
+            }
+        });
+    }
+
+    function saveinTable() {
+        //loan section
+        var row_Count = $('#tblLoan >tbody >tr').length;
+        //alert(row_Count);
+        var TotPaid = 0.0;
+        //var PunishmentId = $("#ddPunishmentList").val();
+        if (row_Count > 0) {
+            for (i = 1; i <= row_Count; i++) {
+                var TotalPaid = $("#TotalPaid" + i).val();
+                TotPaid = TotPaid + parseFloat(TotalPaid)
+                //TotalPaid = $("#TotalPaid" + i).val();
+                // alert(TotalPaid);
+                var LoanSummary = $("#LoanSummary" + i).val();
+                var LoanProductCode = $("#LoanProductCode" + i).val();
+                var ProductId = $("#LoanProductId" + i).val();
+
+                var LoanLoanDue = $("#LoanLoanDue" + i).val();
+
+                var LoanIntDue = $("#LoanIntDue" + i).val();
+
+                var Balance = $("#Balance" + i).val();
+                var InstallmentNo = $("#installmentNo" + i).val();
+                //var MemberID = $("#ddlMember option:selected").val();
+                //var officeId = $("#OfficeID").val();
+                //var CenterID = $("#CenterID").val();
+               /* string SummaryID        = "",
+                string officeId         = "",
+                string CenterID         = "",
+                string MemberID         = "",
+
+                 LoanMemberId  LoanCenterID OfficeID
+                */
+                var LoanMemberId = $("#LoanMemberId" + i).val();
+                 
+                var LoanCenterID = $("#LoanCenterID" + i).val();
+                var LoanOfficeID = $("#LoanOfficeID" + i).val();
+                
+                var undefined = $("#Khalid" + i).val(); //Does not exist
+                if (LoanMemberId == undefined)
+                {
+                    LoanMemberId = $("#ddlMember option:selected").val();
+                }
+                if (LoanCenterID == undefined)
+                {
+                    LoanCenterID = $("#CenterID").val();
+                }
+                if (LoanOfficeID == undefined)
+                {
+                    LoanOfficeID = $("#OfficeID option:selected").val(); //$("#OfficeID").val();
+                }
+
+
+                //InsertData(SummaryID,MemberID,officeId,CenterID, ProductCode, Deposit, WithDrawal, LoanPaid, ProductId, LoanDue, IntDue)
+                InsertData(LoanSummary,LoanMemberId, LoanOfficeID, LoanCenterID, LoanProductCode, 0.00, 0.00, TotalPaid, ProductId, LoanLoanDue, LoanIntDue,Balance,InstallmentNo);
+
+
+                //TotPaid = parseFloat(TotalPaid);
+                //$.alert.open("Message", TotPaid);
+                //return false;
+
+            }//End ForLoop
+
+        }
+        //alert("Message", TotPaid);
+
+        ///end loan section
+
+        //Start saving Section
+
+        var row_Count2 = $('#tblSavings >tbody >tr').length;
+        var TotPaid2 = 0.0;
+        var TotWithdrawal = 0.0;
+        //var PunishmentId = $("#ddPunishmentList").val();
+        if (row_Count2 > 0) {
+            for (i = 1; i <= row_Count2; i++) {
+               // alert("savingloanpaid" + i);
+                var TotalPaid2 = $("#savingloanpaid" + i).val();
+                //alert($('#savingloanpaid1').val());
+                //alert(TotalPaid2);
+                TotPaid2 = TotPaid2 + parseFloat(TotalPaid2);
+
+
+                // savingwithdrawal
+                var TotalWithdraw = $("#savingwithdrawal" + i).val();
+                TotWithdrawal = TotWithdrawal + parseFloat(TotalWithdraw);
+
+
+                var savingSummary = $("#savingSummary" + i).val();
+                var savingProductCode = $("#savingProductCode" + i).val();
+                 
+                var productId = $("#savingProductId" + i).val();
+
+                var savingDue = $("#savingDue" + i).val();
+
+                var savingIntDue = $("#savingIntDue" + i).val();
+
+                var undefined = $("#Khalid" + i).val(); //Does not exist
+
+                var Balance = $("#savingBalance" + i).val();
+                //alert(Balance);
+                if (Balance == undefined)
+                {
+                    Balance = 0;
+
+                }
+                var SavingMemberId = $("#SavingMemberId" + i).val();
+                var SavingCenterID = $("#SavingCenterID" + i).val();
+                var savingOfficeID = $("#savingOfficeID" + i).val();
+
+                
+              
+                var InstallmentNo = 0;
+                if (SavingMemberId == undefined) {
+                    SavingMemberId = $("#ddlMember option:selected").val();
+                }
+                if (SavingCenterID == undefined) {
+                    SavingCenterID = $("#CenterID").val();
+                }
+                if (savingOfficeID == undefined) {
+                    savingOfficeID = $("#OfficeID option:selected").val(); //$("#OfficeID").val();
+
+                }
+
+
+
+
+                //InsertData(SummaryID,MemberID,officeId,CenterID, ProductCode, Deposit, WithDrawal, LoanPaid, ProductId, LoanDue, IntDue)
+                InsertData(savingSummary, SavingMemberId, savingOfficeID, SavingCenterID, savingProductCode, TotalPaid2, TotalWithdraw, 0.00, productId, savingDue, savingIntDue, Balance, InstallmentNo);
+                 
+                ///alert("Message"+ TotalPaid2);
+                //return false;
+
+            }//End ForLoop
+        }
+        //TotalPaid + savingloanpaid  - savingwithdrawal
+        var sum = TotPaid2 + TotPaid;
+        sum = sum - TotWithdrawal;
+
+    }
+
+    function InsertData(SummaryID,MemberID,officeId,CenterID, ProductCode, Deposit, WithDrawal, LoanPaid, ProductId, LoanDue, IntDue,Balance,InstallmentNo) {
+
+        //var MemberID = $("#ddlMember option:selected").val();
+        //var officeId = $("#OfficeID").val();
+        //var CenterID = $("#CenterID").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("InsertData", "Collection", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: false,
+            data: {
+
+                SummaryID       : SummaryID         ,
+                officeId        : officeId          ,
+                CenterID        : CenterID          ,
+                MemberID        : MemberID          ,
+                ProductCode     : ProductCode       ,
+                LoanPaid        : LoanPaid          ,
+                Deposit         : Deposit           ,
+                WithDrawal      : WithDrawal        ,
+                ProductId       : ProductId         ,
+                LoanDue         : LoanDue           ,
+                IntDue          : IntDue            ,
+                Balance         : Balance           ,
+                InstallmentNo   : InstallmentNo
+                
+            },
+            success: function (result) {
+
+            }
+        });
+    }
+
+    function Sum()
+    {
+        //alert("SUM");
+        //loan section
+        var row_Count = $('#tblLoan >tbody >tr').length;
+        //alert(row_Count);
+        var TotPaid = 0.0;
+        //var PunishmentId = $("#ddPunishmentList").val();
+        for (i = 1; i <= row_Count; i++) {
+            var TotalPaid = $("#TotalPaid" + i).val();
+            //TotalPaid = $("#TotalPaid" + i).val();
+             // alert(TotalPaid);
+
+            TotPaid = TotPaid + parseFloat(TotalPaid);
+           //$.alert.open("Message", TotPaid);
+                //return false;
+
+        }//End ForLoop
+        //alert("Message", TotPaid);
+
+        ///end loan section
+
+        //Start saving Section
+
+        var row_Count2 = $('#tblSavings >tbody >tr').length;
+        //alert(row_Count2);
+        var TotPaid2 = 0.0;
+        var TotWithdrawal = 0.0;
+        //var PunishmentId = $("#ddPunishmentList").val();
+        for (i = 1; i <= row_Count2; i++) {
+            var TotalPaid2 = $("#savingloanpaid" + i).val();
+            TotPaid2 = TotPaid2 + parseFloat(TotalPaid2);
+
+            // savingwithdrawal
+            var TotalWithdraw = $("#savingwithdrawal" + i).val();
+            //alert(TotalWithdraw);
+            TotWithdrawal = TotWithdrawal + parseFloat(TotalWithdraw);
+
+
+            ///alert("Message"+ TotalPaid2);
+            //return false;
+
+        }//End ForLoop
+        var sum = TotPaid2 + TotPaid;
+        sum = sum - TotWithdrawal;
+
+        //alert("Message"+ sum);
+
+        $("#grandTotal").val(sum);
+        //End saving Section
+
+    }
+    
+
+    function clear() {
+       // $("#CenterID").prop('selectedIndex', 0);
+       // $("#MemberID").prop('selectedIndex', 0);
+        
+        $("#grandTotal").val("");
+
+        //Saving Setting
+        var dtSavingTable = $("#tblSavings");
+        var tablesavingBody = dtSavingTable.find('tbody');
+        tablesavingBody.empty();
+
+        var dtTable = $("#tblLoan");
+        var tableBody = dtTable.find('tbody');
+        tableBody.empty();
+         
+
+
+
+
+        //$("#ReleaseDate").datepicker('setDate', new Date());
+        //$("#JoiningDate").datepicker('setDate', new Date());
+
+    }
+
+    function GetMember() {
+        var ddlMember = $("#ddlMember");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberList", "Collection", "http")',
+            data: { centerId: $("#CenterID option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.MemberID).html(option.MemberName));
+
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetData(ProductID) { //populate Edit Form
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetByProductID", "Collection", "http")',
+            data: { ProductId: ProductID },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+                //Saving Setting
+                var dtSavingTable = $("#tblSavings");
+                var tablesavingBody = dtSavingTable.find('tbody');
+                tablesavingBody.empty();
+                var SavingSINo = 1;
+
+
+
+                var dtTable = $("#tblLoan");
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var LoanSINo = 1;
+                var sum = 0.00;
+                
+                $.each(data, function (id, option) {
+
+
+                     
+                    if (option.ProductId == 1) {
+                       
+                        tableBody.append('<tr>' +
+
+                                              '<input type="hidden"  id="LoanSummary' + LoanSINo + '" value="' + option.SummaryID + '"/>' +
+
+                                              '<input type="hidden"  id="LoanMemberId' + LoanSINo + '" value="' + option.MemberID + '"/>' +
+
+                                              '<input type="hidden"  id="LoanCenterID' + LoanSINo + '" value="' + option.CenterID + '"/>' +
+
+                                              '<input type="hidden"  id="LoanOfficeID' + LoanSINo + '" value="' + option.OfficeID + '"/>' +
+
+                                              '<input type="hidden" readonly = "readonly" id="LoanProductCode' + LoanSINo + '" value="' + option.ProductCode + '"/>' +
+
+                                              '<input type="hidden"  id="LoanId' + LoanSINo + '" value="' + option.Id + '"/>' +
+
+                                              '<input type="hidden"  id="LoanProductId' + LoanSINo + '" value="' + option.ProductId + '"/>' +
+
+                                              '<td style="text-align: center"> <input type="text" readonly = "readonly" id="productName' + LoanSINo + '" value="' + option.ProductName + '"/></td>' +
+
+                                              '<input type="hidden"    id="LoanLoanDue' + LoanSINo + '" value="' + option.LoanDue + '"/>' +
+
+                                              '<input type="hidden"   id="LoanIntDue' + LoanSINo + '" value="' + option.IntDue + '"/>' +
+
+                                              '<td style="text-align: center"><input type="numeric"  onkeyup="Sum()" onkeypress="return checkNumberic(event)" style="text-align: right;" onfocus= purCursor("TotalPaid' + LoanSINo + '");  id="TotalPaid' + LoanSINo + '" value="' + option.LoanPaid + '"/></td>' +
+
+                                              '<td style="text-align: center"><input type="text"  size="10" readonly = "readonly"  style="text-align: right;  background-color: lightblue;"  id="TotalDue' + LoanSINo + '" value="' + option.TotalDue + '"/></td>' + //kk
+
+                                              '<td style="text-align: center"><input type="text"  size="10" readonly = "readonly"  style="text-align: right;  background-color: lightblue;"  id="Balance' + LoanSINo + '" value="' + option.Balance + '"/></td>' +
+
+                                              '<td style="text-align: center"><input type="text" size="10" readonly = "readonly" style="text-align: right;  background-color: lightblue;"  id="installmentNo' + LoanSINo + '" value="' + option.installmentNo + '"/></td>' +
+
+                                           '</tr>'
+                                   )
+                        LoanSINo += 1;
+                        sum = sum + option.LoanPaid;
+                    }
+
+                    if (option.ProductId == 2) {
+                       
+                        tablesavingBody.append('<tr>' +
+                                                    '<input type="hidden" readonly = "readonly" id="savingSummary' + SavingSINo + '" value="' + option.SummaryID + '"/>' +
+
+                                                    '<input type="hidden"  id="SavingMemberId' + SavingSINo + '" value="' + option.MemberID + '"/>' +
+
+                                                    '<input type="hidden"  id="SavingCenterID' + SavingSINo + '" value="' + option.CenterID + '"/>' +
+
+                                                    '<input type="hidden"  id="savingOfficeID' + SavingSINo + '" value="' + option.OfficeID + '"/>' +
+
+                                                    '<input type="hidden" readonly = "readonly" id="savingId' + SavingSINo + '" value="' + option.Id + '"/>' +
+
+                                                    '<input type="hidden"  id="savingProductId' + SavingSINo + '" value="' + option.ProductId + '"/>' +
+
+                                                    '<input type="hidden"  id="savingProductCode' + SavingSINo + '" value="' + option.ProductCode + '"/>' +
+
+                                                   '<td style="text-align: center"> <input type="text" readonly = "readonly" id="productName' + SavingSINo + '" value="' + option.ProductName + '"/></td>' +
+
+                                                   '<td style="text-align: center"><input type="numeric" onkeyup="Sum()" onkeypress="return checkNumberic(event)" style="text-align: right;" onfocus= purCursor("savingloanpaid' + SavingSINo + '"); id="savingloanpaid' + SavingSINo + '" value="' + option.Deposit + '"/></td>' +
+
+
+                                                    '<input type="hidden"    id="savingDue' + SavingSINo + '" value="' + option.LoanDue + '"/>' +
+
+                                                   '<input type="hidden"   id="savingIntDue' + SavingSINo + '" value="' + option.IntDue + '"/>' +
+                                                   
+                                                   '<td style="text-align: center"><input type="text" onkeyup="Sum()" onkeypress="return checkNumberic(event)" style="text-align: right;" onfocus= purCursor("savingwithdrawal' + SavingSINo + '"); id="savingwithdrawal' + SavingSINo + '" value="' + option.WithDrawal + '"/></td>' +
+
+                                                    '<td style="text-align: center"><input type="text" size="15" readonly = "readonly"  style="text-align: right;  background-color: lightblue;" onfocus= purCursor("savingBalance' + SavingSINo + '"); id="savingBalance' + LoanSINo + '" value="' + option.Balance + '"/></td>' +
+
+                                               '</tr>'
+                                       )
+                        SavingSINo += 1;
+                        sum = sum + option.Deposit;
+                    }
+                   
+                });
+                $("#grandTotal").val(sum);
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                clear();
+            }
+
+        });//End of Ajax
+    }// End of Function
+
+
+    function Edit(id) // Edit ConfigAge Table
+    {
+        GetData(id);
+       
+    }
+
+
+    function GetBalance(memberId) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBalance", "Collection", "http")',
+            data: { centerId: $("#CenterID option:selected").val(), memberId: memberId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //alert("hihi");
+                $.each(data, function (id, option) {
+                    //alert(hi);
+                    //alert();
+                    $("#txttotalLoanPaid").val(option.LoadPaid);
+                    $("#txtDeposit").val(option.Deposit);
+                    $("#txtWithDrawal").val(option.WithDrawal);
+                    $("#txtBalance").val(option.Balance);
+                    
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                clear();
+            }
+
+        });//End of Ajax
+    }// End of Function
+
+   // Process();
+    function Process() {
+
+        var centerId = $("#CenterID option:selected").val();
+        if (centerId == 0)
+        {
+            alert("CenterID Found Empty");
+        }
+        else
+        {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("Process", "Collection", "http")',
+                data: { centerId: $("#CenterID option:selected").val() },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    alert("Data Saved Successfully");
+                    //$.each(data, function (id, option) {
+                    //});
+
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                    clear();
+                }
+
+            });//End of Ajax
+        }
+
+    }// End of Function
+   
+    
+    function checkNumberic(e)
+    {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }
+
+    </script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        confirmDayInitiated();
+        //GetBalance();
+        //////////////////////////////////////
+        $("#CenterID").change(function () {
+            GetBalance();
+            $('#grid').jtable('load', { MemberCode: null, centerId: $("#CenterID option:selected").val() });
+            GetMember();
+        });
+
+        $("#ddlMember").change(function () {
+            getInstallment();
+        });
+
+
+        //btnSave
+        $("#btnSave").click(function () {
+            //alert("save method");
+            saveinTable();
+            $('#grid').jtable('load', { MemberCode: null, centerId: $("#CenterID option:selected").val() });
+            GetBalance();
+            clear();
+
+        });
+
+        //btnProcess
+        $("#btnProcess").click(function () {
+             
+            Process();
+
+        });
+
+
+        //
+        $("#btnSearch").click(function () {
+            var filter = $("#filterColumn option:selected").val();
+            if(filter === 'ViewAll')
+            {
+                //$('#grid').jtable('load');
+                $('#grid').jtable('load', { MemberCode: null, centerId: $("#CenterID option:selected").val() });
+                 
+                GetBalance();
+
+                 
+            }
+            else
+            {
+                //var member = $("#ddlMember option:selected").text().split(',')[0];
+                //alert(member);
+                //$('#grid').jtable('load', { MemberCode: member });
+                //GetBalance();
+                var member = $("#ddlMember option:selected").text().split(',')[0];
+                var memberId = $("#ddlMember option:selected").val();
+                //alert(memberId);
+                $('#grid').jtable('load', { MemberCode: member, centerId: $("#CenterID option:selected").val() });
+                
+                GetBalance(memberId);
+            
+            }
+             
+           
+
+        });
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: false,
+            defaultSorting: 'Id ASC',
+            actions: {
+                listAction: '/Collection/GetList',
+            },
+            fields: {
+                Id: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    width: '10%',
+                    create: false,
+                    edit: true
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                LoanPaid: {
+                    title: 'Total Paid',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    width: '5%',
+                    create: false,
+                    edit: false,
+                    
+                },
+                WithDrawal: {
+                    title: 'WithDrawal',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                EditLink: {
+                    title: "Edit",
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Edit(' + data.record.Id + ')"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+        GetBalance();
+
+    });//End of Document Redy
+    </script>
+
+
+<h2 class="page-title">Collections</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Samity", htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                @Html.Label("MemberCode", htmlAttributes: new { @class = "control-label" })
+                @*@Html.DropDownListFor(model => model.MemberID, member, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })*@
+                @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="control-label">Search By</label>
+                <select id="filterColumn" class="form-control">
+                    @*<option value="0">Please Select</option>*@
+                    <option value="ViewAll">View All</option>
+                    <option value="ByMember">By Member</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-1">
+            <div class="form-group">
+                <label class="control-label">Action</label>
+                <input type="button" value="Search" id="btnSearch" class="btn btn-primary" />
+            </div>
+        </div>
+
+
+    </div>
+    <div class="row">
+
+
+    </div>
+    <!--End of Dropdown..-->
+
+
+    <input type="hidden" id="DurationCommon" value="0.00" />
+    <input type="hidden" id="DurationOverLoanDueCommon" value="0.00" />
+    <input type="hidden" id="DurationOverIntDueCommon" value="0.00" />
+    <input type="hidden" id="CumInterestPaidCommon" value="0.00" />
+    <input type="hidden" id="CumIntChargeCommon" value="0.00" />
+    <input type="hidden" id="CumLoanDueCommon" value="0.00" />
+    <input type="hidden" id="CumIntDueCommon" value="0.00" />
+    <input type="hidden" id="DOCCommon" value="0.00" />
+    <input type="hidden" id="OrgIDCommon" value="0.00" />
+    <input type="hidden" id="principalLoanCommon" value="0.00" />
+    <input type="hidden" id="loanRepaidCommon" value="0.00" />
+
+    <input type="hidden" id="TotalCommon" value="0.00" />
+    <input type="hidden" id="LoanDueCommon" value="0.00" />
+    <input type="hidden" id="IntDueCommon" value="0.00" />
+    <input type="hidden" id="InstallmentNoCommon" value="0.00" />
+    <input type="hidden" id="DueRecoveryCommon"  value="0.00" />
+    <input type="hidden" id="DurationOverCollectionCommon" value="0.00" />
+
+    <!--lOAN -->
+
+    <div class="row">
+        <div class="col-sm-1">
+        </div>
+        <div class="col-md-10">
+            <div class="box-header">
+                <h2 class="box-title">Loan List</h2>
+            </div>
+            <div class=" no-padding table-responsive">
+                <table class="table table-striped responsive-utilities jambo_table bulk_action" id="tblLoan" style="width:80%">
+                    <thead class="thead-default">
+                        <tr class="headings tb">
+                            <th style="text-align: center">Product Name</th>
+                            <th style="text-align: center">Paid </th>
+                            <th style="text-align: center">Loan Paid </th>
+                            <th style="text-align: center">SC Paid </th>
+                            <th style="text-align: center">Recoverable </th>
+                            <th style="text-align: center">Balance</th>
+                            <th style="text-align: center">Installment No</th>
+
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!--End Loan-->
+    <!--Savings -->
+
+    <div class="row">
+        <div class="col-sm-1">
+        </div>
+        <div class="col-sm-10">
+            <div class="box-header">
+                <h2 class="box-title">Saving List</h2>
+            </div>
+            <div class="box-body no-padding table-responsive">
+                <table class="table table-striped responsive-utilities jambo_table bulk_action" id="tblSavings" style="width:40%">
+                    <thead>
+                        <tr class="headings">
+                            <th style="text-align: center">Product Name</th>
+                            <th style="text-align: center">Deposit</th>
+                            <th style="text-align: center">Withdrawal</th>
+                            <th style="text-align: center">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!--End Savings-->
+    <!-- Last Row Summation-->
+    <div class="row">
+        <input type="button" style="margin-left:8em;" value="Add" id="btnSave" class="btn btn-primary" />
+
+        @*<div style="margin-left: 27em;  align-content: center; " >*@
+
+
+        <label style=" margin-left:8em;  font-size:20px;"> Total: <input type="text" style="font-size: 20px; text-align: right;" readonly="readonly" class="control-label" id="grandTotal" value="00.00" />  </label>
+        @*</div>*@
+    </div>
+    <!--End Last Row Summation-->
+    <!--End Savings-->
+
+    <br />
+    <!-- Btn Was-->
+</div>
+    <div class="row">
+        <div id="grid"></div>
+
+        
+         
+    </div>
+    
+    <div class="row">
+        
+        <div class="col-md-1">
+            <div class="form-group">
+                @Html.Label("Action", htmlAttributes: new { @class = "control-label" })
+
+
+                <input type="button"  value="Save" id="btnProcess" class="btn btn-danger" />
+
+            </div>
+        </div> 
+
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Total Paid", htmlAttributes: new { @class = "control-label" })
+
+               <input type="text" readonly="readonly" id="txttotalLoanPaid"  class = "form-control" />
+                
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Total Deposit", htmlAttributes: new { @class = "control-label" })
+
+                <input type="text" readonly="readonly" id="txtDeposit" class="form-control" />
+
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Total WithDrawal", htmlAttributes: new { @class = "control-label" })
+
+                <input type="text" readonly="readonly" id="txtWithDrawal" class="form-control" />
+
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @Html.Label("Total Recovery", htmlAttributes: new { @class = "control-label" })
+
+                <input type="text" readonly="readonly" id="txtBalance" class="form-control" />
+
+            </div>
+        </div>
+         
+    </div>
+    
+}
+
+
+    @section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+
+    }

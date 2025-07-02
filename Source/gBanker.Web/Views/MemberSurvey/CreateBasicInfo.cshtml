@@ -1,0 +1,425 @@
+﻿@model gBanker.Web.ViewModels.SurveyMemberMasterViewModel
+@{
+    ViewBag.Title = "Create Basic Info";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+@using (Html.BeginForm(null, null, new { @id = string.Empty }, FormMethod.Post, new { @id = "create", @mode = "create" }))
+{
+    //@Html.AntiForgeryToken()
+    <div class="accordion">
+        <div class="panel-group" id="accordion">
+            
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-8">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse8"><i class="fa fa-plus"></i>&nbsp;Basic Information</a>
+                    </h4>
+                </div>
+                <div id="collapse8" class="panel-collapse collapse">
+                    
+                    <div class="panel-body">
+                        @{
+                            Html.RenderPartial("~/Views/MemberSurvey/Partial/_MemberSurvey.cshtml", @Model);
+                        }
+                        <div class="row">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input id="btnUpdateAccountDorment" type="submit" value="Save" class="btn btn-primary" onclick="SaveBasicInformation()"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+        <script src="~/Scripts/bootbox.min.js"></script>
+        <script type="text/javascript">
+
+
+            $(document).ready(function () {
+                
+
+                $("#CountryId").change(function () {
+                    var countryId = $('#CountryId').val();
+                    LoadDivision(countryId, 0);
+                    LoadDistrict(0, 0);
+                    LoadBirthPlaceVillage(0, 0);
+                });
+
+                $("#BirthDivision").change(function () {
+                    var divisionCode = $('#BirthDivision').val();
+                    LoadDistrict(divisionCode, 0);
+                    LoadBirthPlaceVillage(0, 0);
+                });
+                $("#BirthDistrict").change(function () {
+                    var districtCode = $('#BirthDistrict').val();
+                    LoadBirthPlaceUnion(districtCode, 0)
+                    LoadBirthPlaceVillage(0, 0);
+                });
+
+                $("#BirthUnion").change(function () {
+                    var unionCode = $('#BirthUnion').val();
+                    LoadBirthPlaceVillage(unionCode, 0);
+                });
+
+
+
+
+                $("#LastName").change(function () {
+                    var FirstName = $("#FirstName").val();
+                    var MiddleName = $("#MiddleName").val();
+                    var LastName = $("#LastName").val();
+                    var FullName = FirstName + " " + MiddleName + " " + LastName;
+                    $("#MemberFullName").val(FullName);
+                    $('#MemberFullName').attr("readonly", true);
+
+                });
+
+
+
+                $("#SurveyDate").datepicker(
+                  {
+                      dateFormat: "dd-M-yy",
+                      showAnim: "scale",
+                      changeMonth: true,
+                      changeYear: true,
+                      yearRange: "1920:2100"
+
+                  });
+                $("#SurveyDate").datepicker(
+                'setDate', new Date());
+
+                $("#BirthDate").datepicker(
+                  {
+                      dateFormat: "dd-M-yy",
+                      showAnim: "scale",
+                      changeMonth: true,
+                      changeYear: true,
+                      yearRange: "1920:2100"
+
+                  });
+                $("#BirthDate").datepicker(
+                'setDate', new Date());
+
+
+                var model = @Html.Raw(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(Model));
+                @*var model = @Html.Raw(@Utility.Json.Serialize(Model));*@
+                //alert(model);
+                loadDropdown(model);
+
+                //$("#SurveyCode").change(function(){
+                //    var SurveyCode = $("#SurveyCode").val();
+                //    SurveyCodeWishID(SurveyCode);
+                //});
+
+
+            });
+
+
+            function LoadDivision(countryId, divisionCode) {
+                if (countryId == null || countryId == 0) {
+                    var url = '/MemberSurvey/GetBirthDivision/' + '0';
+                    selectedValue = divisionCode == "undefined" ? "" : divisionCode;
+                    generateDropdown("#BirthDivision", url, selectedValue, "Select Birth Division", "");
+                }
+                else {
+                    var url = '/MemberSurvey/GetBirthDivision/' + countryId;
+                    selectedValue = divisionCode == "undefined" ? "" : divisionCode;
+                    generateDropdown("#BirthDivision", url, selectedValue, "Select Birth Division", "");
+                }
+            }
+
+
+            function LoadDistrict(divisionCode, districtCode) {
+                if (divisionCode == null || divisionCode == 0) {
+                    var url = '/MemberSurvey/GetBirthDistrict/' + '0';
+                    selectedValue = districtCode == "undefined" ? "" : districtCode;
+                    generateDropdown("#BirthDistrict", url, selectedValue, "Select Birth District", "");
+                }
+                else {
+                    var url = '/MemberSurvey/GetBirthDistrict/' + divisionCode;
+                    selectedValue = districtCode == "undefined" ? "" : districtCode;
+                    generateDropdown("#BirthDistrict", url, selectedValue, "Select Birth District", "");
+                }
+            }
+
+            function LoadBirthPlaceVillage(unionCode, villageCode) {
+                if (unionCode == null || unionCode == 0) {
+                    var url = '/MemberSurvey/GetBirthPlaces/' + '0';
+                    selectedValue = villageCode == "undefined" ? "" : villageCode;
+                    generateDropdown("#PlaceOfBirth", url, selectedValue, "Select Birth Place", "");
+                }
+                else {
+                    var url = '/MemberSurvey/GetBirthPlaces/' + unionCode;
+                    selectedValue = villageCode == "undefined" ? "" : villageCode;
+                    generateDropdown("#PlaceOfBirth", url, selectedValue, "Select Birth Place", "");
+                }
+            }
+
+            function LoadBirthPlaceUnion(districtCode, unionCode) {
+                if (districtCode == null || districtCode == 0) {
+                    var url = '/MemberSurvey/GetBirthPlaceUnion/' + '0';
+                    selectedValue = unionCode == "undefined" ? "" : unionCode;
+                    generateDropdown("#BirthUnion", url, selectedValue, "Select Birth Union", "");
+                }
+                else {
+                    var url = '/MemberSurvey/GetBirthPlaceUnion/' + districtCode;
+                    selectedValue = unionCode == "undefined" ? "" : unionCode;
+                    generateDropdown("#BirthUnion", url, selectedValue, "Select Birth Union", "");
+                }
+            }
+
+
+            loadDropdown = function (model) {
+                var url = '';
+                var selectedValue = '';
+
+                url = '/MemberSurvey/GetCountry';
+                selectedValue = model.CountryId == "undefined" ? "" : model.CountryId;
+                generateDropdown("#CountryId", url, selectedValue, "Select Country", "");
+
+                var countryId = model.CountryId;
+                var divisionCode = model.BirthDivisionCode;
+                var districtCode = model.BirthDistrictCode;
+                var villageCode = model.BirthVillageCode;
+                var unionCode = model.UnionCode;
+
+                LoadDivision(countryId, divisionCode);
+                LoadDistrict(divisionCode, districtCode);
+                LoadBirthPlaceUnion(districtCode, unionCode);
+                LoadBirthPlaceVillage(unionCode, villageCode);
+            }
+            function GenerateMemberSurvey() {
+                var item = {};
+                item.SurveyCode = $("#SurveyCode").val();
+                item.Center = $("#Center").val();
+                item.SurveyDate = $("#SurveyDate").val();
+                item.FirstName = $("#FirstName").val();
+                item.MiddleName = $("#MiddleName").val();
+                item.LastName = $("#LastName").val();
+                item.MemberFullName = $("#MemberFullName").val();
+                item.PresentAddress = $("#PresentAddress").val();
+                item.PermanentAddress = $("#PermanentAddress").val();
+                item.PresentCountryId = $("#CountryId").val();
+                item.PermanentCountryId = $("#CountryId").val();
+                item.PresentAddressPOBCode = $("#PlaceOfBirth").val();
+                item.PermanentAddressPOBCode = $("#PlaceOfBirth").val();
+                item.RefereeName = $("#RefereeName").val();
+                item.PlaceOfBirth = $("#PlaceOfBirth").text();
+                item.CityzenshipId = $("#CityzenshipId").val();
+                item.IsAnyRelationwithOtherNGO = $("#IsAnyRelationwithOtherNGO").val();
+
+                item.BirthDate = $("#BirthDate").val();
+                item.Ocupation = $("#Ocupation").val();
+                item.Education = $("#Education").val();
+                item.MeritalStatus = $("#MeritalStatus").val();
+                return item;
+            }
+
+            function SaveBasicInformation() {
+                var MemberSurvey = GenerateMemberSurvey();
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    async: true,
+                    cache: false,
+                    url: '@Url.Action("SaveMemberSurvey", "MemberSurvey")',
+                    data: JSON.stringify({ MemberSurvey: MemberSurvey }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data == "Save Successfull") {
+                            bootbox.alert({
+                                message: "Save Successfull",
+                                size: 'small'
+                            });
+                        }
+
+                    },
+                    error: function (xhr, status, error) {
+                        alert(error);
+                    }
+
+                });
+
+            }
+            //function SurveyCodeWishID(SurveyCode) {
+            //    $.ajax({
+            //        type: "GET",
+            //        dataType: "json",
+            //        async: true,
+            //        cache: false,
+            //        url: "/MemberSurvey/GetSurveyCodeWishID",
+            //        data: { SurveyCode: SurveyCode },
+            //        contentType: "application/json; charset=utf-8",
+            //        success: function (data) {
+            //            if (data.SurveyID == 0) {
+            //                //alert("please enter valid SurveyCode");
+            //            } else {
+            //                $("#SurveryId").val(data.SurveyID);
+            //                //alert(data.SurveyID);
+            //            }
+
+            //        },
+            //        error: function (request, status, error) {
+            //            alert(request.statusText + "/" + request.statusText + "/" + error);
+            //        }
+            //    });
+            //}
+
+
+            function ShowAccountScanCopyFile(fileInput) {
+                debugger;
+                var files = fileInput.files;
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var imageType = /image.*/;
+
+                    if (file.type.match(imageType)) {
+                        //continue;
+                        var size = Math.round(file.size / 1024);
+                        if (size <= 100) {
+                            var img = document.getElementById("accountScanCopyImg");
+                            img.file = file;
+                            var reader = new FileReader();
+                            reader.onload = (function (aImg) {
+                                return function (e) {
+                                    aImg.src = e.target.result;
+                                };
+                            })(img);
+                            reader.readAsDataURL(file);
+                        }
+                        else {
+                            bootbox.alert({
+                                message: "Image file cannot be greater than 100 KB!",
+                                size: 'small'
+                            });
+                            $('#accountScanCopyImg').attr('src', '/Content/images/varificationimage.jpg');
+                            $('#VarificationDocumentImageFile').val('');
+                        }
+                    }
+                    else {
+                        bootbox.alert({
+                            message: "Please Select Valid Image File!",
+                            size: 'small'
+                        });
+                        $("#VarificationDocumentImageFile").replaceWith($("#VarificationDocumentImageFile").clone(true));
+                        $('#accountScanCopyImg').attr('src', '/Content/images/varificationimage.jpg');
+                        $('#VarificationDocumentImageFile').val('');
+                    }
+
+                }
+            }
+
+
+
+
+            function RemoveAccountScanCopy() {
+
+                var depositAccountId =  $('#SMVerificationId').val();
+                debugger;
+                if (depositAccountId <= 0) {
+                    $('#accountScanCopyImg').attr('src', '/Content/images/varificationimage.jpg');
+                    $('#VarificationDocumentImageFile').val('');
+                    return false;
+                }
+
+                bootbox.confirm({
+                    message: "You are going to Remove Image! Confirm?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-success',
+
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-danger'
+                        }
+                    },
+                    callback: function (result) {
+
+                        $.ajax({
+                            type: 'GET',
+                            contentType: "application/json; charset=utf-8",
+                            url: "/MemberSurvey/RemoveDepositAccountScanCopy",
+                            data: { depositAccountId: depositAccountId },
+                            dataType: 'json',
+                            async: true,
+                            success: function (data) {
+                                if (data.result == 1) {
+                                    $('#accountScanCopyImg').attr('src', '/Content/images/varificationimage.jpg');
+                                    $('#VarificationDocumentImageFile').val('');
+                                } else {
+                                    $.alert.open("Error", data.message);
+                                }
+
+                            },
+                            error: function (request, status, error) {
+                                alert(request.statusText + "/" + request.statusText + "/" + error);
+                            }
+                        });
+
+                    }
+                });
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+            function isUndefinedOrNull(val) {
+                return (typeof val === 'undefined' || val === undefined || val === null);
+            }
+            function generateDropdown(selector, url, selectedValue, defaultText, defaultValue) {
+                $(selector).empty();
+
+                if (!isUndefinedOrNull(defaultValue))
+                    $(selector).append('<option value="' + defaultValue + '">' + defaultText + '</option>');
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: url,
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        $.each(data, function (index, option) {
+                            if (option.Value == selectedValue)
+                                $(selector).append('<option value="' + option.Value + '" ' + " selected='selected' " + '>' + option.Text + '</option>');
+                            else
+                                $(selector).append('<option value="' + option.Value + '">' + option.Text + '</option>');
+                        });
+                    },
+                    error: function (request, status, error) {
+                        console.log(status.statusText);
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+        </script>
+                            }
+
+
+@section Scripts {
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    @Scripts.Render("~/bundles/jqueryui")
+    
+}
+

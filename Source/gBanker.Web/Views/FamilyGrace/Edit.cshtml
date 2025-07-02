@@ -1,0 +1,206 @@
+﻿@model gBanker.Web.ViewModels.FamilyGraceViewModel
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+    var member = ViewBag.MemberName as string;
+    var center = Model == null ? null : Model.centerListItems;
+   // var officeName = office.Where(o => o.Value == Model.OfficeID.ToString()).FirstOrDefault().Text;
+    //var centerName = center.Where(o => o.Value == Model.CenterID.ToString()).FirstOrDefault().Text;
+}
+
+<script type="text/javascript">
+    $body = $("body");
+ 
+    $(document).ready(function () {
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "FamilyGrace", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+
+
+                        }
+                        else if (data.length == 0) {
+                            // alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            // alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "FamilyGrace", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+     //   $("#ApproveDate").datepicker();
+        gBankerDatePicker("GraceStartDate");
+        gBankerDatePicker("GraceEndDate");
+    });
+
+
+
+
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+<h2 class="page-title">Edit FamilyGrace</h2>
+
+@using (Html.BeginForm("Edit", "FamilyGrace", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="">
+        
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        
+        <div class="row" style="display:none">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FamilyGraceID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.FamilyGraceID, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.FamilyGraceID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.OfficeID, Model.officeListItems, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.OfficeID)
+                    @*@Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })*@
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.OfficeID, Model.centerListItems, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.CenterID)
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", member, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GraceStartDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.GraceStartDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.GraceStartDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GraceEndDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.GraceEndDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.GraceEndDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+        </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

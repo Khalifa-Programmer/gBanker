@@ -1,0 +1,811 @@
+﻿@model gBanker.Web.ViewModels.DailyLoanTrxViewModel
+
+@{
+    ViewBag.Title = "Loan Collection List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model.centerListItems == null ? new List<SelectListItem>() { new SelectListItem() { Text = "Select Center", Value = "0" } } : Model.centerListItems;
+}
+
+<style type="text/css">
+    .summaryTitle {
+        color: yellow !important;
+        padding-left: 5px !important;
+    }
+
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+
+    .findElement {
+        background-color: yellow;
+    }
+</style>
+
+@*<table style="width:100%;">
+        <tr>
+            <td style="width:90%"><h2>Loan Collection</h2></td>
+            <td>@Html.ActionLink("Add Transfer", "Create")</td>
+        </tr>
+    </table>
+
+    <hr />*@
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Loan Collection</h2>
+
+<script type="text/javascript">
+    $body = $("body");
+
+    $(document).ready(function () {
+        confirmDayInitiated();
+        //var centerId = 6;
+        $("#CenterID").change(function () {
+            //var centerId = $("#CenterID").val();
+            $('#filterColumn').val('');
+            $('#filterValue').val('');
+            reloadGrid();
+        });
+         //var centerId = 6;
+        //var centerId = $("#CenterID").val();        
+
+        $('#SMSgrid').jtable({
+            // title: 'Loan collection list',
+            paging: true,
+
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/LoanCollectionSms/GetDailyLoanCollectionProductList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+
+            },
+            fields: {
+                DailyLoanTrxID: {
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                ProductID: {
+                    list: true,
+                    create: false,
+                    edit: false,
+                    display: function (loanTrx) {
+                        //Create an image that will be used to open child table
+                        var dueLoanTextbox = '<span class="summaryTitle">Due Loan:</span> <input disabled="disabled" type="text" style="width:40px; color:black;" id="DueLoanSummary' + loanTrx.record.ProductID + '"  value= "' + loanTrx.record.DueLoanSummary + '" />';
+                        var loanCollection = '<span class="summaryTitle">Loan Coll:</span> <input disabled="disabled" type="text" style="width:45px; color:black;" id="LoanCollectionSummary' + loanTrx.record.ProductID + '"  value= "' + loanTrx.record.LoanCollectionSummary + '" />';
+                        var dueIntrestTextbox = '<span class="summaryTitle">Due Interest:</span> <input disabled="disabled" type="text" style="width:40px; color:black;" id="DueInterestSummary' + loanTrx.record.ProductID + '" value= "' + loanTrx.record.DueInterestSummary + '" />';
+                        var interestCollection = '<span class="summaryTitle">Interest Coll:</span> <input disabled="disabled" type="text" style="width:40px; color:black;" id="InterestCollectionSummary' + loanTrx.record.ProductID + '"  value= "' + loanTrx.record.InterestCollectionSummary + '" />';
+                        var totaldue = '<span class="summaryTitle">Total Due:</span> <input disabled="disabled" type="text" style="width:60px; color:black;" id="TotalDueSummary' + loanTrx.record.ProductID + '"  value= "' + loanTrx.record.TotalDueSummary + '" />';
+                        var totalCollection = '<span class="summaryTitle">Total Coll:</span> <input disabled="disabled" type="text" style="width:60px; color:black;" id="TotalCollectionSummary' + loanTrx.record.ProductID + '" value= "' + loanTrx.record.TotalCollectionSummary + '" />';
+                        var $product = $('<div class="jtable-title"> <div class="jtable-title-text">' + 'Product Code - ' + loanTrx.record.ProductCode + ' Name - ' + loanTrx.record.ProductName + dueLoanTextbox + loanCollection + dueIntrestTextbox + interestCollection + totaldue + totalCollection + '</div></div>');
+                        //Open child table when user clicks the image
+
+                        $product.show(function () {
+                            $('#SMSgrid').jtable('openChildTable',
+                                            $product.closest('tr'),
+                                            {
+                                                actions: {
+                                                    listAction: '/LoanCollectionSms/GetDailyLoanCollectionSheet?centerId=' + loanTrx.record.CenterID + '&productId=' + loanTrx.record.ProductID + '&filterColumn=' + $('#filterColumn').val() + '&filterValue=' + $('#filterValue').val() + '&sortColumn=' + $('#sortColumn').val() + '&sortOrder=' + $('#sortOrder').val()
+
+                                                },
+
+                                                fields: {
+                                                    LoanNo: {
+                                                        title: 'Loan No',
+                                                        width: '10%',
+                                                        list: true,
+                                                        create: false,
+                                                        edit: false
+                                                        //display: function (data) {
+                                                        //    var id = '<span attr_code="y">' + data.record.LoanNo + '</span>';
+                                                        //    return id;
+                                                        //}
+
+                                                    },
+                                                    MemberCode: {
+                                                        title: 'Member Code',
+                                                        width: '10%',
+                                                        display: function (data) {
+                                                            var id = '<span attr_code="y">' + data.record.MemberCode + '</span>';
+                                                            return id;
+                                                        }
+
+                                                    },
+                                                    MemberName: {
+                                                        title: 'Member Name',
+                                                        width: '15%',
+                                                        display: function (data) {
+                                                            var id = '<span attr_name="y">' + data.record.MemberName + '</span>';
+                                                            return id;
+                                                        }
+                                                    },
+                                                    LoanTerm: {
+                                                        title: 'Loan Term',
+                                                        width: '5%',
+                                                        display: function (data) {
+                                                            var id = '<input type="hidden"' + ' value="' + data.record.DailyLoanTrxID + '" /> ';
+                                                            return id + '<input type="text" disabled="disabled" name="LoanTerm" style="width:30px"' + 'id="LoanTerm' + data.record.DailyLoanTrxID + '" value="' + data.record.LoanTerm + '" />';
+                                                        }
+                                                    },
+                                                    TrxType: {
+                                                        title: 'TrxType',
+                                                        width: '5%',
+                                                        list: true,
+                                                        create: false,
+                                                        edit: false,
+                                                        display: function (data) {
+                                                            var MemId = '<input type="text" value="' + data.record.MemberID + '" style="display:none;" name="MemberID" id="MemberID' + data.record.DailyLoanTrxID + '" />';
+                                                            var MemCode = '<input type="text" value="' + data.record.MemberCode + '" style="display:none;" name="MemberCode" id="MemberCode' + data.record.DailyLoanTrxID + '" />';
+                                                            var MemName = '<input type="text" value="' + data.record.MemberName + '" style="display:none;" name="MemberName" id="MemberName' + data.record.DailyLoanTrxID + '" />';
+                                                            return MemId + MemCode + MemName + '<input type="text" disabled="disabled" name="TrxType" style="width:30px"' + 'id="TrxType' + data.record.DailyLoanTrxID + '" value="' + data.record.TrxType + '" />';
+                                                        }
+                                                    },
+                                                    LoanDue: {
+                                                        title: 'Loan Due',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" disabled="disabled" style="width:60px"' + 'id="LoanDue' + data.record.DailyLoanTrxID + '" value="' + data.record.LoanDue + '" />';
+                                                        }
+                                                    },
+                                                    IntDue: {
+                                                        title: 'Interest Due',
+                                                        width: '5%',
+                                                        display: function (data) {
+                                                            return '<input type="text"  name="IntDue" disabled="disabled" style="width:50px"' + 'id="IntDue' + data.record.DailyLoanTrxID + '" value="' + data.record.IntDue + '" />';
+                                                        }
+                                                    },
+                                                    TotalInstallment: {
+                                                        title: 'Total Installment',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            var total = data.record.LoanPaid + data.record.IntPaid;
+
+                                                            return '<input type="text" onkeypress="return checkNumberic(event);"  onkeyup="calculate(1, ' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + "," + data.record.ProductID + ');" style="width:60px" ' + 'id="Total' + data.record.DailyLoanTrxID + '" LoanPaidProduct="Total' + data.record.ProductID + '" value="' + total + '" />';
+                                                        }
+                                                    },
+                                                    LoanPaid: {
+                                                        title: 'Loan Paid',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" onkeypress="return checkNumberic(event);"  onkeyup="calculate(2,' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + "," + data.record.ProductID + ');" onblur="validate(' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + "," + data.record.ProductID + ');" style="width:60px" ' + 'id="LoanPaid' + data.record.DailyLoanTrxID + '" LoanPaidProduct="LoanPaid' + data.record.ProductID + '" value="' + data.record.LoanPaid + '" />';
+                                                        }
+                                                    },
+                                                    IntPaid: {
+                                                        title: 'Interest Paid',
+                                                        width: '5%',
+                                                        display: function (data) {
+                                                            return '<input type="text" onkeypress="return checkNumberic(event);"  onkeyup="calculate(3, ' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + "," + data.record.ProductID + ');" style="width:50px" ' + 'id="IntPaid' + data.record.DailyLoanTrxID + '" LoanPaidProduct="IntPaid' + data.record.ProductID + '" value="' + data.record.IntPaid + '" />';
+                                                        }
+                                                    },
+                                                    PrincipalLoan: {
+                                                        title: 'Principal Loan',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" disabled="disabled" onkeypress="return checkNumberic(event);"  onkeyup="calculate(4, ' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + "," + data.record.ProductID + ');" style="width:100px" ' + 'id="PrincipalLoan' + data.record.DailyLoanTrxID + '" value="' + data.record.PrincipalLoan + '" />';
+                                                        }
+                                                    },
+                                                    LoanRepaid: {
+                                                        title: 'Loan Repaid',
+                                                        width: '6%',
+                                                        display: function (data) {
+                                                            return '<input type="text" disabled="disabled" onkeypress="return checkNumberic(event);"  onkeyup="calculate(5, ' + data.record.DailyLoanTrxID + ",'" + data.record.InterestCalculationMethod + "'" + "," + data.record.ProductID + ');" style="width:100px" ' + 'id="LoanRepaid' + data.record.DailyLoanTrxID + '" value="' + data.record.LoanRepaid + '" />';
+                                                        }
+                                                    },
+                                                    CreateUser: {
+                                                        title: 'Create User',
+                                                        edit:false
+                                                    },
+                                                    CollectionStatus: {
+                                                        title: 'Collection Status',
+                                                        edit: false,
+                                                        display: function (data) {
+                                                            if (data.record.CollectionStatus == '') {
+                                                                return "No";
+                                                            }
+                                                            else if (data.record.CollectionStatus == '0') {
+                                                                return "No";
+                                                            }
+                                                            else if (data.record.CollectionStatus == '1') {
+                                                                return '<span style="color:green;">Yes</span>';
+                                                            }
+                                                        }
+                                                    },
+                                                    SmsStatus: {
+                                                        title: "SMS",
+                                                        sort: false,
+                                                        create: false,
+                                                        edit: false,
+                                                        display: function (data) {
+                                                            if (data.record.SmsStatus == '') {
+                                                                return '<div class="text-center"><a href="#" OnClick="LoadSmsBox(' + "'" + data.record.MemberName + "'," + data.record.MemberID + ",'" + data.record.PhoneNo + "'," + (data.record.LoanPaid + data.record.IntPaid) + ",'" + data.record.TrxDateMsg + "'," + ((data.record.PrincipalLoan - data.record.LoanRepaid) - data.record.LoanPaid) + ',' + data.record.TotalPaid + ');"><i class="fa fa-share-square-o"></i></a></div>';
+                                                            }
+                                                            else {
+                                                                if (data.record.SmsStatus == 'Sent') {
+
+                                                                    return '<span style="color:green;">SMS has sent</span>'
+                                                                }
+                                                                else if (data.record.SmsStatus == 'Fail') {
+
+                                                                    return '<span style="color:red;">Fail</span>&nbsp;' + '<div class="text-center"><a href="#" OnClick="LoadSmsBox(' + "'" + data.record.MemberName + "'," + data.record.MemberID + ",'" + data.record.PhoneNo + "'," + (data.record.LoanPaid + data.record.IntPaid) + ",'" + data.record.TrxDateMsg + "'," + ((data.record.PrincipalLoan - data.record.LoanRepaid) - data.record.LoanPaid) + ',' + data.record.TotalPaid + ');"><i class="fa fa-share-square-o"></i></a></div>';
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }, function (data) { //opened handler
+                                                data.childTable.jtable('load');
+
+                                            });
+
+                        });
+                        //Return image to show on the person row
+                        // $('#grid').jtable('getRowByKey', loanTrx.record.DailyLoanTrxID).find("span").click();
+                        return $product;
+                    }
+                }
+            }
+        });
+
+
+        reloadGrid();
+        //$('#grid').jtable('load');
+        //$('.jtable-column-header').hide();
+        $('.jtable .jtable-title').find('div').hide();
+
+
+        $('#btnProduct').click(function (e) {
+            e.preventDefault();
+            var startDate = "24/11/2012";
+            var endDate = "30/11/2012";
+            var url = '/LoanCollectionSms/GenerateReport?fromDate=' + startDate + '&toDate=' + endDate;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+
+        $("#btnSend").click(function (e) {
+            e.preventDefault();
+            var msgBody = $('#lblMsg').html();
+            var receiver = $('#ReceiverPhoneNo').val();
+            var memId = $('#ReceiverMemberId').val();
+            var collDt = $('#ReceiverCollectionDt').val();
+            if (receiver != null && collDt != null) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SendSMS", "LoanCollectionSMS", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    data: { msgBody: msgBody, receiver: receiver, memId: memId, collDt: collDt },
+                    success: function (result) {
+                        $('#smsBox').hide();
+                        var msg, css;
+                        if (result != '') {
+                            msg = "SMS has been sent successfully";
+                            css = "success";
+                        }
+                        else if (result == '') {
+                            msg = "Failed to Save";
+                            css = "failed";
+                        }
+                        else {
+                            msg = "Failed to Send";
+                            css = "failed";
+                        }
+                        reloadGrid();
+                        alert(msg);
+                        //$("#dvMessage").attr('class', css);
+                        //$("#dvMessage").html(msg);
+                        //$("#dvMessage").show();
+                        //if (result == null)
+                        //    $("#dvMessage").toggle('fade', 1500);
+                    },
+                    error: function (request, status, error) {
+                        //$("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html(request.statusText);
+                        $("#dvMessage").show();
+                    }
+                });
+            }
+            else {
+                alert("Please set a phone number for this member.")
+            }
+
+        });
+    });
+    function LoadSmsBox(memName, memId,phnNo,loanPaid, trxDate, loanBalance, totalPaid) {
+        $('#lblMsg').html("Thank you " + memName + ", for your repayment of " + loanPaid + " on " + trxDate + ". Your Loan balance is " + loanBalance + " and you have " + totalPaid + " remaining installments.");
+        $('#ReceiverPhoneNo').val(phnNo);
+        $('#ReceiverMemberId').val(memId);
+        $('#ReceiverCollectionDt').val(trxDate);
+        $('#smsBox').show();
+    }
+    function CloseSms() {
+        $('#smsBox').hide();
+        //reloadGrid();
+    }
+    function checkNumberic(e)
+    {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }
+    function reloadGrid()
+    {
+        $('#SMSgrid').jtable('load', { centerId: $('#CenterID').val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        $('.jtable-column-header').hide();
+        $('.jtable .jtable-title').find('div').hide();
+
+        //if ($('#txtOption').val() == 'true') {
+        //    $('#SMSgrid').jtable('load', { centerId: $('#CenterID').val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        //    $('.jtable-column-header').hide();
+        //    $('.jtable .jtable-title').find('div').hide();
+        //    $('#grid').hide();
+        //}
+        //else {
+        //    $('#grid').jtable('load', { centerId: $('#CenterID').val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        //    $('.jtable-column-header').hide();
+        //    $('.jtable .jtable-title').find('div').hide();
+        //    $('#SMSgrid').hide();
+        //}
+
+        // $('#grid').jtable('getRowByKey', 10).find("span").trigger('click');
+    }
+    function calculate(type, id, calcMethod, productid) {
+        var totalId = 'Total' + id;
+        var loanPaidId = 'LoanPaid' + id;
+        var intPaidId = 'IntPaid' + id;
+        var loandue = 'LoanDue' + id;
+        var intdue = 'IntDue' + id;
+        var principalLoan = 'PrincipalLoan' + id;
+        var loanRepaid = 'LoanRepaid' + id;
+        if (type == 1) {
+            var vLoanInstallment = 0;
+            var vInterestInstallment = 0;
+            var vPrincipalLOan = $('#' + principalLoan).val();
+            if (vPrincipalLOan.length == 0)
+                vPrincipalLOan = "0";
+            var vloanRepaid = $('#' + loanRepaid).val();
+            if (vloanRepaid.length == 0)
+                vloanRepaid = "0";
+
+            var total = $('#' + totalId).val();
+            if (total.length == 0)
+                total = "0";
+            var vLoan = $('#' + loandue).val();
+            if (vLoan.length == 0)
+                vLoan = "0";
+            var vInt = $('#' + intdue).val();
+            if (vInt.length == 0)
+                vInt = "0";
+            var vTotalInstall = Number(vLoan) + Number(vInt);
+
+            if (vTotalInstall == 0) {
+                vLoanInstallment = 0;
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    if (total < vLoan) {
+                        vLoanInstallment = 0;
+                    }
+                    else {
+                        vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+                else {
+                    vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                }
+            }
+            // loanPaidId = vLoanInstallment;
+
+            if (vTotalInstall == 0)
+            {
+
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    if (total < vInt) {
+                        vInterestInstallment = total;
+                    }
+                    else {
+                        vInterestInstallment = (parseFloat(vInt) * parseFloat(total) )/ parseFloat(vTotalInstall);
+                    }
+                }
+                else {
+                    vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                }
+            }
+            //intPaidId = vInterestInstallment;
+            //$('#' + loanPaidId).val(total/2);
+            //$('#' + intPaidId).val(total/2);
+            var vLoan = $('#' + loanPaidId).val();
+            var vLoanBal = Number(vPrincipalLOan) - Number(vloanRepaid)
+            var calIns = Number(vloanRepaid) + Number(vLoan)
+            if (calIns >= Number(vPrincipalLOan))
+            {
+                vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+                vLoanInstallment = Number(vPrincipalLOan) - Number(vloanRepaid)
+
+            }
+            $('#' + loanPaidId).val(Math.round(vLoanInstallment));
+            $('#' + intPaidId).val(Math.round(vInterestInstallment));
+
+        }
+        if (type == 2) {
+            var vLoanInstallment = 0;
+            var vInterestInstallment = 0;
+            var total = $('#' + totalId).val();
+            var vLoan = $('#' + loanPaidId).val();
+            var vInt = $('#' + intPaidId).val();
+            var vTotalInstall = Number(vLoan) + Number(vInt);
+
+            $('#' + totalId).val(vTotalInstall);
+
+        }
+        if (type == 3) {
+            var vLoanInstallment = 0;
+            var vInterestInstallment = 0;
+            var total = $('#' + totalId).val();
+            var vLoan = $('#' + loanPaidId).val();
+            var vInt = $('#' + intPaidId).val();
+            var vTotalInstall = Number(vLoan) + Number(vInt);
+
+            $('#' + totalId).val(vTotalInstall);
+
+        }
+        //var loanCollectionSMry = $('#' + LoanCollectionSummary).val();
+        //var finalLoanCollectionSummary = (loanCollectionSMry - initialLoanPaid) + vLoanInstallment;
+
+        //$('#LoanCollectionSummary' + productid).val(finalLoanCollectionSummary);
+        displaySumary(productid, "LoanPaid", "LoanCollectionSummary");
+        displaySumary(productid, "IntPaid", "InterestCollectionSummary");
+        displaySumary(productid, "Total", "TotalCollectionSummary");
+    }
+    function validate(id, calcMethod, productid) {
+        var totalId = 'Total' + id;
+        var loanPaidId = 'LoanPaid' + id;
+        var intPaidId = 'IntPaid' + id;
+        var loandue = 'LoanDue' + id;
+        var intdue = 'IntDue' + id;
+        var principalLoan = 'PrincipalLoan' + id;
+        var loanRepaid = 'LoanRepaid' + id;
+
+            var vLoanInstallment = 0;
+            var vInterestInstallment = 0;
+            var vPrincipalLOan = $('#' + principalLoan).val();
+            if (vPrincipalLOan.length == 0)
+                vPrincipalLOan = "0";
+            var vloanRepaid = $('#' + loanRepaid).val();
+            if (vloanRepaid.length == 0)
+                vloanRepaid = "0";
+
+            var total = $('#' + totalId).val();
+            if (total.length == 0)
+                total = "0";
+            var vLoan = $('#' + loandue).val();
+            if (vLoan.length == 0)
+                vLoan = "0";
+            var vInt = $('#' + intdue).val();
+            if (vInt.length == 0)
+                vInt = "0";
+            var vTotalInstall = Number(vLoan) + Number(vInt);
+
+            if (vTotalInstall == 0) {
+                vLoanInstallment = 0;
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    if (total < vLoan) {
+                        vLoanInstallment = 0;
+                    }
+                    else {
+                        vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+                else {
+                    vLoanInstallment = (parseFloat(vLoan) * parseFloat(total)) / parseFloat(vTotalInstall);
+                }
+            }
+            // loanPaidId = vLoanInstallment;
+
+            if (vTotalInstall == 0) {
+
+                vInterestInstallment = 0;
+            }
+            else {
+                if (calcMethod == "D") {
+                    if (total < vInt) {
+                        vInterestInstallment = total;
+                    }
+                    else {
+                        vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                    }
+                }
+                else {
+                    vInterestInstallment = (parseFloat(vInt) * parseFloat(total)) / parseFloat(vTotalInstall);
+                }
+            }
+            //intPaidId = vInterestInstallment;
+            //$('#' + loanPaidId).val(total/2);
+            //$('#' + intPaidId).val(total/2);
+            //var vLoanBal = Number(vPrincipalLOan) - Number(vloanRepaid)
+            //if (Math.round(vLoanInstallment) > Number(vLoanBal)) {
+            //   // vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+            //    vLoanInstallment = Number(vPrincipalLOan) - Number(vloanRepaid)
+
+        //}
+            var vLoan = $('#' + loanPaidId).val();
+            var vLoanBal = Number(vPrincipalLOan) - Number(vloanRepaid)
+            var calIns = Number(vloanRepaid) + Number(vLoan)
+            if (calIns >= Number(vPrincipalLOan))
+                {
+                vInterestInstallment = Number(Math.round(total)) - (Number(vPrincipalLOan) - Number(vloanRepaid))
+                vLoanInstallment = Number(vPrincipalLOan) - Number(vloanRepaid)
+                $('#' + loanPaidId).val(Math.round(vLoanInstallment));
+            }
+
+          //  $('#' + intPaidId).val(Math.round(vInterestInstallment));
+
+
+
+       calculate(2, id, calcMethod, productid);
+    }
+    function displaySumary(productId, initial, summaryfield) {
+        var total = 0;
+        var $allInputs = $('input[LoanPaidProduct="' + initial + productId + '"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            total = total + parseFloat( value);
+        });
+        $('#' + summaryfield + productId).val(total);
+    }
+    function checkLoanInstallment(loanInstallmentId) {
+        //alert(loanInstallmentId);
+    }
+    function checkInterestInstallment(loanInstallmentId) {
+        //alert(loanInstallmentId);
+    }
+
+    function SaveAdnReload() {
+
+        var allCollection = new Array();
+        var $allInputs = $('input[type="text"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allCollection[allCollection.length] = obj;
+        });
+
+
+        var $allId = $('input[type="hidden"]');
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        var allTrx = new Object();
+        allTrx.allTrx = allCollection;
+        allTrx.allLoanTrxId = allIds;
+
+        var json = JSON.stringify(allTrx);
+
+        $("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveLoanTransaction", "LoanCollectionSms", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+                $("#loading").hide();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                }
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+            }
+        });
+    }
+</script>
+
+@*@using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()*@
+
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="form-group">
+            @Html.Label("Center", htmlAttributes: new { @class = "control-label" })
+            @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("Filter By", htmlAttributes: new { @class = "control-label" })            
+            <div class="row">
+                <div class="col-md-5">
+                    <select id="filterColumn" class="form-control">
+                        <option value="">View All</option>
+                        <option value="MemberCode">Member Code</option>
+                        <option value="ProductCode">Product Code</option>
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">            
+            @Html.Label("Sort By", htmlAttributes: new { @class = "control-label" })
+            <div class="row">
+                <div class="col-md-5">
+                    <select id="sortColumn" class="form-control">
+                        <option value="MemberCode">Member Code</option>
+                        <option value="MemberName">Member Name</option>
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <select id="sortOrder" class="form-control">
+                        <option value="ASC">Ascending</option>
+                        <option value="DESC">Descending</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1" style="padding-top:22px; padding-left:0;" align="left">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+@*<div class="row">
+    <div class="col-md-1" style="padding-top:8px; font-weight:bold;">
+        Filter By:
+    </div>
+    <div class="col-md-2">
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="MemberCode">Member Code</option>
+            <option value="ProductCode">Product Code</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-1" style="padding-top:8px; font-weight:bold;" align="right">
+        Sort By:
+    </div>
+    <div class="col-md-2">
+        <select id="sortColumn" class="form-control">
+            <option value="MemberCode">Member Code</option>
+            <option value="MemberName">Member Name</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select id="sortOrder" class="form-control">
+            <option value="ASC">Ascending</option>
+            <option value="DESC">Descending</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>*@
+<br />
+
+<div id="SMSgrid"></div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <input type="button" value="Save" class="btn btn-primary" onclick="SaveAdnReload();" />
+        &nbsp;
+        <input id="btnProduct" type="submit" value="Collection Info" class="btn btn-primary" />
+    </div>
+</div>
+
+
+<div id="smsBox" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 180px; width: 100%; height: 100%; z-index: 1;
+        display: none">
+    @*<p style="position: absolute; top: 30%; left: 45%; background-color: White;">*@
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    Send SMS
+                </h4>
+            </div>
+            <div class="modal-body">
+
+                <label id="lblMsg"></label>
+            </div>
+            <div class="modal-footer">
+                <input type="submit" value="Send" id="btnSend" class="btn btn-success" />
+                &nbsp;
+                <input type="submit" value="Cancel" id="btnCancel" class="btn btn-danger" onclick="CloseSms()" />
+                <input type="hidden" id="ReceiverPhoneNo" value="" />
+                <input type="hidden" id="ReceiverMemberId" value="" />
+                <input type="hidden" id="ReceiverCollectionDt" value="" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+
+}

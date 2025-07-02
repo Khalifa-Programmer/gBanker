@@ -1,0 +1,107 @@
+﻿@{
+    ViewBag.Title = "InActiveMemberList";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+
+
+    function GetEmployee() {
+        var ddlEmp = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmployeeList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+
+
+        GetEmployee();
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var EmployeeStatus = $("#ddlQtype").val();
+
+            var Employee = $("#ddlEmp").val();
+
+            var url = '/GroupwiseReport/GenerateInactiveMemberList?EmployeeId=' +  Employee;
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+
+
+        $("#btnDrop").click(function (e) {
+            e.preventDefault();
+
+            var EmployeeStatus = $("#ddlQtype").val();
+
+            var url = '/GroupwiseReport/GenerateInactiveMemberListDropNew';
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+
+
+
+<h2 class="page-title">InActive Member List</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Employee", new { @class = "control-label" })
+                    @Html.DropDownList("EmployeeList", null, new { @ID = "ddlEmp", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+
+            <div class="col-md-8" style="padding-right:20px;" align="right">
+                <input id="btnDrop" type="submit" value="Dropable" class="btn btn-primary" />
+            </div>
+
+        </div>
+
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+

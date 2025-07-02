@@ -1,0 +1,1141 @@
+﻿@model LoanUpdateViewModel
+@{
+    ViewBag.Title = "Update Loan";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 300px;
+        z-index: 2147483647;
+    }
+</style>
+
+<style>
+    .jtable > thead > tr {
+        height: 50px;
+    }
+
+    div.jtable-main-container table.jtable thead th {
+        vertical-align: top;
+        text-align: left;
+    }
+</style>
+
+<script type="text/javascript">
+
+    // User can input only numbers
+    function isNumber(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+
+    // Get Center DropdownList with the help of this function
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/LoanUpdate/GetCenterList',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+     
+    // Get Product List BY Member wise
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/LoanUpdate/GetProductListByMemberWithProcedure',
+            data: { Qtype: 1, MemberID: $("#hdnMemberID").val(), ProductID: 0 },
+            dataType: 'json',
+            async: true,
+            success: function (List_MemberwiseProduct) {
+                console.log(List_MemberwiseProduct);
+                ddlProd.html('');
+                $.each(List_MemberwiseProduct, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.ProductID).html(option.ProductName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    // Get Loan Term List by Product & Member Wise
+    function GetLoanTerm() {
+        var ddlLoanTerm = $("#ddlLoanTerm");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/LoanUpdate/GetLoanTermListByProductandMemberWithProcedure',
+            //data: { Member_id: Member_id, center_id: center_id },
+            data: { Qtype: 2, MemberID: $("#hdnMemberID").val(), ProductID: $("#ddlProd").val() },
+            dataType: 'json',
+            async: true,
+            success: function (List_LoanTermMemberandProductwise) {
+                console.log(List_LoanTermMemberandProductwise);
+                ddlLoanTerm.html('');
+                $.each(List_LoanTermMemberandProductwise, function (id, option) {
+                    ddlLoanTerm.append($('<option></option>').val(option.ProductID).html(option.LoanTerm));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    // Input text Only NUMBER
+    function checkNumberic(e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }
+
+    //Go to next Row of GRID View Data
+    function goNextRow(e, rowSl, id) {
+        //up arrow 38
+        if (e.keyCode == 38) {
+            var newId = '#' + 'PrimaryKeyId' + (rowSl - 1).toString();
+            var newIdVal = $(newId).val();
+            var newFocusId = id + newIdVal.toString();
+            $('#' + newFocusId).focus();
+            $('#' + newFocusId).select();
+        }
+        else if (e.keyCode == 40) {
+            var newId = '#' + 'PrimaryKeyId' + (rowSl + 1).toString();
+            var newIdVal = $(newId).val();
+            var newFocusId = id + newIdVal.toString();
+            $('#' + newFocusId).focus();
+            $('#' + newFocusId).select();
+        }
+    }
+
+    function SaveAndReload() {
+        var allCollection = new Array();
+
+        var $modifiedRow = $('.jtable-row-changed');
+        var allInputsInModifiedRow = $modifiedRow.find('input[type="text"]')
+
+        console.log(allInputsInModifiedRow);
+
+        allInputsInModifiedRow.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+
+            var obj = new Object();
+
+            obj.Key = id;
+            obj.Value = value;
+
+            allCollection[allCollection.length] = obj;
+        });
+
+
+        var $allId = $('input[type="hidden"]');
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        var allTrx = new Object();
+        allTrx.allTrx = allCollection;
+        allTrx.allLoanTrxId = allIds;
+        /*
+        Additional info while Insert Data
+        */
+        allTrx.center      = $("#ddlCenter option:selected").val();
+        allTrx.member      = $("#hdnMemberID").val();
+        allTrx.product     = $("#ddlProd option:selected").val();
+        allTrx.loanterm    = $("#ddlLoanTerm option:selected").val();
+        /*END */
+
+        var json = JSON.stringify(allTrx);
+
+        //$("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveLoanSummaryUpdate", "LoanUpdate", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+                $("#loading").hide();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                    $("#dvMessageDown").toggle('fade', 1500);
+                    setTimeout("hideMsg()", 1500);
+                }
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+            }
+        });
+    }// ENd Save Grid Function
+
+     
+    function loadAllMemberCategoryDropdown(dropdownid, selectedValue) {
+        // $("#loading").show();
+        //alert(selectedValue);
+        $.ajax({
+            type: "POST",
+            //url: "/LoaneeTransfer/GetOfficeList",
+            url: '/LoanUpdate/GetMemberCategoryList',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+
+                $("#" + dropdownid).append($("<option/>").val('0').text('Select Member Category'));
+                $.each(data, function (id, option) {
+                    if (selectedValue == option.Value) {
+                        //alert(selectedValue);
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text).attr('selected', 'selected'));
+                    }
+                    else {
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text));
+                    }
+                });
+
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+
+    }
+
+    function loadAllPurposeDropdown(dropdownid, selectedValue) {
+        // $("#loading").show();
+        //alert(selectedValue);
+        $.ajax({
+            type: "POST",
+            //url: "/LoaneeTransfer/GetOfficeList",
+            url: '/LoanUpdate/GetPurposeList',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+
+                $("#" + dropdownid).append($("<option/>").val('0').text('Select Purpose'));
+                $.each(data, function (id, option) {
+                    if (selectedValue == option.Value) {
+                        //alert(selectedValue);
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text).attr('selected', 'selected'));
+                    }
+                    else {
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text));
+                    }
+                });
+
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+
+    }
+
+    function loadProductDropdown(dropdownid, selectedValue) {
+        // $("#loading").show();
+        $.ajax({
+            type: "POST",
+            url: '/LoanUpdate/GetProductListProcedure',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+
+                $("#" + dropdownid).append($("<option/>").val('0').text('Select Product'));
+                $.each(data, function (id, option) {
+
+                    if (selectedValue == option.Value) {
+                        //alert(selectedValue);
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text).attr('selected', 'selected'));
+                    }
+                    else {
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text));
+                    }
+
+
+                });
+
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+
+    }
+
+    function loadOfficeDropdown(dropdownid, selectedValue) {
+       // $("#loading").show();
+        $.ajax({
+            type: "POST",
+            //url: "/LoaneeTransfer/GetOfficeList",
+            url: '/LoanUpdate/GetCenterList',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+
+                $("#" + dropdownid).append($("<option/>").val('0').text('Select Center'));
+                $.each(data, function (id, option) {
+
+                    if (selectedValue == option.Value) {
+                        //alert(selectedValue);
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text).attr('selected', 'selected'));
+                    }
+                    else {
+                        $("#" + dropdownid).append($('<option></option>').val(option.Value).html(option.Text));
+                    }
+
+
+                });
+
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+
+    }
+
+    function loadAll(officeid, LoanSummaryID) {
+
+        var ddlId = "ddlNewCenterID" + LoanSummaryID;
+        var vlu = $("#" + ddlId + " option:selected").val();
+
+        var elements = document.getElementsByClassName("c" + LoanSummaryID);
+        if (elements.length > 0) {
+            var targetElement = elements[0];
+            targetElement.value = vlu;
+        }
+    }
+
+    function loadAllProduct(officeid, LoanSummaryID) {
+
+        var ddlId = "ddlNewProductID" + LoanSummaryID;
+
+        var vlu = $("#" + ddlId + " option:selected").val();
+
+        var elements = document.getElementsByClassName("p"+LoanSummaryID);
+        if (elements.length > 0) {
+            var targetElement = elements[0];
+            targetElement.value = vlu;
+        }
+    }
+
+    function loadAllPurposeCode(officeid, LoanSummaryID) {
+
+        var ddlId = "ddlNewPurposeID" + LoanSummaryID;
+        var vlu = $("#" + ddlId + " option:selected").val();
+
+        var elements = document.getElementsByClassName(LoanSummaryID);
+        if (elements.length > 0) {
+            var targetElement = elements[0];
+            targetElement.value = vlu;
+        }
+    }
+     
+    function loadAllCategory(officeid, LoanSummaryID) {
+
+        var ddlId = "ddlNewMemberCategoryID" + LoanSummaryID;
+
+        var vlu = $("#" + ddlId + " option:selected").val();
+
+        var elements = document.getElementsByClassName("mc" + LoanSummaryID);
+        if (elements.length > 0) {
+            var targetElement = elements[0];
+            targetElement.value = vlu;
+        }
+    }
+
+    function popupMemberDiv(officeid, LoanSummaryID) {
+
+        $("#memberAutoCompleteSelect").val("");
+
+        $("#hdnCurrentSummaryId").val(LoanSummaryID);
+
+        $("#currentSummaryId").val(LoanSummaryID);
+        //$('html, body').animate({ scrollTop: $('#MemberDiv').offset().top }, 'slow');
+        $("#MemberDiv").dialog({
+            autoOpen: false,
+            height: 160,
+            width: 390,
+            modal: true,
+            buttons: {
+                //"Save": function () {
+                //    SaveUpdateProgram();
+                //},
+                "Close": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    // window.location.href = "Member/Create";
+
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#MemberDiv").dialog('open');
+        }
+
+    }//End of Show Popup		
+
+    //============ Document Ready =============//
+    function populateDatePicker(inputField) {
+        $(inputField).datepicker({
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true
+        }).datepicker("show");
+    }
+    $(document).ready(function () {
+        
+        ///////////// FOR Grid MEMBER Selection /////////////////////
+
+        // Auto Complete for Member Selection
+        $("#memberAutoCompleteSelect").blur(function () {
+
+            var member = $("#memberAutoCompleteSelect").val();
+            var currentSummaryId = $("#hdnCurrentSummaryId").val();
+
+            var CenterId = $("#ddlCenter option:selected").val();
+            if (CenterId == "0" || CenterId == "") {
+                return;
+            }
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '/LoanUpdate/GetMemberListAuto',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: CenterId },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#memberAutoCompleteSelect").val(data[0].MemberName);
+                            //$("#hdnMemberID").val(data[0].MemberID);
+                            //$("#currentSummaryId").val(data[0].MemberName);
+
+                            //var elements = document.getElementsByClassName("m" + LoanSummaryID);
+                            //if (elements.length > 0) {
+                            //    var targetElement = elements[0];
+                            //    targetElement.value = vlu;
+                            //}
+
+                            if ($("#ddlCenter option:selected").val() > 0 && data[0].MemberID > 0) {
+                                //GetProduct();
+                            }
+                            else {
+                                //$("#ddlProd").empty();
+                            }
+
+                        }
+                        else if (data.length == 0) {
+                            //$("#hdnMemberID").val("");
+                        }
+                        else {
+                            //$("#hdnMemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoCompleteSelect").autocomplete({
+
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '/LoanUpdate/GetMemberListAuto',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#ddlCenter option:selected").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoCompleteSelect").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                 $("#memberAutoCompleteSelect").val(ui.item.label);
+                var LoanSummaryID = $("#currentSummaryId").val();
+
+                //let text = "How are you doing today?";
+                //const myArray = text.split(" ");
+                //let word = myArray[1];
+                //alert(word);
+
+
+                var selectedMember = ui.item.label;
+                 var array = selectedMember.split(",");
+
+                array = array[1].split("----"); 
+ 
+                var elements = document.getElementsByClassName("m" + LoanSummaryID);
+                if (elements.length > 0) {
+                    var targetElement = elements[0];
+                    targetElement.value = array[0];
+                }
+                var elements = document.getElementsByClassName("mem" + LoanSummaryID);
+                if (elements.length > 0) {
+                    var targetElement = elements[0];
+                    targetElement.value = ui.item.value;
+                }
+
+
+
+                
+
+                //GetProduct();
+                //$("#ddlLoanTerm").empty();
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoCompleteSelect").val(ui.item.label);
+
+                //var LoanSummaryID = $("#currentSummaryId").val();
+
+                //var elements = document.getElementsByClassName("m" + LoanSummaryID);
+                //if (elements.length > 0) {
+                //    var targetElement = elements[0];
+                //    targetElement.value = ui.item.value;
+                //}
+
+                //$("#hdnMemberID").val(ui.item.value);
+                return false;
+            }
+        });
+         
+        ////////////////END Grid Selection /////////////////
+
+
+
+        // Auto Complete for Member Selection
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            var CenterId = $("#ddlCenter option:selected").val();
+            if (CenterId == "0" || CenterId == "") {
+                return;
+            }
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '/LoanUpdate/GetMemberListAuto',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: CenterId },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#hdnMemberID").val(data[0].MemberID);
+
+                            if ($("#ddlCenter option:selected").val() > 0 && data[0].MemberID > 0) {
+                                GetProduct();
+                            }
+                            else {
+                                //$("#ddlProd").empty();
+                            }
+
+                        }
+                        else if (data.length == 0) {
+                            $("#hdnMemberID").val("");
+                        }
+                        else {
+                            $("#hdnMemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '/LoanUpdate/GetMemberListAuto',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#ddlCenter option:selected").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#hdnMemberID").val(ui.item.value);
+
+                GetProduct();
+                $("#ddlLoanTerm").empty();
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#hdnMemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+
+        GetCenter();
+
+
+        $("#ddlCenter").change(function () {
+
+            $("#memberAutoComplete").val('');
+            $("#hdnMemberID").val('');
+            $("#ddlProd").val('');
+            $("#ddlLoanTerm").empty();
+
+            var ddlCenter = $("#ddlCenter option:selected").val();
+            if (ddlCenter > 0) {
+                //  GetMember();
+            }
+            else {
+                // $("#ddlMember").empty();
+                $("#hdnMemberID").val("");
+            }
+
+        });
+
+
+        $("#ddlProd").change(function () {
+            var ddlProd = $("#ddlProd option:selected").val();
+            if (ddlProd > 0) {
+                GetLoanTerm();
+            }
+            else {
+                $("#ddlLoanTerm").empty();
+            }
+        });
+
+
+        // View Button to load data into grid
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var center = $("#ddlCenter option:selected").val();
+            var member = $("#hdnMemberID").val();//$("#ddlMember option:selected").val();
+            var product = $("#ddlProd option:selected").val();
+            var loanterm = $("#ddlLoanTerm option:selected").val();
+
+            $('#grid').jtable('load', { CenterID: center, MemberID: member, ProductID: product, LoanTerm: loanterm });
+
+        });
+        //Load jTable on Init
+        $('#grid').jtable({
+            // title: 'Category Transfer List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/LoanUpdate/GETLoanUpdateList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+
+            },
+            fields: {
+                LoanSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                //MemberID: {
+                //    list: false,
+                //    create: false,
+                //    edit: false
+                //},
+                //MemberCode: {
+                //    title: 'Member Code',
+                //    width: '5%',
+                //    display: function (data) {
+                //        return '<input type="text" readonly style="background-color:#F6F6F6; width:100px;" ' + 'id="MemberCode,' + data.record.LoanSummaryID + '" value="' + data.record.MemberCode + '" />';
+                //    }
+                //},
+                MemberName: {
+                    title: 'Member Name',
+                    width: '5%',
+                    display: function (data) {
+                        //var ddl = '<select  onchange="loadAllMember(this.value' + "," + data.record.LoanSummaryID + ');" style="width:180px" ' + 'id="ddlNewMemberID' + data.record.LoanSummaryID + '"></select>'
+                        //    + '<input style="display:none;" type="text"' + 'class= "m' + data.record.LoanSummaryID.toString() + '"' + 'id="txtSelectedMemberId,' + data.record.LoanSummaryID + '" value= ""  /> ';
+                        //// '<input type="text" style="display:none;" ' + 'id="txtSelectedCenterId,' + data.record.LoanSummaryID + '" /> ';
+                        ////
+                        //loadMemberDropdown('ddlNewMemberID' + data.record.LoanSummaryID);
+                        //return ddl;
+                        var member = '<input type="text" readonly style="background-color:#F6F6F6; width:150px;" onclick="popupMemberDiv(this.value' + "," + data.record.LoanSummaryID + ');" ' + 'class= "m' + data.record.LoanSummaryID.toString() + '"' + 'id="MemberName,' + data.record.LoanSummaryID + '" value="' + data.record.MemberName + '" />'
+                            + '<input style="display:none;" type="text"' + 'class= "mem' + data.record.LoanSummaryID.toString() + '"' + 'id="txtSelectedMemberId,' + data.record.LoanSummaryID + '" value= "' + data.record.MemberID + '"  /> ';
+                           
+                        return member;
+
+                    }
+                },
+                //ProductID: {
+                //    list: false,
+                //    create: false,
+                //    edit: false
+                //},
+                //ProductCode: {
+                //    title: 'Product Code',
+                //    width: '5%',
+                //    display: function (data) {
+                //        return '<input type="text" readonly style="background-color:#F6F6F6; width:80px;" ' + 'id="ProductCode,' + data.record.LoanSummaryID + '" value="' + data.record.ProductCode + '" />';
+                //    }
+                //},
+                ProductName: {
+                    title: 'Product Name',
+                    width: '5%',
+                    display: function (data) {
+                        var ddl = '<select  onchange="loadAllProduct(this.value' + "," + data.record.LoanSummaryID + ');" style="width:180px" ' + 'id="ddlNewProductID' + data.record.LoanSummaryID + '"></select>'
+                            + '<input style="display:none;" type="text"' + 'class= "p' + data.record.LoanSummaryID.toString() + '"' + 'id="txtSelectedProductId,' + data.record.LoanSummaryID + '" value= "' + data.record.ProductID + '"  /> ';
+                        // '<input type="text" style="display:none;" ' + 'id="txtSelectedCenterId,' + data.record.LoanSummaryID + '" /> ';
+                        //
+
+                        let CreateId = 'ddlNewProductID' + data.record.LoanSummaryID;
+
+                        loadProductDropdown(CreateId, data.record.ProductID);
+                        return ddl;
+
+
+
+                        //return '<input type="text" readonly style="background-color:#F6F6F6; width:120px;" ' + 'id="ProductName,' + data.record.LoanSummaryID + '" value="' + data.record.ProductName + '" />';
+                    }
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Center Name',
+                    width: '5%',
+                    display: function (data) {
+
+                        var ddl = '<select  onchange="loadAll(this.value' + "," + data.record.LoanSummaryID + ');" style="width:180px" ' + 'id="ddlNewCenterID' + data.record.LoanSummaryID + '"></select>'
+                            + '<input style="display:none;" type="text"' + 'class="c' + data.record.LoanSummaryID.toString() + '"' + 'id="txtSelectedCenterId,' + data.record.LoanSummaryID + '" value= "' + data.record.CenterID + '"  /> ';
+                        // '<input type="text" style="display:none;" ' + 'id="txtSelectedCenterId,' + data.record.LoanSummaryID + '" /> ';
+                            //
+
+                        let CreateId = 'ddlNewCenterID' + data.record.LoanSummaryID;
+
+
+                        loadOfficeDropdown(CreateId, data.record.CenterID );
+                        return ddl;
+
+                        //var ddl = '<select  onchange="loadAll(this.value' + "," + data.record.LoanSummaryID + ');" style="width:180px" ' + 'id="NewOfficeID' + data.record.LoanSummaryID + '"></select>';
+                        //loadOfficeDropdown('NewOfficeID' + data.record.MemberID);
+                        //return ddl;
+
+                       // return '<input type="text" readonly style="background-color:#F6F6F6; width:80px;" ' + 'id="CenterName,' + data.record.LoanSummaryID + '" value="' + data.record.CenterName + '" />';
+                    }
+                },
+                MemberCategoryID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                //MemberCategoryCode: {
+                //    title: 'Member Category Code',
+                //    width: '5%',
+                //    display: function (data) {
+                //        return '<input type="text" readonly style="background-color:#F6F6F6; width:60px;" ' + 'id="MemberCategoryCode,' + data.record.LoanSummaryID + '" value="' + data.record.MemberCategoryCode + '" />';
+                //    }
+                //},
+                CategoryName: {
+                    title: 'Member Category Name',
+                    width: '5%',
+                    display: function (data) {
+                        //return '<input type="text" readonly style="background-color:#F6F6F6; width:80px;" ' + 'id="CategoryName,' + data.record.LoanSummaryID + '" value="' + data.record.CategoryName + '" />';
+
+                        var ddl = '<select  onchange="loadAllCategory(this.value' + "," + data.record.LoanSummaryID + ');" style="width:180px" ' + 'id="ddlNewMemberCategoryID' + data.record.LoanSummaryID + '"></select>'
+                            + '<input style="display:none;" type="text"' + 'class="mc' + data.record.LoanSummaryID.toString() + '"' + 'id="txtSelectedMemberCategoryId,' + data.record.LoanSummaryID + '" value= "' + data.record.MemberCategoryID + '"  /> ';
+
+                        let CreateId = 'ddlNewMemberCategoryID' + data.record.LoanSummaryID;
+
+                        loadAllMemberCategoryDropdown(CreateId, data.record.MemberCategoryID);
+
+                        return ddl;
+                    }
+                },
+                //PurposeID: {
+                //    list: false,
+                //    create: false,
+                //    edit: false
+                //},
+                //PurposeCode: {
+                //    title: 'Purpose Code',
+                //    width: '5%',
+                //    display: function (data) {
+                //        return '<input type="text" readonly style="background-color:#F6F6F6; width:60px;" ' + 'id="PurposeCode,' + data.record.LoanSummaryID + '" value="' + data.record.PurposeCode + '" />';
+                //    }
+                //},
+                PurposeName: {
+                    title: 'Purpose Name',
+                    width: '5%',
+                    display: function (data) {
+
+                        var ddl = '<select  onchange="loadAllPurposeCode(this.value' + "," + data.record.LoanSummaryID + ');" style="width:180px" ' + 'id="ddlNewPurposeID' + data.record.LoanSummaryID + '"></select>'
+                            + '<input style="display:none;" type="text"' + 'class="' + data.record.LoanSummaryID.toString() + '"' + 'id="txtSelectedPurposeCode,' + data.record.LoanSummaryID + '" value= "' + data.record.PurposeID +'"  /> ';
+
+                        let CreateId = 'ddlNewPurposeID' + data.record.LoanSummaryID;
+                       // loadAllPurposeDropdown('ddlNewPurposeID' + data.record.LoanSummaryID);
+                        loadAllPurposeDropdown(CreateId, data.record.PurposeID );
+                        //$("#" + CreateId).val(data.record.PurposeID);
+
+                        //$("#" + CreateId + " option[value='" + data.record.PurposeID + "']").prop('selected', 'selected');
+
+                        return ddl;
+
+
+                       // return '<input type="text" readonly style="background-color:#F6F6F6; width:100px;" ' + 'id="PurposeName,' + data.record.LoanSummaryID + '" value="' + data.record.PurposeName + '" />';
+
+
+
+                    }
+                },
+                LoanTerm: {
+                    title: 'Loan Term',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="background-color:#F6F6F6; width:40px;" ' + 'id="LoanTerm,' + data.record.LoanSummaryID + '" value="' + data.record.LoanTerm + '" />';
+                    }
+                },
+                PrincipalLoan: {
+                    title: 'Disbursed Amount',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="PrincipalLoan,' + data.record.LoanSummaryID + '" value="' + data.record.PrincipalLoan + '" />';
+                    }
+                },
+                ApproveDate: {
+                    title: 'Approve Date',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onfocus="populateDatePicker(this)" style="color:black; width:100px;" ' + 'id="ApproveDate,' + data.record.LoanSummaryID + '" value="' + data.record.ApproveDate + '" />';
+                    }
+                },
+                DisburseDate: {
+                    title: 'Disburse Date',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onfocus="populateDatePicker(this)" style="color:black; width:100px;" ' + 'id="DisburseDate,' + data.record.LoanSummaryID + '" value="' + data.record.DisburseDate + '" />';
+                    }
+                },
+                Duration: {
+                    title: 'Duration',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="Duration,' + data.record.LoanSummaryID + '" value="' + data.record.Duration + '" />';
+                    }
+                },
+                LoanRepaid: {
+                    title: 'Loan Repaid',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="LoanRepaid,' + data.record.LoanSummaryID + '" value="' + data.record.LoanRepaid + '" />';
+                    }
+                },
+                IntCharge: {
+                    title: 'Interest Charge',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="IntCharge,' + data.record.LoanSummaryID + '" value="' + data.record.IntCharge + '" />';
+                    }
+                },
+                IntPaid: {
+                    title: 'Interest Paid',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="IntPaid,' + data.record.LoanSummaryID + '" value="' + data.record.IntPaid + '" />';
+                    }
+                },
+                LoanInstallment: {
+                    title: 'Loan Installment',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="LoanInstallment,' + data.record.LoanSummaryID + '" value="' + data.record.LoanInstallment + '" />';
+                    }
+                },
+                IntInstallment: {
+                    title: 'Interest Installment',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="IntInstallment,' + data.record.LoanSummaryID + '" value="' + data.record.IntInstallment + '" />';
+                    }
+                },
+                InterestRate: {
+                    title: 'Interest Rate',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="InterestRate,' + data.record.LoanSummaryID + '" value="' + data.record.InterestRate + '" />';
+                    }
+                },
+                InstallmentNo: {
+                    title: 'Installment No',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="InstallmentNo,' + data.record.LoanSummaryID + '" value="' + data.record.InstallmentNo + '" />';
+                    }
+                },
+                InstallmentDate: {
+                    title: 'Installment Date',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onfocus="populateDatePicker(this)" style="color:black; width:100px;" ' + 'id="InstallmentDate,' + data.record.LoanSummaryID + '" value="' + data.record.InstallmentDate + '" />';
+                    }
+                },
+                LoanStatus: {
+                    title: 'Loan Status',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" style="color:black; width:100px;" ' + 'id="LoanStatus,' + data.record.LoanSummaryID + '" value="' + data.record.LoanStatus + '" />';
+                    }
+                },
+                PartialAmount: {
+                    title: 'Partial Amount',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="PartialAmount,' + data.record.LoanSummaryID + '" value="' + data.record.PartialAmount + '" />';
+                    }
+                },
+                PartialIntCharge: {
+                    title: 'Partial Int.Charge',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="PartialIntCharge,' + data.record.LoanSummaryID + '" value="' + data.record.PartialIntCharge + '" />';
+                    }
+                },
+                PartialIntPaid: {
+                    title: 'Partial Int.Paid',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onkeypress = "return isNumber(event)" style="color:black; width:100px;" ' + 'id="PartialIntPaid,' + data.record.LoanSummaryID + '" value="' + data.record.PartialIntPaid + '" />';
+                    }
+                }
+            }
+        });
+
+        // Add an event listener to input fields within each cell to detect changes
+        $('#grid tbody').on('input', 'input[type="text"]', function () {
+            var row = $(this).closest('tr');
+            row.addClass('jtable-row-changed');
+        });
+
+        // Add an event listener to the select fields within each cell to detect changes
+        $('#grid tbody').on('change', 'select', function () {
+            var row = $(this).closest('tr');
+            row.addClass('jtable-row-changed');
+        });
+    });
+
+</script>
+
+<h2 class="page-title"> Update Loan (Loan Summary)</h2>
+
+@using (Html.BeginForm())
+{
+    //Selective Dropdowns (Center, Member, Product, Loanterm)
+    <div class="">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    <input type="hidden" id="hdnMemberID" value="0" />
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Select Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductListByMember", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Select LoanTerm", new { @class = "control-label" })
+                    @Html.DropDownList("LoanTermList", null, new { @ID = "ddlLoanTerm", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Button to SHow Data into grid according to dropdown Selected
+    <h2 class="page-title"></h2>
+    <div class="">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+        @*GRID View*@
+        <div class="row">
+            <div id="grid"></div>
+        </div>
+
+
+        @*//Button to Save the data*@
+        <div class="row" id="dvgridButton">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+
+                    <input type="button" value="Save" class="btn btn-primary" onclick="SaveAndReload();" />
+
+                    @*&nbsp;&nbsp; <input type="button" value="Add New" class="btn btn-primary" id="btnAddNew" />*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+<!-- Popup Member Select -->
+<div id="MemberDiv" title="Member Select" style="display:none">
+    @*khalid*@
+    <div  class="ui-widget">
+        <div class="col-sm-12">
+            <div class="form-group">
+                @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                @Html.TextBox("memberAutoCompleteSelect", "", new { @class = "form-control" })
+                 <input type="hidden" id="currentSummaryId" value="0" />
+                 <input type="hidden" id="hdnCurrentSummaryId" value="0" />
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,49 @@
+﻿
+@model gBanker.Web.ViewModels.LoanCodeXAccCodeMappingViewModel
+
+@{
+    ViewBag.Title = "Mapping with Loan Code FA & OCP";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">Mapping with Loan Code FA & SCP</h2>
+
+@using (Html.BeginForm("Map", "POLoanXAccCodeMap", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <table class="table table-hover" id="tblAvailableProduct">
+            <thead class="thead-dark">
+                <tr>
+                    <th class="column-title">SL</th>
+                    <th class="column-title">Loan Code</th>
+                    <th class="column-title"> Functionalities And Features </th>
+                    <th class="column-title" id="select1">Acc Code For FA</th>
+                    <th class="column-title" id="select2">Acc Code For  SCP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center">
+                    <td colspan="6" class="text-center">
+                        <img style="width: 5%;" src="~/Content/charisma-master/bower_components/colorbox/example4/images/loading.gif" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+     
+        <div class="form-group">
+            <div class="form-group form-action">
+                <button type="submit" class="btn btn-primary" id="btnSave"> Submit </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+
+    <script src="~/Assets/js/olrs/poLoanCodeWiseAccCodeDataManager.js"></script>
+}
+

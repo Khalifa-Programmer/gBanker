@@ -1,0 +1,88 @@
+﻿
+@{
+    ViewBag.Title = "Member Wise Savings Data";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnView").click(function (e) {
+            debugger;
+            e.preventDefault();
+            var Qtype = $("#ddlQtype").val();
+            var dateFrom = $("#DateFrom").val();
+            var dateTo = $("#DateTo").val();
+            if (Qtype == '' || dateFrom == '' || dateTo == '') {
+                $.alert.open("Alert", "Please select Date");
+                return false;
+            }
+            else {
+                var url = '/GroupwiseReport/GenerateMemberWiseSavingsData?Qtype=' + Qtype + '&dateFrom=' + dateFrom + '&dateTo=' + dateTo;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+
+        });
+    });
+</script>
+
+
+
+<h2 class="page-title">Member Wise Savings Data</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Report Type", new { @class = "control-label" })
+                    @Html.DropDownList("QtypeList", new[] {
+                      new SelectListItem() {Text="Please Select", Value="0",Selected = true},
+                      new SelectListItem() {Text="Deposit", Value="1"},
+                      new SelectListItem() {Text="Withdrawal", Value="2"},
+                      new SelectListItem() {Text="Drop", Value="3"} },
+                      new { @ID = "ddlQtype", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["DateFrom"], new { @ID = "DateFrom", @class = "form-control datepicker" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["DateTo"], new { @ID = "DateTo", @class = "form-control datepicker" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">&nbsp;</div>
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+

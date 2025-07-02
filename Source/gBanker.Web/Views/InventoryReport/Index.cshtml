@@ -1,0 +1,292 @@
+﻿
+@{
+    ViewBag.Title = "Common Reports";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style type="text/css">
+    label {
+        font-size: 13px;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#ReportType").html("<option value='0'>Select Report Type</option>")
+        var OfficeLevel=@ViewBag.OfficeLevel;
+        if(OfficeLevel==1){
+            $("#ReportType")
+            .append(
+                    "<option value='1'>Item Wise Store Register</option>"+
+                    "<option value='2'>Received Information</option>"+
+                    "<option value='3'>Disbursement Information Sheet</option>"+
+                    "<option value='4'>Individual Report Sheet</option>"+
+                    "<option value='5'>Requisition Report</option>"+
+                    "<option value='10'>Requisition Approve Report</option>"+
+                    "<option value='6'>Individual Branch Report</option>"+
+                    "<option value='7'>All Branch Report</option>"+
+                    "<option value='8'>Store  Material Report</option>"+
+                    "<option value='9'>Item Wise Store Summary</option>"+
+                    "<option value='11'>Dispose Status Report</option>"+
+                    "<option value='23'>Branch wise Dispose Item report</option>"
+                    )
+        }
+        else if(OfficeLevel==2){
+            $("#ReportType")
+            .append(
+                    "<option value='1'>Item Wise Store Register</option>"+
+                    "<option value='2'>Received Information</option>"+
+                    "<option value='3'>Disbursement Information Sheet</option>"+
+                    "<option value='4'>Individual Report Sheet</option>"+
+                    "<option value='5'>Requisition Report</option>"+
+                    "<option value='10'>Requisition Approve Report</option>"+
+                    "<option value='6'>Individual Branch Report</option>"+
+                    "<option value='8'>Store  Material Report</option>"+
+                     "<option value='9'>Item Wise Store Summary</option>"+
+                     "<option value='11'>Dispose Status Report</option>"+
+                    "<option value='23'>Branch wise Dispose Item report</option>"
+                    )
+        }
+        else if(OfficeLevel==4){
+            $("#ReportType")
+            .append(
+                    "<option value='1'>Item Wise Store Register</option>"+
+                    "<option value='2'>Received Information</option>"+
+                    "<option value='3'>Disbursement Information Sheet</option>"+
+                    "<option value='4'>Individual Report Sheet</option>"+
+                    "<option value='5'>Requisition Report</option>"+
+                    "<option value='10'>Requisition Approve Report</option>"+
+                     "<option value='9'>Item Wise Store Summary</option>"+
+                     "<option value='11'>Dispose Status Report</option>")
+        }
+        var data = GenerateAjaxRequist('/Common/GetAllCategory', null, "POST")
+        $("#Category").html("");
+        $("#Category").append("<option value=''>Select Catagory</option>")
+        for (var i = 0; i < data.Records.length; i++) {
+            $("#Category").append('<option value=' + data.Records[i].CategorySubCategoryID + '>' +
+                data.Records[i].CategorySubCategoryName + '</option>')
+        }
+
+        $("#Category").change(function () {
+            $("#hdnItem").val('')
+            $("#Item").val('')
+
+            jQuery("#Item").on('input propertychange paste', function () {
+                var availableTags = [];
+                if ($(this).val() && $("#Category").val()) {
+                    if ($(this).val().length > 2) {
+                        var param = { categoryID: $("#Category").val(), item: $(this).val() };
+                        var data = GenerateAjaxRequist('/Common/GetItemSearchXCategory', param, "GET")
+                        //debugger
+                        if (data.Message == "LogOut")
+                            location.reload(true);
+                        else {
+                            for (var i = 0; i < data.Records.length; i++) {
+                                availableTags.push(data.Records[i])
+                            }
+                        }
+                    }
+                }
+                else {
+                    $(this).val('')
+                    $("#hdnItem").val('')
+                }
+
+                $("#Item").autocomplete({
+                    source: availableTags,
+                    select: function (event, ui) {
+                        param = JSON.stringify({ categoryID: $("#Category").val(), itemCode: ui.item.label.split('~')[0], itemName: ui.item.label.split('~')[1] });
+                        data = GenerateAjaxRequist('/Common/GetItemIDXCategoryANDItemInfo', param, "POST")
+                        $("#hdnItem").val(data.Records.ItemID)
+                    }
+                });
+            });
+        })
+        $("#ReportType").on("change", function () {
+            var rt = parseInt($("#ReportType option:selected").val());
+            $("input[type='text'],input[type='hidden']").val('');
+            // $("#txtOffice").val('');
+            $("#ddlOffice").html('');
+            $('#Category').val('')
+            $("#Item,#EmployeeCode").val('')
+            $("#dvItem,#dvDate,#dvEmp,#dvOffice").hide()
+            // Office show
+            var txtofficeArr=[1,2,3,5,6,9,10,11,23];
+            var ddlofficeArr=[7,8];
+            var dvDateArr=[1,2,3,4,5,6,7,8,9,10,11,23];
+            var dvItemArr=[1,2,3,4,6,7];
+            //debugger
+            if((OfficeLevel==1 || OfficeLevel==2)){
+                if(txtofficeArr.indexOf(rt)>=0){
+                    $("#dvOffice,#txtOffice").show();
+                    $("#lblOffice").text("Office");
+                    $("#ddlOffice").hide();
+                }
+                else if(ddlofficeArr.indexOf(rt)>=0){
+                    var data = GenerateAjaxRequist('/Common/GetAllZoneOffice',null, 'POST');
+                    $("#txtOffice").hide()
+                    $("#dvOffice,#ddlOffice").show();
+                    $("#lblOffice").text("Zone");
+                    $("#ddlOffice").append('<option value='+0+'>Select Office</option>');
+                    for(var i=0;i<data.length;i++){
+                        $("#ddlOffice").append('<option value='+data[i].Value+'>'+data[i].Text+'</option>');
+                        //console.log(i)
+                    }
+                }
+            }
+
+            // Date
+            if(dvDateArr.indexOf(rt)>=0){
+                $("#dvDate").show()
+                $("#FromDate,#ToDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+                if (rt == 4)
+                    $("#dvEmp").show()
+            }
+            // item
+            if(dvItemArr.indexOf(rt)>=0){
+                $("#dvItem").show()
+            }
+
+        });
+        jQuery("#txtOffice").on('input propertychange paste', function () {
+
+            var availableTags = [];
+            if ($(this).val() && $(this).val().length > 2) {
+                var param = JSON.stringify({ officeCode: $(this).val() });
+                var data = GenerateAjaxRequist('/Common/GetAllBranch', param, "POST")
+                //debugger
+                if(data.Message=="LogOut")
+                    location.reload(true);
+                else{
+                    for (var i = 0; i < data.Records.length; i++) {
+                        availableTags.push(data.Records[i])
+                    }
+                }
+            }
+
+            $("#txtOffice").autocomplete({
+                source: availableTags,
+                select:function(event, ui){
+                    $("#hdnOffice").val(ui.item.label.split('-')[0])
+                }
+            });
+        });
+        $("#btnReport").button().click(function (e) {
+            e.preventDefault();
+            if(@ViewBag.OfficeLevel!=3){
+                if ($('#ReportType').val() > 0) {
+                    var url = "";
+                    var ReportType = $("#ReportType option:selected").val()
+                    if (ReportType == 1 | ReportType == 2 | ReportType == 3
+                        | ReportType == 4 | ReportType == 5| ReportType == 6
+                        | ReportType == 7| ReportType == 8 | ReportType == 9 | ReportType == 10| ReportType == 11| ReportType == 23)
+                        url = "/InventoryReport/CommonReports?reportTypeId=" + $('#ReportType').val()
+                    + "&categoryId=" + ($('#Category').val() ? $('#Category').val() : 0)
+                    + "&itemId=" + ($('#hdnItem').val() ? $('#hdnItem').val() : 0)
+                    + "&from=" + $('#FromDate').val()
+                    + "&to=" + $('#ToDate').val()
+                    + "&OfficeID=" + $('#ddlOffice').val()
+                    + "&OfficeCode=" + $("#hdnOffice").val()
+                    ;
+                    window.open(url, 'mywindow'
+               , 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=no,width=600,height=600');
+                }
+            }
+            //alert(ViewBag.OfficeLevel)
+            //return
+
+        });
+        ////////// Button
+        $("#FromDate,#ToDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+       });
+        $("#FromDate,#ToDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+    });
+</script>
+<h2 class="page-title">Common Reports</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="" />
+    <div class="row">
+        <div class="form-group">
+            <label class="control-label col-md-2" for="ReportType">Report Type</label>
+            <div class="col-md-4">
+                <select class="form-control" id="ReportType" name="ReportType"></select>
+            </div>
+        </div>
+    </div>
+    <div id="dvOffice" style="display: none;">
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Office" id="lblOffice">Office</label>
+                <div class="col-md-4">
+                    <select class="form-control" id="ddlOffice" name="ddlOffice"></select>
+                    <input type="text" class="form-control" id="txtOffice" autocomplete="off" />
+                    <input type="hidden" id="hdnOffice" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="dvItem" style="display: none;">
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">Category</label>
+                <div class="col-md-4">
+                    <select class="form-control" id="Category" name="Category"></select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">Item</label>
+                <div class="col-md-4">
+                    @*<select class="form-control" id="Item" name="Item"></select>*@
+                    <input type="text" autocomplete="off" class="form-control" id="Item" name="Item" />
+                    <input type="hidden" id="hdnItem" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dvDate" style="display: none;">
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">From date: </label>
+                <div class="col-md-4">
+                    <input type="text" id="FromDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">To date: </label>
+                <div class="col-md-4">
+                    <input type="text" id="ToDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="dvEmp" style="display: none;">
+        <div class="row">
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Item">Employee Code: </label>
+                <div class="col-md-4">
+                    <input type="text" id="EmployeeCode" class="form-control" autocomplete="off" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-2">
+            <button id="btnReport" type="button" class="btn btn-primary">Report</button>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,215 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.ProductViewModel>
+
+@{
+    ViewBag.Title = "Product List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#btnExport').click(function ()
+        {
+
+            window.location = '/Product/ExportData';
+
+        });
+
+        $('#grid').jtable({
+           // title: 'Product List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Product/GetProducts?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+               // listAction: '/Product/GetProducts'
+                //updateAction: '/Product/Edit',
+                //deleteAction: '/Product/Delete'
+            },
+            fields: {
+                ProductID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    width: '20%'
+
+                },
+                ProductName: {
+                    title: 'Name',
+                    width: '40%'
+                },
+                InterestRate: {
+                    title: 'Interest Rate',
+                    width: '40%'
+                },
+                Duration: {
+                    title: 'Duration',
+                    width: '40%'
+                },
+                MainProductCode: {
+                    title: 'Main ProductCode',
+                    width: '40%'
+                },
+                LoanInstallment: {
+                    title: 'Loan Inst.',
+                    width: '40%'
+                },
+                InterestInstallment: {
+                    title: 'Interest Inst.',
+                    width: '40%'
+                },
+                SavingsInstallment: {
+                    title: 'Savings Inst.',
+                    width: '40%'
+                },
+                MinLimit: {
+                    title: 'Min. Limit',
+                    width: '40%'
+                },
+                MaxLimit: {
+                    title: 'Max. Limit',
+                    width: '40%'
+                },
+                InterestCalculationMethod: {
+                    title: 'Int.Calc Method',
+                    width: '40%'
+                },
+                PaymentFrequency: {
+                    title: 'Payment Frequency',
+                    width: '40%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                       // return "<a href='/Product/Edit/" + data.record.ProductID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                        return "<div class='text-center'><a href='/Product/Edit/" + data.record.ProductID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                       // return '<a href="/Product/Edit/' + data.record.ProductID + '">Edit</a>';
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="/Product/Delete/' + data.record.ProductID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+                       // return '<a href="/Product/Delete/' + data.record.ProductID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+        //$('#grid').jtable('load');
+
+        $('#btnProduct').click(function (e) {
+            e.preventDefault();
+            var startDate = "24/11/2012";
+            var endDate = "30/11/2012";
+            var url = '/Product/GenerateReport?fromDate=' + startDate + '&toDate=' + endDate;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            //var fromDate = $("#startDate").val();
+            //var toDate = $("#endDate").val();
+
+            //alert("sdsf");
+            @*$.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GenerateReport", "Product", "http")',
+                data: { fromDate: 'asd', toDate: 'gfh' },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    //alert("success");
+                    window.open('@Url.Action("Index", "ReportViewer", "http")', 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+
+                }
+            });*@
+        });
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Product List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="ProductCode">Product Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+
+@*<div>
+    Filter By:&nbsp; <select id="filterColumn">
+        <option value="">View All</option>
+       <option value="ProductCode">Product Code</option>
+    </select>
+    <input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+    <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />
+</div>*@
+
+@*<input type="button" id="btnExport" value="Export" class="btn btn-primary" />*@
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+
+
+<input id="btnProduct" type="submit" value="Product Info" />
+

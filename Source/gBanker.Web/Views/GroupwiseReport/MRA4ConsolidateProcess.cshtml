@@ -1,0 +1,86 @@
+﻿
+@{
+    ViewBag.Title = "MRA 4 Consolidate Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                beforeShowDay: function (date) {
+                    var month = date.getMonth();
+                    return [month === 5 || month === 11, ''];
+            }
+        });
+
+        $('#btnProcess').click(function () {
+            $('#btnProcess').prop("disabled", true);
+            $('#btnProcess').html("<i class='fa fa-spinner fa-pulse'></i> Process Running...");
+
+            var processDate = $('#txtToDt').val();
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '/GroupWiseReport/Generate__MRA4ConsolidateProcess',
+                data: { processDate: processDate },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.Response.IsRunning == '1') {
+                        $.alert.open('warning', data.Response.Message);
+                    }
+                    else {
+                        $.alert.open(data.Response.Message);
+                    }
+                },
+                complete: function () {
+                    $('#btnProcess').prop("disabled", false)
+                    $('#btnProcess').html("Process")
+                },
+                error: function (err) {
+                    alert(request.statusText + "/" + status.statusText + "/" + error);
+                }
+            });
+        });
+    });
+</script>
+
+<h2 class="page-title">MRA4 Consolidate Process </h2>
+
+<div class="">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+            <p class="text-warning text-center">
+                <strong>N.B: </strong> User can select date for only <strong>June</strong> or <strong>December</strong> Month.
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="form-group form-action">
+                <button type="submit" class="btn btn-primary" id="btnProcess">
+                    Process
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

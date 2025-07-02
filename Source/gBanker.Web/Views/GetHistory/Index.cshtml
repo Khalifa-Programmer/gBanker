@@ -1,0 +1,772 @@
+﻿@*@model IEnumerable<gBanker.Web.ViewModels.getTodaysTransactionViewModel>*@
+@model gBanker.Web.ViewModels.getTodaysTransactionViewModel
+
+@{
+    ViewBag.Title = "Member Ledger";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        GetCenter();
+        $("#txtDateFrom").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        $("#txtDateTo").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale"
+          });
+
+        ////////////////////////// LoanGrid
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GetHistory/GenerateHistory?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InstallmentDate: {
+                    title: 'Inst. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    //  width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    // width: '10%'
+
+                },
+                FirstName: {
+                    title: 'Member Name',
+                    // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    // width: '8%'
+                },
+                LoanTerm: {
+                    title: 'Loan Term',
+                    // width: '8%'
+                },
+                InstallmentNo: {
+                    title: 'Installment No.',
+                    // width: '8%'
+                },
+                PrincipalLoan: {
+                    title: 'Disburse Amount',
+                    // width: '8%'
+                },
+
+                LoanDue: {
+                    title: 'Principal Receivable',
+                    // width: '8%'
+                },
+
+                LoanPaid: {
+                    title: 'Principal Received',
+                    // width: '8%'
+                },
+                IntCharge: {
+                    title: 'SC Charge',
+                    // width: '8%'
+                },
+                IntDue: {
+                    title: 'SC Due',
+                    // width: '8%'
+                },
+                IntPaid: {
+                    title: 'SC Paid',
+                    // width: '8%'
+                },
+                TrxType: {
+                    title: 'TrxType',
+                    // width: '8%'
+                },
+                CreateUser: {
+                    title: 'Create User',
+                    // width: '8%'
+                },
+
+                CreateDate: {
+                    title: 'Create Date',
+                    type: 'date',
+                    display: function (data) {
+                        return moment(data.record.CreateDate).format('DD/MM/YYYY HH:mm:ss');
+                    }
+                    //displayFormat: 'd-M-yy',
+                },
+
+            }
+        });
+
+        ////////////////////////// SavingsGrid
+        $('#gridSavings').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GetHistory/GenerateHistory?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionDate: {
+                    title: 'Trans. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    //  width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    // width: '10%'
+
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    // width: '8%'
+                },
+                NoOfAccount: {
+                    title: 'NoOfAccount',
+                    // width: '8%'
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    // width: '8%'
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    // width: '8%'
+                },
+
+                Penalty: {
+                    title: 'Penalty',
+                    // width: '8%'
+                },
+
+                MonthlyInterest: {
+                    title: 'MonthlyInterest',
+                    // width: '8%'
+                },
+                TransType: {
+                    title: 'TransType',
+                    // width: '8%'
+                },
+                CreateUser: {
+                    title: 'CreateUser',
+                    // width: '8%'
+                },
+                CreateDate: {
+                    title: 'CreateDate',
+                    type: 'date',
+                    display: function (data) {
+                        return moment(data.record.CreateDate).format('DD/MM/YYYY HH:mm:ss');
+                    }
+                    //displayFormat: 'd-M-yy',
+                },
+
+            }
+        });
+
+
+        ////////////////////////// DailyGrid
+         $('#gridDaily').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GetHistory/GenerateHistory?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionDate: {
+                    title: 'Trans. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    //  width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    // width: '10%'
+
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    // width: '8%'
+                },
+                NoOfAccount: {
+                    title: 'NoOfAccount',
+                    // width: '8%'
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    // width: '8%'
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    // width: '8%'
+                },
+
+                Penalty: {
+                    title: 'Penalty',
+                    // width: '8%'
+                },
+
+                MonthlyInterest: {
+                    title: 'MonthlyInterest',
+                    // width: '8%'
+                },
+                TransType: {
+                    title: 'TransType',
+                    // width: '8%'
+                },
+                CreateUser: {
+                    title: 'CreateUser',
+                    // width: '8%'
+                },
+               
+            }
+         });
+
+        ////////////////////////// SpecialGrid
+        $('#gridSpecial').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GetHistory/GenerateHistory?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionDate: {
+                    title: 'Trans. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    //  width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    // width: '10%'
+
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    // width: '8%'
+                },
+                NoOfAccount: {
+                    title: 'NoOfAccount',
+                    // width: '8%'
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    // width: '8%'
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    // width: '8%'
+                },
+
+                Penalty: {
+                    title: 'Penalty',
+                    // width: '8%'
+                },
+
+                MonthlyInterest: {
+                    title: 'MonthlyInterest',
+                    // width: '8%'
+                },
+                TransType: {
+                    title: 'TransType',
+                    // width: '8%'
+                },
+                CreateUser: {
+                    title: 'CreateUser',
+                    // width: '8%'
+                },
+                CreateDate: {
+                    title: 'CreateDate',
+                    type: 'date',
+                    display: function (data) {
+                        return moment(data.record.CreateDate).format('DD/MM/YYYY HH:mm:ss');
+                    }
+                    //displayFormat: 'd-M-yy',
+                },
+
+            }
+        });
+
+        ////////////////////////// TransferGrid
+        $('#gridTransfer').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GetHistory/GenerateHistory?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionDate: {
+                    title: 'Trans. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    //  width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    // width: '10%'
+
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    // width: '8%'
+                },
+                NoOfAccount: {
+                    title: 'NoOfAccount',
+                    // width: '8%'
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    // width: '8%'
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    // width: '8%'
+                },
+
+                Penalty: {
+                    title: 'Penalty',
+                    // width: '8%'
+                },
+
+                MonthlyInterest: {
+                    title: 'MonthlyInterest',
+                    // width: '8%'
+                },
+                TransType: {
+                    title: 'TransType',
+                    // width: '8%'
+                },
+                CreateUser: {
+                    title: 'CreateUser',
+                    // width: '8%'
+                },
+                CreateDate: {
+                    title: 'CreateDate',
+                    type: 'date',
+                    display: function (data) {
+                        return moment(data.record.CreateDate).format('DD/MM/YYYY HH:mm:ss');
+                    }
+                    //displayFormat: 'd-M-yy',
+                },
+
+            }
+        });
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "GetHistory", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#ddlCenter").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                        }
+                        else if (data.length == 0) {
+                            $("#MemberID").val("");
+                        }
+                        else {
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "GetHistory", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#ddlCenter").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+        $('#btnSearch').click(function (e) {
+            debugger;
+            e.preventDefault();
+            var productType = $('#ProductType').val();
+
+            var TransType = $('#TransactionType').val();
+
+            if (TransType == '10') {
+                $('#gridDaily').show();
+                $('#gridSpecial').hide();
+                $('#gridTransfer').hide();
+                $('#gridSavings').hide();
+                $('#grid').hide();
+
+                reloadDailyGrid();
+              
+            }
+            if (TransType == '20') {
+
+                $('#gridSpecial').show();
+                $('#gridDaily').hide();
+                $('#gridTransfer').hide();
+                $('#gridSavings').hide();
+                $('#grid').hide();
+                reloadSpecialGrid();
+              
+            }
+
+            if (TransType == '30') {
+
+                $('#gridTransfer').show();
+                $('#gridSpecial').hide();
+                $('#gridDaily').hide();
+                $('#gridSavings').hide();
+                $('#grid').hide();
+                reloadTransferGrid();
+
+            }
+
+            if (productType == 'L') {
+                $('#grid').show();
+                $('#gridSavings').hide();
+                $('#gridTransfer').hide();
+                $('#gridSpecial').hide();
+                $('#gridDaily').hide();
+                reloadLoanGrid();
+            }
+            if (productType == 'S') {
+                $('#gridSavings').show();
+                $('#grid').hide();
+                $('#gridTransfer').hide();
+                $('#gridSpecial').hide();
+                $('#gridDaily').hide();
+                reloadSavingsGrid();
+            }
+
+        });
+        $("#ddlCenter").change(function () {
+            $("#memberAutoComplete").val('');
+        });
+    });
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+    function reloadLoanGrid() {
+        $('#grid').jtable('load', { DateFrom: $('#txtDateFrom').val(), DateTo: $('#txtDateTo').val(), centerIdFrom: $('#ddlCenter').val(), productType: $('#ProductType').val(), memberID: $('#MemberID').val(), TransType: $('#TransactionType').val()});
+    }
+    function reloadSavingsGrid() {
+        $('#gridSavings').jtable('load', { DateFrom: $('#txtDateFrom').val(), DateTo: $('#txtDateTo').val(), centerIdFrom: $('#ddlCenter').val(), productType: $('#ProductType').val(), memberID: $('#MemberID').val(), TransType: $('#TransactionType').val()});
+    }
+
+    function reloadDailyGrid() {
+        $('#gridDaily').jtable('load', { DateFrom: $('#txtDateFrom').val(), DateTo: $('#txtDateTo').val(), centerIdFrom: $('#ddlCenter').val(), productType: $('#ProductType').val(), memberID: $('#MemberID').val(), TransType: $('#TransactionType').val() });
+    }
+    function reloadSpecialGrid() {
+        $('#gridSpecial').jtable('load', { DateFrom: $('#txtDateFrom').val(), DateTo: $('#txtDateTo').val(), centerIdFrom: $('#ddlCenter').val(), productType: $('#ProductType').val(), memberID: $('#MemberID').val(), TransType: $('#TransactionType').val() });
+    }
+    function reloadTransferGrid() {
+        $('#gridTransfer').jtable('load', { DateFrom: $('#txtDateFrom').val(), DateTo: $('#txtDateTo').val(), centerIdFrom: $('#ddlCenter').val(), productType: $('#ProductType').val(), memberID: $('#MemberID').val(), TransType: $('#TransactionType').val() });
+    }
+</script>
+
+
+<h2 class="page-title">History</h2>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("Select Samity", new { @class = "control-label" })
+            @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("Member", new { @class = "control-label" })
+            @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+            @Html.HiddenFor(model => model.MemberID)
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("Product Type", new { @class = "control-label" })
+            @Html.DropDownList("ProductTypeList", null, new { @ID = "ProductType", @class = "form-control" })
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("DateFrom", new { @class = "control-label" })
+            @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtDateFrom", @class = "form-control" })
+            @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("DateTo", new { @class = "control-label" })
+            @Html.TextBox(" ", ViewData["TrxdateTo"].ToString(), new { @ID = "txtDateTo", @class = "form-control" })
+            @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("Trans Type", new { @class = "control-label" })
+            @Html.DropDownList("TransactionTypeList", null, new { @ID = "TransactionType", @class = "form-control" })
+        </div>
+    </div>
+  
+</div>
+
+<div class="row">
+    <div class="col-md-4" style="padding-top:20px; margin-left:10px">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+
+</div>
+
+<div id="grid" style="display:none"></div>
+<div id="gridSavings" style="display:none"></div>
+<div id="gridDaily" style="display:none"></div>
+<div id="gridSpecial" style="display:none"></div>
+<div id="gridTransfer" style="display:none"></div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+<script src="~/Scripts/moment.min.js"></script>

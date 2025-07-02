@@ -1,0 +1,123 @@
+﻿
+@{
+    ViewBag.Title = "Week No Declaration";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+
+        $("#myload").hide();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetYearList", "GroupwiseReport")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                data = $.map(data, function (item, a) {
+                    return "<option value=" + item.Value + ">" + item.Text + "</option>";
+                });
+                $("#ddlYear").html(data.join(""));
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var startDate = $("#txtFromDt").val();
+            var year = $("#ddlYear option:selected").val();
+            if (startDate != "" && year != 0) {
+                    $("#myload").show();
+                        $.ajax({
+                            type: 'GET',
+                            contentType: "application/json; charset=utf-8",
+                            url: '@Url.Action("GenerateWeekNoDeclaration", "GroupwiseReport")',
+                            data: { startDate: startDate, year: year},
+                            dataType: 'json',
+                            async: true,
+                            success: function (data) {
+                            },
+                            error: function (request, status, error) {
+                                var sts = status;
+                                if (sts == "parsererror") {
+                                    alert("Success");
+                                } else {
+                                    alert("Week Already Exists");
+                                }
+                                $("#myload").hide();
+                                location.reload();
+                            }
+                        });
+                } else {
+                    alert("Please Select required field");
+                }
+        });
+
+
+
+    });
+
+</script>
+
+<h2 class="page-title">Week No Declaration</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <span id="myload"><i class="fa fa-spinner fa-4x fa-spin"></i></span>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Start Date", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Process Year", new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownList("YearList", null, new { @ID = "ddlYear", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="form-group form-action">
+                    <input type="submit" value="Generate" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

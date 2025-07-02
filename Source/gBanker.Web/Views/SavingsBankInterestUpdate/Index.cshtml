@@ -1,0 +1,335 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.SpecialSavingCollectionViewModel>
+
+@{
+    ViewBag.Title = "SavingsInterestUpdate List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        confirmDayInitiated();
+        $('#grid').jtable({
+           // title: 'Special Saving Collection List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/SavingsBankInterestUpdate/GetSpecialCollection?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+               // listAction: '/SpecialSavingCollection/GetSpecialCollection',
+                updateAction: '/SavingsBankInterestUpdate/Edit',
+                deleteAction: '/SavingsBankInterestUpdate/Delete'
+               // deleteAction: '@Url.Action("DeleteDisburse")',
+            },
+            fields: {
+                DailySavingTrxID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    //width: '10%',
+                    create: false,
+                    edit: false
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                   // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                MemberID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Info',
+                    //width: '15%',
+                    create: false,
+                    edit: true,
+                    display: function (data) {
+                        return data.record.MemberCode + ' - ' + data.record.MemberName;
+                    },
+                    input: function (data) {
+                        if (data.record) {
+                            return '<label>' + data.record.MemberCode + ' - ' + data.record.MemberName + '</label>';
+                            //return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.MemberCode + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+
+                ProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                   // width: '10%',
+                    create: false,
+                    edit: false
+                },
+
+                NoOfAccount: {
+                    list: true,
+                    create: false,
+                    edit: false
+                },
+                TransType: {
+                    title: 'TransType',
+                    edit: false,
+                    width: '5%',
+                    display: function (data) {
+                        var id = '<input type="hidden"' + ' value="' + data.record.DailySavingTrxID + '" /> ';
+                        return id + '<input type="text" disabled="disabled" name="TransType" style="width:30px"' + 'id="TransType' + data.record.DailySavingTrxID + '" value="' + data.record.TransType + '" />';
+                    }
+                },
+               //TotalPaid: {
+               //    list: true,
+               //     create: true,
+               //     edit: true,
+               //     title: 'Total Paid',
+               //     width: '10%',
+               //     input: function (data) {
+               //         if (data.record) {
+               //             return '<input type="text"  onblur="checkTotalPaid(' + data.record.DailyLoanTrxID + ');"' + ' id="TotalPaid" name="TotalPaid" style="width:200px"  value="' + data.record.TotalPaid + '" />';
+               //         } else {
+               //             return '<input type="text" name="TotalPaid" style="width:200px" value="" />';
+               //         }
+               //     }
+
+               // },
+
+
+                SavingInstallment: {
+                   list: true,
+                   create: true,
+                   edit: false,
+                   title: 'Saving Installment',
+                   width: '10%',
+                   input: function (data) {
+                       var productId = '<input id="hdnProdId" type="hidden"' + ' value="' + data.record.ProductID + '" /> ';
+                       var MemtId = '<input id="hdnmemId" type="hidden"' + ' value="' + data.record.MemberID + '" /> ';
+                       var officeId = '<input id="hdnofficeId" type="hidden"' + ' value="' + data.record.OfficeID + '" /> ';
+                       var NoAccountId = '<input id="hdnNoAccountId" type="hidden"' + ' value="' + data.record.NoOfAccount + '" /> ';
+                       var CenterId = '<input id="hdnCenterId" type="hidden"' + ' value="' + data.record.CenterID + '" /> ';
+                       if (data.record) {
+                           return productId + MemtId + officeId + NoAccountId + CenterId + '<input type="text"  onkeypress="return checkNumberic(event);"  onkeyup="checkSavingInstallment(' + data.record.DailySavingTrxID + ');"' + ' Id="SavingInstallment" name="SavingInstallment" style="width:200px"  value="' + data.record.SavingInstallment + '" />';
+                       } else {
+                           return productId + MemtId + officeId + NoAccountId + CenterId + '<input type="text" name="SavingInstallment" style="width:200px" value="" />';
+                       }
+                   }
+               },
+                Withdrawal: {
+                   list: true,
+                   create: true,
+                   edit: false,
+                   title: 'Withdrawal',
+                    width: '10%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" onkeypress="return checkNumberic(event);" onkeyup="checkWithdrwal(' + data.record.DailySavingTrxID + ');"' + ' id="Withdrawal" name="Withdrawal" style="width:200px"  value="' + data.record.Withdrawal + '" />';
+                        } else {
+                            return '<input type="text" name="Withdrawal" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                Penalty: {
+                    list: true,
+                    create: true,
+                    edit: false,
+                    title: 'Penalty',
+                    width: '10%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" onkeypress="return checkNumberic(event);" onkeyup="checkWithdrwal(' + data.record.DailySavingTrxID + ');"' + ' id="Penalty" name="Penalty" style="width:200px"  value="' + data.record.Penalty + '" />';
+                        } else {
+                            return '<input type="text" name="Penalty" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                MonthlyInterest: {
+                    list: true,
+                    create: true,
+                    edit: true,
+                    title: 'Monthly Interest',
+                    width: '10%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" onkeypress="return checkNumberic(event);" onkeyup="checkWithdrwal(' + data.record.DailySavingTrxID + ');"' + ' id="MonthlyInterest" name="MonthlyInterest" style="width:200px"  value="' + data.record.MonthlyInterest + '" />';
+                        } else {
+                            return '<input type="text" name="MonthlyInterest" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                Balance: {
+                    list: false,
+                     create: false,
+                     edit: true,
+                     title: 'Balance',
+                     width: '10%',
+                     input: function (data) {
+                         if (data.record) {
+                             return '<input type="text" onblur="checkTotalPaid(' + data.record.DailySavingTrxID + ');"' + ' id="Balance" name="Balance" style="width:200px"  value="' + data.record.Balance + '" />';
+                         } else {
+                             return '<input type="text" name="Balance" style="width:200px" value="" />';
+                         }
+                     }
+
+                 }
+            }
+        });
+        reloadGrid();
+       // $('#grid').jtable('load');
+        $('#EditDialogSaveButton').click(function () {
+            $("#Edit-DisburseStatus").val('Disbursed');
+        });
+    });
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+
+    function checkNumberic(e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }
+    function checkSavingInstallment(loanInstallmentId) {
+
+        ////////////////////////////////////
+
+        var SavingInstallment = $("#SavingInstallment").val();
+        var prodId = $("#hdnProdId").val();
+        var memId = $("#hdnmemId").val();
+        var officeId = $("#hdnofficeId").val();
+        var centerId = $("#hdnCenterId").val();
+        var NOA = $("#hdnNoAccountId").val();
+        var wd = $("#Withdrawal").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInstallment", "SavingsBankInterestUpdate", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { OfficeID: officeId, CenterID: centerId, MemId: memId, ProdId: prodId, NoOfAccount: NOA, SavingInstallment: SavingInstallment, WithDrawal: wd },
+
+            success: function (result) {
+                // CalcBalance();
+                $("#Balance").val(result.loan);
+                //  $("#IntPaid").val(result.interest);
+
+            }
+        });
+
+        ////////////////////////////////////
+
+    }
+    function checkWithdrwal(loanInstallmentId) {
+        ////////////////////////////////////
+
+        var SavingInstallment = $("#SavingInstallment").val();
+        var prodId = $("#hdnProdId").val();
+        var memId = $("#hdnmemId").val();
+        var officeId = $("#hdnofficeId").val();
+        var centerId = $("#hdnCenterId").val();
+        var NOA = $("#hdnNoAccountId").val();
+        var wd = $("#Withdrawal").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInstallment", "SavingsBankInterestUpdate", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { OfficeID: officeId, CenterID: centerId, MemId: memId, ProdId: prodId, NoOfAccount: NOA, SavingInstallment: SavingInstallment, WithDrawal: wd },
+
+            success: function (result) {
+                // CalcBalance();
+                $("#Balance").val(result.loan);
+                //  $("#IntPaid").val(result.interest);
+
+            }
+        });
+
+    }
+</script>
+
+
+@*<table style="width:100%;">
+        <tr>
+            <td style="width:90%"><h2>Special SavingCollection List</h2></td>
+            <td>@Html.ActionLink("Add New", "Create")</td>
+        </tr>
+    </table>
+
+    <hr />*@
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">SavingsInterestUpdate List</h2>
+
+
+<div>
+    Filter By:&nbsp; <select id="filterColumn">
+        <option value="">View All</option>
+        <option value="CenterCode">Samity Code</option>
+        <option value="MemberCode">Member Code</option>
+        <option value="ProductCode">Product Code</option>
+    </select>
+    <input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+    <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />
+</div>
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

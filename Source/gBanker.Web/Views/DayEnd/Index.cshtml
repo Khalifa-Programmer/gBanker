@@ -1,0 +1,233 @@
+﻿@model gBanker.Web.ViewModels.DayEndViewModel
+
+@{
+    ViewBag.Title = "Complete Work Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+}
+
+<style type="text/css">
+    .summaryTitle {
+        color: yellow !important;
+        padding-left: 5px !important;
+    }
+
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+       the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+       modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+
+    .findElement {
+        background-color: yellow;
+    }
+
+    .hidemsg {
+        display: none;
+    }
+    /*.input{
+           font-size:40px;
+       }*/
+</style>
+
+
+
+<script type="text/javascript">
+
+    function displayLoanSummaryReport()
+    {
+
+        var startDate = $("#startDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=LoanSummary&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+    function displayProductReport() {
+
+        var processtDate = $("#processtDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=Product&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+    function rundayEnd() {
+        //  e.preventDefault();
+        var officeId = $("#OfficeId").val();
+        var businessDate = $("#BusinessDate").val();
+
+        $("#loading").show();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DayEndProcess", "DayEnd", "http")',
+            data: { officeId: officeId, businessDate: businessDate },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+                $("#loading").hide();
+                var msg = "Work process successful";
+                var css = "success";
+                if (data.Message != null) {
+                    msg = data.Message;
+                    css = "failed"
+                }
+
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (data.Message == null)
+                    $("#dvMessage").toggle('fade', 1500);
+
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+
+    }
+    $(document).ready(function () {
+
+        confirmDayInitiated();
+      //  $("#loading").show();
+        $("#confirmDlg").dialog({
+            autoOpen: false,
+            height: 150,
+            width: 400,
+            modal: true,
+            title: 'Confirmation',
+            buttons: {
+                "Yes": function () {
+                    $(this).dialog("close");
+                    rundayEnd();
+                   // $("#loading").hide();
+                },
+                "No": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        $('#BusinessDate').bind('focus', function (e) {
+            $("#dvMessage").hide();
+        });
+        $("#OfficeId").change(function () {
+            var officeId = $("#OfficeId").val();
+        });
+
+        $('#btnProcess').click(function (e) {
+            e.preventDefault();
+            var bdate = $("#BusinessDate").val();
+            var msg = "Do you want to run the Process? " + bdate.toString("dd-MMM-yy");
+            $("#lblMsg").text(msg);
+            $("#confirmDlg").dialog('open');
+
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+      //  $("#BusinessDate").datepicker();
+        gBankerDatePicker("BusinessDate");
+    });
+
+
+</script>
+
+
+<h2 class="page-title">Complete Work Process</h2>
+
+
+<div id="confirmDlg" style="display:none">
+    <div class="form-group">
+        <label id="lblMsg"></label>
+
+    </div>
+
+</div>
+
+<div>
+    <br />
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="row" style="display:none">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeId, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.EditorFor(model => model.CenterID, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.DropDownListFor(model => model.OfficeId, office, new { @class = "form-control" })
+                    @Html.Hidden("hfOfficeId")
+                    @Html.ValidationMessageFor(model => model.OfficeId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="display:none">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.BusinessDate, htmlAttributes: new { @class = "control-label" })
+
+                        @Html.EditorFor(model => model.BusinessDate, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                        @Html.ValidationMessageFor(model => model.BusinessDate, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+    @* BusinessDate Date:  <input type="text" id="BusinessDate" /> <br />*@
+    <div class="col-md-6">
+        <input id="btnProcess" type="submit" value="Process" class="btn btn-primary" />
+    </div>
+    @* <input type="button" value="Process" onclick="displayProductReport();" />*@
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

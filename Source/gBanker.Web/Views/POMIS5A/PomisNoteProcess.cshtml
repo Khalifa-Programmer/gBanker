@@ -1,0 +1,147 @@
+﻿
+@{
+    ViewBag.Title = "POMIS Note Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var from_date = $("#txtFromDt").val();
+            var qType = $("#ddlQtype").val();
+
+
+            $('#btnView').prop("disabled", true)
+            $('#btnView').html("<i class='fa fa-spinner fa-pulse'></i> Data Processing...")
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '/POMIS5A/CheckIsPomisRunning',
+                data: { from_date: from_date, qType: qType },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    console.log(data.Response)
+                    if (data.Response.IsRunning == '1') {
+                        $.alert.open(data.Response.Message)
+                    }
+                    else {
+
+                        if (data.Response.IsExist == '1') {
+                            $.alert.open('confirm', data.Response.Message, function (button) {
+                                if (button == 'yes') {
+
+                                    $('#btnView').prop("disabled", true)
+                                    $('#btnView').html("<i class='fa fa-spinner fa-pulse'></i> Data Processing...")
+
+                                    $.ajax({
+                                        type: 'GET',
+                                        contentType: "application/json; charset=utf-8",
+                                        url: '/POMIS5A/GeneratePomisNoteProcess',
+                                        data: { from_date: from_date, qType: qType },
+                                        dataType: 'json',
+                                        async: true,
+                                        success: function (data) {
+                                            console.log(data.Response)
+                                            $.alert.open(data.Response.Message)
+                                        },
+                                        error: function (request, status, error) {
+                                            alert(request.statusText + "/" + status.statusText + "/" + error);
+                                        },
+                                        complete: function () {
+                                            $('#btnView').prop("disabled", false)
+                                            $('#btnView').html("Process")
+                                        }
+                                    });
+                                }
+                            });
+                        } else {
+
+                            $('#btnView').prop("disabled", true)
+                            $('#btnView').html("<i class='fa fa-spinner fa-pulse'></i> Data Processing...")
+                            $.alert.open(data.Response.Message)
+                        }
+                    }
+                    //console.log(data)
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + status.statusText + "/" + error);
+                },
+                complete: function () {
+                    $('#btnView').prop("disabled", false)
+                    $('#btnView').html("Process")
+                }
+            });
+
+        });
+    });
+</script>
+
+<div class="">
+
+</div>
+
+<h2 class="page-title">POMIS-5A (Notes) Consolidation Process</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Process Note", new { @class = "control-label" })
+                    @Html.DropDownList("QtypeList", new[] {
+                           new SelectListItem() {Text="POMIS-5A Note 01", Value="1",Selected = true},
+                           new SelectListItem() {Text="POMIS-5A Note 02", Value="2"},
+                           new SelectListItem() {Text="POMIS-5A Note 03", Value="3"},
+                           new SelectListItem() {Text="POMIS-5A Note 04", Value="4"},
+                           new SelectListItem() {Text="POMIS-5A Write Off", Value="5"},
+                           new SelectListItem() {Text="Staff Profile", Value="6"}},
+                           new { @ID = "ddlQtype", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <button type="submit" class="btn btn-primary" id="btnView">
+                        Process
+                    </button>
+                    @*<input type="submit" value="Process" class="btn btn-primary" id="btnView" />*@
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

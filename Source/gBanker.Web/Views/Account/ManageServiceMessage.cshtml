@@ -1,0 +1,436 @@
+﻿@{
+    ViewBag.Title = "Manage Service Messages";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style>
+    .jtable > thead > tr {
+        height: 50px;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+
+    //Save Work Area
+    function UpdateServiceMessage() {
+       // alert("Update");
+        var ServiceMessage = $("#ServiceMessage").val();
+        var ServiceMessageID = $("#ServiceMessageID").val();
+
+        var FromDate = $("#FromDate").val();
+        var ToDate = $("#ToDate").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateUpdateServiceMessage", "Account", "http")',
+            data: { ServiceMessage: ServiceMessage, ServiceMessageID: ServiceMessageID, FromDate:FromDate, ToDate: ToDate },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Update Successfully");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Update");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }// End of Function
+
+
+    //Save Work Area
+    function SaveNewMessage() {
+
+        var ServiceMessage = $("#ServiceMessage").val();
+
+        var FromDate = $("#FromDate").val();
+        var ToDate = $("#ToDate").val();
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateNewMessage", "Account", "http")',
+            data: { ServiceMessage: ServiceMessage, FromDate: FromDate, ToDate: ToDate },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Saved Successfully");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Saved");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }// End of Function
+
+
+
+    //Promotion Config JS
+    function GetDataServiceMessage(ServiceMessageId) { //populate Area Form
+        //alert(AreaID);
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAllServiceMessageList", "Account", "http")',
+            data: { ServiceMessageId: ServiceMessageId, jtStartIndex: 1, jtPageSize: 5, jtSorting: true, filterColumn: null, filterValue: null },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+                $.each(data, function (id, option) {
+
+                    $("#ServiceMessage").val(option.ServiceMessage);
+                    $("#FromDate").val(option.FromDate);
+                    $("#ToDate").val(option.ToDate);
+
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                clear();
+            }
+        });
+    }
+    function clear()
+    {
+        $("#ServiceMessage").val('');
+        $("#FromDate").val('');
+        $("#ToDate").val('');
+    }
+    //Save Work Area
+    function DeleteServiceMessage(ServiceMessageId) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DeleteServiceMessage", "Account", "http")',
+            data: { ServiceMessageID: ServiceMessageId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Delete Successfully");
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Delete. ");
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+
+
+    }// End of Function
+    function TakeOnlineOffLine(ServiceMessageId) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("TakeOnlineOffLine", "Account", "http")',
+            data: { ServiceMessageID: ServiceMessageId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+               // $.alert.open("Message", "Data Delete Successfully");
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+               // $.alert.open("Message", "Data Not Delete. ");
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+
+
+    }// End of Function
+
+    function Edit(id)
+    {
+        GetDataServiceMessage(id);
+
+    }
+
+    function Delete(id)
+    {
+
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                DeleteServiceMessage(id);
+                return true;
+            }
+            else {
+
+                return false;
+            }
+        });
+
+    }
+    function Activate(id, Action) {
+        var message = "";
+        if (Action == true) {
+            message = "Take OFF-LINE"
+
+        }
+        else {
+            message = "Take ONLINE"
+
+        }
+        $.alert.open('confirm', 'Are you sure you want to ' + message +' this Message?', function (button) {
+            if (button == 'yes') {
+                TakeOnlineOffLine(id);
+                return true;
+            }
+            else {
+
+                return false;
+            }
+        });
+
+    }
+    //End Save Work Area
+
+    $(document).ready(function () {
+
+
+        $('#ServiceMessage').on('keyup keypress', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode === 13) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+
+        $("#FromDate").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+               changeMonth: true,
+               changeYear: true,
+               yearRange: "1920:2050"
+
+           });
+        $("#FromDate").datepicker(
+            'setDate', new Date());
+
+        $("#ToDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1920:2050"
+
+            });
+        $("#ToDate").datepicker(
+            'setDate', new Date());
+
+        $("#btnReset").click(function () {
+            $("#ServiceMessageID").val(0);
+            $("#ServiceMessage").val('');
+            $("#FromDate").val('');
+            $("#ToDate").val('');
+
+        });
+
+        $("#btnServiceMessageSave").click(function () {
+
+            var ServiceMessage = $("#ServiceMessage").val();
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+
+            if (ServiceMessage == '')
+            {
+                $.alert.open("Please Give Service Message.");
+                return false;
+            }
+
+            if (FromDate == '') {
+                $.alert.open("Please Give From Date.");
+                return false;
+            }
+
+            if (ToDate == '') {
+                $.alert.open("Please Give To Date.");
+                return false;
+            }
+
+            var ServiceMessageID = $("#ServiceMessageID").val();
+            if (ServiceMessageID != 0)
+            {
+                // Update
+                UpdateServiceMessage(ServiceMessageID);
+                clear();
+            }
+            else
+            {
+                // Save
+                SaveNewMessage();
+                clear();
+            }
+
+        });
+
+        $('#grid2').jtable({
+            // title: 'Investor List',
+            paging: true,
+            pageSize: 5,
+            sorting: false,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: '/Account/GetAllServiceMessageList'
+            },
+            fields: {
+                rowSl: {
+                    title: 'SI No',
+                    width: '6%'
+                },
+                ServiceMessageID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ServiceMessage: {
+                    title: 'Service Message',
+                    width: '70%'
+                },
+                FromDate: {
+                    title: 'From Date',
+                    width: '10%'
+                },
+                ToDate: {
+                    title: 'To Date',
+                    width: '10%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Edit(' + data.record.ServiceMessageID + ')"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Delete(' + data.record.ServiceMessageID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                },
+                ActiveLink: {
+                    title: "Action",
+                    display: function (data) {
+                        if (data.record.isOnline) {
+                            return '<div class="text-center"> <input type="button" class="btn btn-success" value="ONLINE"  OnClick="Activate(' + data.record.ServiceMessageID + ',' + data.record.isOnline + ');" /> </div>';
+                        }
+                        else {
+                            return '<div class="text-center"> <input type="button" class="btn btn-danger" value="OFF LINE"  OnClick="Activate(' + data.record.ServiceMessageID + ',' + data.record.isOnline + ');" /> </div>';
+                        }
+
+                    }
+                }
+
+
+            }
+        });
+        reloadGrid2();
+        //$('#grid').jtable('load');
+        $("#filterColumn").change(function () {
+            if ($(this).val() === "ViewAll") {
+                $("#filterValue").val('');
+            }
+        });
+
+        function reloadGrid2() {
+            //$("#loading").show();
+            $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            //$("#loading").hide();
+        }
+
+    });// End Document Rready
+</script>
+
+<h2 class="page-title">Manage Service Message</h2>
+&nbsp;
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <input type="text" id="ServiceMessage" class="form-control" value="" placeholder="Service Message details." />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="label"> From Date </label>
+                    <div class="col-sm-8">
+                        <input type="text" id="FromDate" class="form-control" value="" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="label"> To Date </label>
+                    <div class="col-sm-8">
+                        <input type="text" id="ToDate" class="form-control" value="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <div class="form-group form-action" style="padding:10px;margin:5px;">
+                        &nbsp;
+                        <input type="button" value="Save" id="btnServiceMessageSave" class="btn btn-success" />
+                        &nbsp;
+                        <input type="button" value="Reset" id="btnReset" class="btn btn-warning" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                &nbsp;
+            </div>
+            &nbsp;
+            <div id="grid2">
+
+            </div>
+        </div>
+    </div>
+
+}
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

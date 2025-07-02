@@ -1,0 +1,171 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.SmsLogViewModel>
+
+@{
+    ViewBag.Title = "SMS Log";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";    
+}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"                
+            });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        
+        $('#txtFromDt').val($.datepicker.formatDate("dd-M-yy", new Date($('#txtDayInitial').val())))
+        //$('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date()))
+        $('#txtToDt').val($.datepicker.formatDate("dd-M-yy", new Date($('#txtDayInitial').val())))
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'MemberName ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/SmsLog/GetSmsInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                SmsLogID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberName: {
+                    title: 'Member',
+                    width: '10%',
+                    create: false,
+                    edit: false
+                },
+                DateSent: {
+                    title: 'Sent Date',
+                    width: '10%',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false,
+                    edit: true
+                },
+                SmsTo: {
+                    title: 'Receiver',
+                    width: '10%',
+                    create: false,
+                    edit: false
+                },
+                SmsBody: {
+                    title: 'SMS Text',
+                    width: '60%',
+                    create: false,
+                    edit: false
+                },
+                SmsType: {
+                    title: 'Type',
+                    width: '5%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        if (data.record.SmsType == 'D')
+                            return "Disburse";
+                        else
+                            return "Collection";
+                    }
+                },
+                SmsStatus: {
+                    title: 'Status',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { dateFrom: $('#txtFromDt').val(), dateTo: $('#txtToDt').val(), memCode: $('#txtMemCode').val(), smsType: $('#ddlSmsType').val(), smsStatus: $('#ddlSmsStatus').val() });
+        $("#loading").hide();
+    }
+
+</script>
+<h2 class="page-title">SMS List</h2>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date From</label>
+            @Html.TextBox(" ", null, new { @ID = "txtFromDt", @style = "width:150px; height:35px;" })
+        </div>        
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Date To</label>
+            @Html.TextBox(" ", null, new { @ID = "txtToDt", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Member Code</label>
+            @Html.TextBox(" ", null, new { @ID = "txtMemCode", @style = "width:150px; height:35px;" })
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">SMS Type</label>
+            <select id="ddlSmsType" class="form-control">
+                <option value="V">View All</option>
+                <option value="D">Disburse</option>
+                <option value="C">Collection</option>                
+            </select>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">SMS Status</label>
+            <select id="ddlSmsStatus" class="form-control">
+                <option value="V">View All</option>
+                <option value="Sent">Sent</option>
+                <option value="Fail">Fail</option>
+            </select>
+        </div>
+    </div>    
+    <div class="col-md-2" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+<br />
+<div id="grid"></div>
+@Html.TextBox(" ", "" + ViewData["dayInitial"], new { @class = "form-control", @id = "txtDayInitial", @style = "display:none;" })
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+
+
+
+
+
+

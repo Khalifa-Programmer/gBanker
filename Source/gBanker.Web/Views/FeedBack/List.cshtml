@@ -1,0 +1,367 @@
+﻿@{
+    ViewBag.Title = "List";
+}
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style>
+    .jtable > thead > tr {
+        height: 50px;
+    }
+</style>
+
+<h2>Correction</h2>
+
+<script>
+
+ function GetOfficeList() {
+     var OfficeId = $("#OfficeId");
+     $.ajax({
+         type: 'GET',
+         contentType: "application/json; charset=utf-8",
+         url: '@Url.Action("GetOfficeList", "FeedBack", "http")',
+         data: {},
+         dataType: 'json',
+         async: true,
+         success: function (data) {
+             OfficeId.html('');
+             OfficeId.append($('<option></option>').val("0").html("Please Select"));
+             $.each(data, function (id, option) {
+                 OfficeId.append($('<option></option>').val(option.Value).html(option.Text));
+             });
+         },
+         error: function (request, status, error) {
+             alert(request.statusText + "/" + request.statusText + "/" + error);
+         }
+     });
+ }
+
+
+ function GetNecessityId() {
+     var NecessityId = $("#NecessityId");
+
+     $.ajax({
+         type: 'GET',
+         contentType: "application/json; charset=utf-8",
+         url: '@Url.Action("GetNecessityType", "FeedBack", "http")',
+         data: {},
+         dataType: 'json',
+         async: true,
+         success: function (data) {
+             NecessityId.html('');
+             NecessityId.append($('<option></option>').val("0").html("Please Select"));
+             $.each(data, function (id, option) {
+                 NecessityId.append($('<option></option>').val(option.Value).html(option.Text));
+             });
+         },
+         error: function (request, status, error) {
+             alert(request.statusText + "/" + request.statusText + "/" + error);
+         }
+     });
+ }
+
+    function GetCorrectionStatus() {
+        var CorrectionStatusId = $("#CorrectionStatusId");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetStatusType", "FeedBack", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                CorrectionStatusId.html('');
+                CorrectionStatusId.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    CorrectionStatusId.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+ function ShowNote(Id) {
+     var FeedbackId = Id;
+     if (FeedbackId != "") {
+         $('#gridNote').jtable('load', { FeedbackId: FeedbackId, filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+         popupNoteDiv();
+     }
+ }
+
+
+ function popupNoteDiv() {
+     $('html, body').animate({ scrollTop: $('#NoteDiv').offset().top }, 'slow');
+     $("#NoteDiv").dialog({
+         autoOpen: false,
+         height: 300,
+         width: 500,
+         modal: true,
+         buttons: {
+             //"Save": function () {
+             //    SaveUpdateProgram();
+             //},
+             "Close": function () {
+                 //alert("No Office selected. Employee office will be used.");
+                 // window.location.href = "Member/Create";
+
+                 $(this).dialog("close");
+             }
+         }
+     });
+
+     var showPopup = "True";
+     if (showPopup == "True") {
+         $("#NoteDiv").dialog('open');
+     }
+
+ }//End of Show Popup
+
+
+ $(document).ready(function () {
+     GetOfficeList();
+     GetNecessityId();
+     GetCorrectionStatus();
+
+
+     $("#btnSearch").click(function (e) {
+         reloadGrid();
+     });
+
+
+     $('#gridCorrection').jtable({
+         //title: 'Member List',
+         paging: true,
+         pageSize: 20,
+         sorting: true,
+         defaultSorting: 'CorrectionId',
+         actions: {
+             listAction: function (postData, jtParams) {
+                 console.log("Loading from custom function...");
+                 return $.Deferred(function ($dfd) {
+                     $.ajax({
+                         url: '/FeedBack/GetCorrectionList?CorrectionId=' + 0 + '&jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                         type: 'POST',
+                         dataType: 'json',
+                         data: postData,
+                         success: function (data) {
+                             $dfd.resolve(data);
+                         },
+                         error: function () {
+                             $dfd.reject();
+                         }
+                     });
+                 });
+             }
+         },
+
+         fields: {
+
+             CorrectionId: {
+                 key: true,
+                 list: false,
+                 create: false,
+                 edit: false
+             },
+             EntryDate: {
+                 title: 'Entry Date',
+                 width: '8%'
+             },
+             Zone: {
+                 title: 'Zone',
+                 width: '8%'
+             },
+             Branch: {
+                 title: 'Branch',
+                 width: '8%'
+             },
+             Status: {
+                 title: 'Status',
+                 width: '5%'
+             },
+             Necessity: {
+                 title: 'Necessity',
+                 width: '6%'
+             },
+             ProblemDate: {
+                 title: 'Problem Date',
+                 width: '8%'
+             },
+             Problem: {
+                 title: 'Problem Type',
+                 width: '8%'
+             },
+             ProblemDetail: {
+                 title: 'Problem Detail',
+                 width: '15%'
+             },
+             SolvedDetail: {
+                 title: 'Solved Detail',
+                 width: '15%'
+             },
+             SolvedBy: {
+                 title: 'Solved By',
+                 width: '5%'
+             },
+             SolvedDate: {
+                 title: 'Solved Date',
+                 width: '8%'
+             },
+
+             EditLink: {
+                 title: "Action",
+                 width: '6%',
+                 sorting: false,
+                 display: function (data) {
+                     return "<div class='text-right'> <a href='/Feedback/Index?FeedbackId=" + data.record.CorrectionId + '&CreateUser=' + data.record.CreateUser + "'><i title='Evaluate Officer' class='fa fa-pencil-square-o'></i></a>&nbsp &nbsp &nbsp" +
+                        "<a href='#' onclick = 'ShowNote(" + data.record.CorrectionId + ");'><i class='fa fa-bars'></i></a>&nbsp &nbsp &nbsp" + "</div>";
+                     //            url = '/Evaluation/GenerateEvaluationSummaryReport?designationId=' + designationId + '&SelectedOfficeId=' + SelectedOfficeId +'&IsExcel=' + 'Yes' ;
+
+                 }
+             },
+         }
+     });
+
+     reloadGrid();
+
+
+     ///NOTE
+     $('#gridNote').jtable({
+         //title: 'Member List',
+         paging: true,
+         pageSize: 20,
+         sorting: true,
+         defaultSorting: 'FeedBackId ASC',
+         actions: {
+             //deleteAction: '/Member/Delete',
+             listAction: function (postData, jtParams) {
+                 console.log("Loading from custom function...");
+                 return $.Deferred(function ($dfd) {
+                     $.ajax({
+                         url: '/FeedBack/GetNoteList?NoteId=' + 0 + '&jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                         type: 'POST',
+                         dataType: 'json',
+                         data: postData,
+                         success: function (data) {
+                             $dfd.resolve(data);
+                         },
+                         error: function () {
+                             $dfd.reject();
+                         }
+                     });
+                 });
+             }
+         },
+
+         fields: {
+             rowSl: {
+                 title: 'SI No',
+                 width: '5%'
+             },
+             NoteId: {
+                 key: true,
+                 list: false,
+                 create: false,
+                 edit: false
+             },
+             User: {
+                 title: 'User',
+                 width: '8%'
+             },
+             Comment: {
+                 title: 'Comment',
+                 width: '15%'
+             },
+             Date: {
+                 title: 'Date',
+                 width: '8%'
+             },
+
+         }
+     });        //reloadNoteGrid();
+
+ });// END of Document Read
+
+ function reloadGrid() {
+
+     var OfficeId = $('#OfficeId option:selected').val();
+     var NecessityId = $('#NecessityId option:selected').val();
+     var CorrectionStatusId = $('#CorrectionStatusId option:selected').val();
+
+
+     $("#loading").show();
+     $('#gridCorrection').jtable('load', { OfficeId: OfficeId, NecessityId: NecessityId, CorrectionStatusId: CorrectionStatusId, filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+     $("#loading").hide();
+ }
+
+
+</script>
+
+@Html.ActionLink("Create New", "index", null, new { @class = "pull-right" })
+<hr />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4"> Select Office </label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "OfficeId", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">প্রয়োজনীয়তা</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "NecessityId", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">অবস্থা</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "CorrectionStatusId", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <div class="col-sm-8">
+                <input type="button" value="Search" id="btnSearch" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-sm-12">
+        <div id="gridCorrection">
+        </div>
+    </div>
+</div>
+
+<!-- Popup Note -->
+<div id="NoteDiv" title="Add Note"  style="display:none">
+    <div class="row">
+        <div class="col-sm-12" >
+            <div id="gridNote">
+            </div>
+        </div>
+        </div>
+</div>
+<!-- End Of Note Div -->
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/jtable")
+        @Scripts.Render("~/bundles/alert")
+    }

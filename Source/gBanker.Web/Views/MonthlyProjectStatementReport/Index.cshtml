@@ -1,0 +1,133 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    function callMonthlyStatisticalReport(pYear, pMonth)
+    {
+        $("#progressBar").progressbar(0);
+        for (var i = 1; i <= 20; i++) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GenerateMonthlyProjectStatement", "MonthlyProjectStatementReport", new { id = 1 }, "http")',
+                data: { pYear: pYear, pMonth: pMonth, qType: i },
+                dataType: 'json',
+                async: true,
+                success: function (result) {
+                    //alert(result.qType);
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        }
+     }
+
+
+
+    $(document).ready(function () {
+        //YeaList
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetYearList", "MonthlyProjectStatementReport", new { id = 1 }, "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //alert("success");
+                data = $.map(data, function (item, a) {
+                    return "<option value=" + item.Value + ">" + item.Text + "</option>";
+                });
+                $("#ddlYear").html(data.join(""));
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var pYear = $("#ddlYear").val();
+            var pMonth = $("#ddlMonth").val();
+            //var qType = $("#ddlQtype").val();
+            callMonthlyStatisticalReport(pYear, pMonth);
+            
+            var url = '/MonthlyProjectStatementReport/GenerateMonthlyProjectStatementReport?pYear=' + pYear + '&pMonth=' + pMonth;
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+<h2 class="page-title">Monthly Project Statement Report</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group">
+                    @Html.DropDownList("YearList", null, new { @ID = "ddlYear", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-10">
+                &nbsp;
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group">
+
+                    @Html.DropDownList("ProcessMonth", new[] {
+                       new SelectListItem() {Text="January", Value="1"},
+                       new SelectListItem() {Text="February",Value="2"},
+                       new SelectListItem() {Text="March",Value="3"},
+                       new SelectListItem() {Text="April",Value="4"},
+                       new SelectListItem() {Text="May",Value="5"},
+                       new SelectListItem() {Text="June",Value="6"},
+                       new SelectListItem() {Text="July",Value="7"},
+                       new SelectListItem() {Text="August",Value="8"},
+                       new SelectListItem() {Text="September",Value="9"},
+                       new SelectListItem() {Text="October",Value="10"},
+                       new SelectListItem() {Text="November",Value="11"},
+                       new SelectListItem() {Text="December",Value="12"}},
+                                       "Please Select", new { @ID = "ddlMonth", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-10">
+                &nbsp;
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+
+
+

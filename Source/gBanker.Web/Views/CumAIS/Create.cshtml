@@ -1,0 +1,247 @@
+﻿@model gBanker.Web.ViewModels.CumAISViewModel
+
+@{
+    ViewBag.Title = "CumMIS Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.OfficeList;
+    var ReconPurpose = Model == null ? null : Model.ReconPurposeList;
+    var VoucherType = Model == null ? null : Model.VoucherTypeList;
+    var AccCode = Model == null ? null : Model.AccCodeList;
+       
+}
+
+<style type="text/css">
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+<script type="text/javascript">
+    function CheckVoucherType() {
+        var vType = $("#VoucherType").val();
+        if (vType == "Dr") {
+            $("#Debit").prop("readonly", false);
+            $("#Credit").prop("readonly", true);
+            $("#Credit").val = 0;
+        }
+        else if (vType == "Cr") {
+            $("#Debit").prop("readonly", true);
+            $("#Credit").prop("readonly", false);
+            $("#Debit").val = 0;
+        }
+        //else if (vType == "Jr") {
+        //    $("#Debit").prop("readonly", false);
+        //    $("#Credit").prop("readonly", false);
+        //}
+    }
+
+    $(document).ready(function () {
+        CheckVoucherType();
+        //$("#VoucherNo").prop("readonly", true);
+        $("#VoucherType").change(function () {
+            CheckVoucherType();
+        });
+        //  $("#ApproveDate").datepicker();
+        gBankerDatePicker("AISDate");
+
+        $("#txtAccCode").autocomplete({
+
+            source: function (request, response) {
+
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAccCode", "CumAIS", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { acc_code: request.term},
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.acc_code,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            }
+        });
+
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+@using (Html.BeginForm("Create", "CumAIS", FormMethod.Post, new { enctype = "multipart/form-data" })) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="">
+        
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AccCode, htmlAttributes: new { @class = "control-label" })
+                    @*@Html.TextBox("txtAccCode", "", new { @class = "form-control" })*@
+                    @Html.DropDownListFor(model => model.AccCode, AccCode, new { @class = "form-control" })
+                    @*@Html.TextBoxFor(model => model.AccCode, new { style = "display:none;" })*@
+                    @Html.ValidationMessageFor(model => model.AccCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ReconPurposeCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.ReconPurposeCode, ReconPurpose, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.ReconPurposeCode, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VoucherType, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.VoucherType, VoucherType, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.VoucherType, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+   
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VoucherNo, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.VoucherNo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.VoucherNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Reference, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Reference, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Reference, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Debit, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Debit, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Debit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Credit, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Credit, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Credit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Naration, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Naration, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Naration, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AISDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.AISDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.AISDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

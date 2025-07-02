@@ -1,0 +1,310 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+<script>
+    function GetHO(ddlVal) {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlHO').val(ddlVal);
+                    //LoadOfficeWiseAssetUser(ddlVal);
+                }
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetZone(HO_val, ddlVal) {
+        var ddlZone = $("#ddlZone");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetZoneList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZone.html('');
+                $.each(data, function (id, option) {
+                    ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlZone').val(ddlVal);
+                    //LoadOfficeWiseAssetUser(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetArea(HO_val, zone_val, ddlVal) {
+        var ddlArea = $("#ddlArea");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlArea.html('');
+                $.each(data, function (id, option) {
+                    ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlArea').val(ddlVal);
+                    //LoadOfficeWiseAssetUser(ddlVal);
+                }
+                else {
+                    $("#ddlArea").prop('selectedIndex', 0);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetOffice(HO_val, zone_val, area_val, ddlVal) {
+        var ddlOffice = $("#ddlOffice");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlOffice').val(ddlVal);
+                    //LoadOfficeWiseAssetUser(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function CheckOffcLevel() {
+        var offcLevel = $('#lblOffcLevel').html();
+        var firstLevel = $('#lblFirstLevel').html();
+        var secondLevel = $('#lblSecondLevel').html();
+        var thirdLevel = $('#lblThirdLevel').html();
+        var fourthLevel = $('#lblFourthLevel').html();
+        //alert(offcLevel);
+        if (offcLevel == 1) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+        }
+        if (offcLevel == 2) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            // GetArea(firstLevel, secondLevel, thirdLevel);
+            GetArea(firstLevel, secondLevel, null);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+        }
+        if (offcLevel == 3) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+        }
+        if (offcLevel == 4) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+            $("#ddlOffice").prop("disabled", true);
+        }
+    }
+    $(document).ready(function () {
+        CheckOffcLevel();
+        $("#ddlHO").change(function () {
+            var HO_val = $("#ddlHO").val();
+            if (HO_val > 0) {
+                var ddlZone = $("#ddlZone");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetZoneList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlZone.html('');
+                        $.each(data, function (id, option) {
+                            ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        //LoadOfficeWiseAssetUser(HO_val);
+                        ClearForm();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlZone").empty();
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlArea.html('');
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        //LoadOfficeWiseAssetUser(zone_val);
+                        //$("#ddlOffice").empty();
+                        ClearForm();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetOfficeList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlOffice.html('');
+                        $.each(data, function (id, option) {
+                            ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        //LoadOfficeWiseAssetUser(area_val);
+                        ClearForm();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+    });
+
+
+
+</script>
+
+
+<div class="form-horizontal" id="dayInitialDependent">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.DailyTransactionId)
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title panel-title-OfficeSelection">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOfficeSelection"><i class="fa fa-plus"></i>&nbsp;Office Selection</a>
+            </h4>
+        </div>
+        @*<div id="collapseOfficeSelection" class="panel-collapse collapse">*@
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Head Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control" })
+                        </div>
+                        @Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
+                        @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
+                        @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
+                        @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
+                        @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Zone Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Area Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Branch Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

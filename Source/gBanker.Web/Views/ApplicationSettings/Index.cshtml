@@ -1,0 +1,147 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.ApplicationSettingViewModel>
+
+@{
+    ViewBag.Title = "ApplicationSetting List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<script type="text/javascript">
+
+    function deleteConfirm(status) {
+        if (status == "true") {
+            return confirm('Are you sure you want to delete this record');
+        }
+        else {
+            alert("You cannot delete this record because it is already disabled.");
+            return false;
+        }
+    }
+</script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        
+        $('#grid').jtable({
+           // title: 'Application Setting List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/ApplicationSettings/GetApplicationSetting?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+               // listAction: '/ApplicationSettings/GetApplicationSetting'
+
+            },
+            fields: {
+                ApplicationSettingsID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '20%'
+
+                },
+                OrganizationName: {
+                    title: 'Organization Name',
+                    width: '20%'
+                },
+                YearClosingDate: {
+                    title: 'YearClosing Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '20%'
+                },
+                CashBook: {
+                    title: 'CashBook Code',
+                    width: '20%'
+                },
+                PLAccount: {
+                    title: 'PLAccount Code',
+                    width: '20%'
+                },
+
+                BankAccount: {
+                    title: 'BankAccount Code',
+                    width: '20%'
+                },
+                CellNo: {
+                    title: 'CellNo',
+                    width: '20%'
+                },
+                ProcessType: {
+                    title: 'Process Type',
+                    width: '40%'
+                },
+               
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/ApplicationSettings/Edit/" + data.record.ApplicationSettingsID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                        //return '<a href="/LoanSummary/Edit/' + data.record.LoanSummaryID + '">Edit</a>';
+                       // return "<a href='/ApplicationSettings/Edit/" + data.record.ApplicationSettingsID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                    }
+                }
+                //,
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<a href="/ApplicationSettings/Delete/' + data.record.ApplicationSettingsID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //    }
+                //}
+            }
+        });
+        $('#grid').jtable('load');
+        //////////////////////////
+
+    });
+
+
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">ApplicationSetting List</h2>
+
+
+
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

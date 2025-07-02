@@ -1,0 +1,189 @@
+﻿
+@{
+    ViewBag.Title = "Weekly Data Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+
+        $("#myload").hide();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetYearList", "GroupwiseReport")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                data = $.map(data, function (item, a) {
+                    return "<option value=" + item.Value + ">" + item.Text + "</option>";
+                });
+                $("#ddlYear").html(data.join(""));
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+
+
+        $("#ddlYear").change(function () {
+            var year = $("#ddlYear option:selected").val();
+            var WeekNoID = 0;
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetYearWiseWeekNoList", "GroupwiseReport")',
+                data: { year: year, WeekNoID: WeekNoID },
+                dataType: 'json',
+                async: true,
+                success: function (List_WeeNo) {
+                    data = $.map(List_WeeNo, function (List_WeeNo) {
+                        return "<option value=" + List_WeeNo.WeekNoID + ">" + List_WeeNo.WeekNoSl + "</option>";
+                    });
+                    $("#ddlWeek").html(data.join(""));
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        });
+
+        $("#ddlWeek").change(function () {
+            var year = $("#ddlYear option:selected").val();
+            var WeekNoID = $("#ddlWeek option:selected").val();
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetYearWiseWeekNoList", "GroupwiseReport")',
+                data: { year: year, WeekNoID: WeekNoID},
+                dataType: 'json',
+                async: true,
+                success: function (List_WeeNo) {
+                    var sd = List_WeeNo[0].SD;
+                    var ed = List_WeeNo[0].ED;
+                    $("#txtStartDate").val(sd);
+                    $("#txtEndDate").val(ed);
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        });
+
+
+
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var year = $("#ddlYear option:selected").val();
+            var WeekNo = $("#ddlWeek option:selected").val();
+            var StartDate = $("#txtStartDate").val();
+            var EndDate = $("#txtEndDate").val(); 
+            if (StartDate != "" && EndDate != "" && year != 0 && WeekNo != 0) {
+                    $("#myload").show();
+                        $.ajax({
+                            type: 'GET',
+                            contentType: "application/json; charset=utf-8",
+                            url: '@Url.Action("GenerateWeeklyDataProcess", "GroupwiseReport")',
+                            data: { year: year, WeekNo: WeekNo,StartDate:StartDate,EndDate:EndDate},
+                            dataType: 'json',
+                            async: true,
+                            success: function (data) {
+                            },
+                            error: function (request, status, error) {
+                                var sts = status;
+                                if (sts == "parsererror") {
+                                    alert("Success");
+                                } else {
+                                    alert("Week Already Exists");
+                                }
+                                $("#myload").hide();
+                                location.reload();
+                            }
+                        });
+                } else {
+                    alert("Please Select required field");
+                }
+        });
+
+
+
+    });
+
+</script>
+
+<h2 class="page-title">Weekly Data Process</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+
+    <span id="myload"><i class="fa fa-spinner fa-4x fa-spin"></i></span>
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Process Year", new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                @Html.DropDownList("YearList", null, new { @ID = "ddlYear", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Week No", new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                @Html.DropDownList("WeekList", null, new { @ID = "ddlWeek", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Start Date", new { @class = "control-label" })
+                <input type="text" name="name" id="txtStartDate" class="form-control" disabled/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("End Date", new { @class = "control-label" })
+                <input type="text" name="name"  id="txtEndDate" class="form-control" disabled/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group form-action">
+                <input type="submit" value="Generate" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+
+</div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

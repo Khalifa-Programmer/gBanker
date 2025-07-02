@@ -1,0 +1,93 @@
+﻿@model gBanker.Web.ViewModels.EmployeeHistoryUpdateViewModel
+
+@{
+    ViewBag.Title = "Employee History Update List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    //var EmployeeList = Model == null ? null : Model.EmployeeList;
+}
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+
+        //$("#EmployeeID").change(function () {
+        //    if ($("#EmployeeID option:selected").val() > 0) {
+        //        $('#grid').jtable('load', { EmployeeID: $("#EmployeeID option:selected").val() });
+        //    }
+        //    else {
+        //        $('#grid').jtable('load', { EmployeeID: null });
+        //    }
+        //});
+
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 50,
+            sorting: false,
+            defaultSorting: 'EmployeeCode ASC',
+            actions: {
+                listAction: '/EmployeeHistoryUpdate/GetList',
+            },
+            fields: {
+                EmployeeHistoryId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EmployeeCode: {
+                    title: 'Employee Code',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                OldOfficeCode: {
+                    title: 'Old Office Code',
+                    width: '15%',
+                    create: false,
+                    edit: true
+                },
+                OldJoinDate: {
+                    title: 'Old Joining Date',
+                    width: '10%',
+                    create: false,
+                    edit: true
+                },
+                EditLink: {
+                    title: "Edit",
+                    width: '10%',
+                    sorting: false,
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/EmployeeHistoryUpdate/Edit/" + data.record.EmployeeHistoryId + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    });
+
+
+</script>
+
+
+<h2 class="page-title">Employee History Update List</h2>
+
+
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

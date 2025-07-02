@@ -1,0 +1,60 @@
+﻿@model gBanker.Web.ViewModels.DailyLoanTrxViewModel
+
+@{
+    ViewBag.Title = "Loan Register For Cheque Receive Return";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {       
+        $("#DateFrom").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+           });
+        $("#DateTo").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+           });
+
+        $("#btnPrint").click(function () {
+            var dateFrom = $("#DateFrom").val();
+            var dateTo = $("#DateTo").val();            
+            url = '/DailyLoanCollection/GetLoanRegisterForChequeReceiveReturnReport?dateFrom=' + dateFrom + '&dateTo=' + dateTo;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        })
+    });
+
+</script>
+
+<h2 class="page-title">Loan Register For Cheque Receive and Return</h2>
+<div class="form-horizontal">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Date From</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DateFrom, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Date To</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DateTo, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row col-sm-offset-2">
+        <input type="button" value="Print" id="btnPrint" class="btn btn-primary" />
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}

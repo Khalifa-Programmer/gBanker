@@ -1,0 +1,99 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.BranchViewModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+
+       
+
+        <th>
+            |@Html.DisplayNameFor(model => model.BranchCode)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.BranchName)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.BranchNameBng)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.AreaID)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.OperationStartDate)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.GeoLocationID)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.BranchAddress)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.PostCode)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.Email)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.Phone)
+        </th>
+        <th>
+            |@Html.DisplayNameFor(model => model.InvestorID)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+      
+        <td>
+            |@Html.DisplayFor(modelItem => item.BranchCode)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.BranchName)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.BranchNameBng)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.AreaID)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.OperationStartDate)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.GeoLocationID)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.BranchAddress)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.PostCode)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.Email)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.Phone)
+        </td>
+        <td>
+            |@Html.DisplayFor(modelItem => item.InvestorID)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id = item.BranchID }) |
+           @* @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |*@
+            @Html.ActionLink("Delete", "Delete", new { id = item.BranchID }, new  { onclick="return confirm('Are you sure you want to delete this item?');"})
+           
+        </td>
+    </tr>
+}
+
+</table>

@@ -1,0 +1,64 @@
+﻿
+/*styles for validation helpers*/
+
+.field-validation-error {
+    color: #D62020;
+    display: inline-block;
+    width: 100%;
+    /*background: #f2dede;*/
+    padding: 5px;
+    border-radius: 3px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+
+input.input-validation-error, textarea.input-validation-error, select.input-validation-error {
+    border: 1px solid #b94a48;
+}
+
+input[type="checkbox"].input-validation-error {
+    border: 0 none;
+}
+
+.validation-summary-errors {
+    color: #b94a48;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+
+.chosen-container-single .chosen-single {
+    padding-top: 5px;
+    height: 35px;
+}
+
+    .chosen-container-single .chosen-single div {
+        padding-top: 5px;
+    }
+
+/*required asterisk*/
+
+.required:after {
+    content: " *";
+    font-weight: bold;
+    color: red;
+}
+
+.program-data-details td {
+    font-size: 14px !important
+}
+
+#GlobalPopupModal .modal-lg-90pct {
+    width: 90% !important;
+}
+
+#smartAlert {
+    z-index: 1100 !important;
+}

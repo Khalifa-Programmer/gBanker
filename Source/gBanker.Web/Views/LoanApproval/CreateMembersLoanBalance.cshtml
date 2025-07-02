@@ -1,0 +1,772 @@
+﻿@model gBanker.Web.ViewModels.MembersLoanBalanceViewModel
+
+@{
+    ViewBag.Title = "Add Passbook Balance";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.MemberCategoryList;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var investor = Model == null ? null : Model.investorListItems;
+    var pMode = Model == null ? null : Model.paymentMode;
+    var mPassBook = Model == null ? null : Model.MemberPassBookNOListItems;
+    var disType = Model == null ? null : Model.disType;
+    var freqMode = Model == null ? null : Model.freqMode;
+    var mainproductcode = Model == null ? null : Model.MainProductList;
+    // var vmaxLoanterm == null ? null : Model.vMaxLoanTerm.ToString();
+
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+
+}
+
+
+
+<style type="text/css">
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+<script type="text/javascript">
+
+
+
+
+
+    function reloadGrid2() {
+
+        var filterColumn = $("#filterColumn").val();
+        var filterValue = $("#filterValue").val();
+
+      
+         $('#gridKendo').html("");
+            var dataSource = new kendo.data.DataSource({
+                type: "aspnetmvc-ajax",
+                pageSize: 25,
+                schema: {
+                    data: "data",
+                    total: "total"
+                },
+                serverPaging: true,
+                serverSorting: true,
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetListForMembersLoanBalanceFilterBy", "LoanApproval", "http")',
+                        dataType: 'json',
+                        data: function () {
+                            return {
+                                filterColumn: filterColumn, // Replace with your variable or logic to get the value of `x`
+                                filterValue: filterValue  // Replace with your variable or logic to get the value of `y`
+                            };
+                        }
+                    }
+                }
+            });
+
+         $("#gridKendo").kendoGrid({
+                dataSource: dataSource,
+                groupable: false,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                selectable: false,
+                resizable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "MembersLoanBalanceID",
+                        hidden: true,
+                        filterable: false
+                    },
+                    {
+                        field: "rowSl",
+                        title: "SL",
+                        width: "15px",
+                        filterable: true,
+                    },
+                    {
+                        field: "MembersInfo",
+                        title: "Member",
+                        width: "30px",
+                        filterable: true,
+                    },
+                    {
+                        field: "GeneralSavings",
+                        title: "General Savings",
+                        width: "40px",
+                        filterable: true,
+                    },
+                    {
+                        field: "VoluntarySavings",
+                        title: "Voluntary Savings",
+                        width: "40px",
+                        filterable: true,
+                    },
+                    {
+                        field: "LTS",
+                        title: "LTS",
+                        width: "30px",
+                        filterable: true,
+                    },
+                    {
+                        field: "LoanBalance",
+                        title: "Loan Balance",
+                        width: "30px",
+                        filterable: true,
+                    },
+                    {
+                        field: "SCbalance",
+                        title: "SC balance",
+                        width: "30px",
+                        filterable: true,
+                    },
+                    {
+                        field: "PassBookEntryDate",
+                        title: "PassBookEntryDate",
+                        width: "30px",
+                        filterable: true,
+                    },
+                    {
+                        title: "Edit",
+                        width: "20px",
+                        template: function (dataItem) {
+                            return "<a  href='#' OnClick='Edit(" + dataItem.MembersLoanBalanceID + ");'><i class='fa fa-pencil-square-o'></i></a>";
+                        }
+                    },
+                    {
+                        title: "Delete",
+                        width: "20px",
+                        template: function (dataItem) {
+                            return "<a href='#' OnClick='Delete(" + dataItem.MembersLoanBalanceID + ");'><i class='fa fa-trash-o'></i></a>";
+                        }
+                    },
+
+                ]
+            });
+    }
+
+
+
+    $(document).ready(function () {
+
+        $body = $("body");
+
+        reloadGrid2();
+
+
+        $("#PassBookEntryDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "MemberPassBookRegister", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    // alert(data.length);
+                    if (data.length == 1) {
+                        $("#memberAutoComplete").val(data[0].MemberName);
+                        $("#MemberID").val(data[0].MemberID);
+
+                    }
+                    else if (data.length == 0) {
+                        alert("No member found.");
+                        $("#MemberID").val("");
+
+                    }
+                    else {
+                        alert("More than one member found with the given Member code.");
+                        $("#MemberID").val("");
+                    }
+                }
+            });
+        }
+        });
+
+        $("#memberAutoComplete").autocomplete({
+        source: function (request, response) {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemberList", "MemberPassBookRegister", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: request.term, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return {
+                            value: item.MemberID,
+                            label: item.MemberName
+                        };
+                        //response(data);
+                    }))
+                }
+            })
+        },
+        messages: {
+            noResults: "", results: ""
+        },
+        focus: function (event, ui) {
+            $("#memberAutoComplete").val(ui.item.label);
+            return false;
+        },
+        select: function (event, ui) {
+            $("#memberAutoComplete").val(ui.item.label);
+            $("#MemberID").val(ui.item.value);
+            return false;
+        },
+        change: function (event, ui) {
+            $("#memberAutoComplete").val(ui.item.label);
+            $("#MemberID").val(ui.item.value);
+            return false;
+        }
+    });
+
+        var ProductId = $("#ProductId").val();
+
+        //$("#btnSearch").click(function () {
+
+        //    var filterColumn = $("#filterColumn").val();
+
+        //    var filterValue = $("#filterValue").val();
+
+
+
+        //});
+
+
+
+          $("#btnSubmit").click(function () {
+        console.log('click');
+        var LoanBalanceID = $("#LoanBalanceID").val();
+        var OfficeID = $("#OfficeID").val();
+        var CenterID = $("#CenterID").val();
+        var MemberID = $("#MemberID").val();
+        var MemberCategoryID = $("#MemberCategoryID").val();
+        var ProductID = $("#ProductID").val();
+        var GS = $("#GS").val();
+        var VS = $("#VS").val();
+        var LTS = $("#LTS").val();
+        var LoanBalance = $("#LoanBalance").val();
+        var SCBalance = $("#SCBalance").val();
+        var PassBookEntryDate = $("#PassBookEntryDate").val();
+
+              if (OfficeID == '') {
+                  $.alert.open('Error', 'Please Select Office');
+                  return false;
+              }
+
+
+              if (CenterID == '0') {
+                  $.alert.open('Error', 'Please Select Samity');
+                  return false;
+              }
+
+              if (MemberID == '' || $('#memberAutoComplete').val() == '')
+              {
+                  $.alert.open('Error', 'Please select member');
+                  return false;
+              }
+
+              if (MemberCategoryID == '0') {
+                  $.alert.open('Error', 'Please select member category');
+                  return false;
+              }
+
+
+                var newObj =  {
+                    LoanBalanceID: LoanBalanceID,
+                    OfficeID: OfficeID,
+                    CenterID: CenterID,
+                    MemberID: MemberID,
+                    MemberCategoryID: MemberCategoryID,
+                    ProductID: ProductID,
+                    GS: GS,
+                    VS: VS,
+                    LTS: LTS,
+                    LoanBalance: LoanBalance,
+                    SCBalance: SCBalance,
+                    PassBookEntryDate: PassBookEntryDate
+                };
+                if (newObj!=null) {
+                    $.ajax({
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("CreateMembersLoanBalance", "LoanApproval", "http")',
+                        data: JSON.stringify({ model : newObj }),
+                        dataType: 'json',
+                        async: false,
+                        success: function (data) {//klm
+                            if (data.result==1) {
+                                $.alert.open("Success", data.message);
+                                reloadGrid();
+                                ClearForm();
+                            } else {
+                                $.alert.open("Error", data.message);
+                            }
+                        },
+                        error: function (request, status, error) {
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                }
+
+          });
+
+
+
+            @*$("#btnSearch").click(function (e) {
+                e.preventDefault();
+
+            var filterColumn = $("#filterColumn").val();
+            var filterValue = $("#filterValue").val();
+
+
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetListForMembersLoanBalanceFilterBy", "LoanApproval")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: {
+                    filterColumn: filterColumn,
+                    filterValue: filterValue
+                },
+                success: function (data) {
+
+                    //localStorage.clear();
+                    //reloadGrid2();
+
+                    alert("Hello");
+
+            },
+                error: function (error) {
+
+
+            }
+        });
+
+        });*@
+
+
+        @*$("#btnSearch").click(function (e) {
+    e.preventDefault();
+
+    var filterColumn = $("#filterColumn").val();
+    var filterValue = $("#filterValue").val();
+
+    $.ajax({
+        contentType: "application/json; charset=utf-8",
+        url: '@Url.Action("GetListForMembersLoanBalanceFilterBy", "LoanApproval")',  // Your action URL
+        type: "GET",
+        dataType: 'json',
+        async: true,
+        data: {
+            filterColumn: filterColumn,
+            filterValue: filterValue
+        },
+        success: function (data) {
+            // Example: Store some relevant data in localStorage
+            // For this example, let's assume you want to store the filter criteria (filterColumn and filterValue).
+
+
+            // You can also store other data from the server response, for example, the data itself:
+
+            // Call the grid reload function to update the grid with new data
+            reloadGrid2();
+
+            // After reloading the grid, clear the data from localStorage if you no longer need it
+
+
+            localstorage.clear();
+
+
+            // Or clear all localStorage if you want to remove everything
+            // localStorage.clear();  // Uncomment if you want to clear all items in localStorage
+        },
+        error: function (error) {
+            console.error("Error fetching data:", error);
+            // Handle error here if necessary
+        }
+    });
+});*@
+
+
+
+     $("#btnSearch").click(function (e) {
+         e.preventDefault();
+         
+    var filterColumn = $("#filterColumn").val();
+    var filterValue = $("#filterValue").val();
+
+    // Disable the button to prevent multiple clicks
+    $("#btnSearch").prop("disabled", true);
+         reloadGrid2();
+    //// Store the filter values in localStorage
+    //localStorage.setItem("filterColumn", filterColumn);
+    //localStorage.setItem("filterValue", filterValue);
+
+
+    @*$.ajax({
+        contentType: "application/json; charset=utf-8",
+        url: '@Url.Action("GetListForMembersLoanBalanceFilterBy", "LoanApproval")',
+        type: "GET",
+        dataType: 'json',
+        async: true,
+        data: {
+            filterColumn: filterColumn,
+            filterValue: filterValue
+        },
+        success: function (data) {
+
+               // reloadGrid2();
+
+        },
+        error: function (error) {
+            console.error("Error occurred:", error);
+        },
+
+    });*@
+         $("#btnSearch").prop("disabled", false);
+
+}); // End btn
+
+    }); // END Document Ready
+
+
+
+
+
+    function deleteItems() {
+        localStorage.clear();
+    }
+
+
+
+    function Edit(MembersLoanBalanceID) {
+        console.log(MembersLoanBalanceID);
+
+         $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDataForMembersLoanBalance", "LoanApproval")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+             data: { MembersLoanBalanceID : MembersLoanBalanceID },
+
+            success: function (result) {
+                $("#OfficeID").val(result.OfficeID);
+                $("#MemberID").val(result.MemberID);
+                $("#CenterID").val(result.CenterID);
+                $("#MemberCategoryID").val(result.MembersCategoryID);
+                $("#GS").val(result.GeneralSavings);
+                $("#VS").val(result.VoluntarySavings);
+                $("#LTS").val(result.LTS);
+                $("#LoanBalance").val(result.LoanBalance);
+                $("#SCBalance").val(result.SCbalance);
+                $("#PassBookEntryDate").val(result.PassBookEntryDate);
+                $("#LoanBalanceID").val(result.MembersLoanBalanceID);
+                $("#memberAutoComplete").val(result.MembersInfo);
+            },
+            error: function (error) {
+                //alert('error');
+            }
+        });
+
+
+
+    }
+
+    function ClearForm() {
+       // $("#OfficeID").val('0');
+        $("#MemberID").val('0');
+        $("#CenterID").val('0');
+        $("#MemberCategoryID").val('0');
+        $("#GS").val('0');
+        $("#VS").val('0');
+        $("#LTS").val('0');
+        $("#LoanBalance").val('0');
+        $("#SCBalance").val('0');
+        $("#LoanBalanceID").val('0');
+        $("#memberAutoComplete").val('');
+    }
+
+    function Delete(MembersLoanBalanceID) {
+        $.alert.open('confirm', 'Are you sure, you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                console.log(MembersLoanBalanceID);
+
+                $.ajax({
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        url: '/LoanApproval/DeleteForMembersLoanBalance?MembersLoanBalanceID=' + MembersLoanBalanceID,
+                        dataType: 'json',
+                        async: false,
+                        success: function (data) {//klm
+                            if (data.result==1) {
+                                $.alert.open("Success", data.message);
+                                reloadGrid();
+                            } else {
+                                $.alert.open("Error", data.message);
+                            }
+                        },
+                        error: function (request, status, error) {
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+
+                reloadGrid();
+            }
+        });
+    }
+
+
+
+</script>
+
+@*@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })*@
+
+<h2 class="page-title">Add Passbook Balance   </h2>
+
+@using (Html.BeginForm("", "", FormMethod.Post, new { enctype = "multipart/form-data", id = "membersloanbalance" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.LoanBalanceID)
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <input type="hidden" id="OrgId" value="" />
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                    <span style="color:red; font-size:15px;"> * </span>
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.HiddenFor(model => model.MyGuid)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        @*<div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MemberCategoryID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                        @Html.DropDownListFor(model => model.MemberCategoryID, mainproductcode, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.MemberCategoryID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>*@
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.DropDownListFor(model => model.ProductID, mainproductcode, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GS, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.GS, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.GS, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VS, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.VS, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.VS, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LTS, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.LTS, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.LTS, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.LoanBalance, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.LoanBalance, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.LoanBalance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.SCBalance, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.EditorFor(model => model.SCBalance, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                    @Html.ValidationMessageFor(model => model.SCBalance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PassBookEntryDate, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.PassBookEntryDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.PassBookEntryDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="button" id="btnSubmit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-1 text-right">
+                <label class="control-label" style="padding-top:8px;">Filter By:</label>
+            </div>
+            <div class="col-md-3">
+
+                <select id="filterColumn" class="form-control">
+                    <option value="">View All</option>
+
+                    <option value="MemberCode">Member Code</option>
+
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+            </div>
+            <div class="col-md-5">
+                <input type="button" id="btnSearch" value="Search"  class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="gridKendo"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="gridKendo2"></div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>

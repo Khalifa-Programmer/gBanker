@@ -1,0 +1,234 @@
+﻿@model gBanker.Web.ViewModels.AccTrxMasterViewModel
+@{
+    ViewBag.Title = "Fund Transfer";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.OfficeListItems;
+}
+<script type="text/javascript">
+
+
+    function VoucherDelete(id) {
+        if (confirm('Are you sure, you want to delete?') == true) {
+            var data = GenerateAjaxRequist("/FundTransfer/DeleteFundTransferVoucher", JSON.stringify({ id: id }), "POST");
+            $('#grid').jtable('load');
+            alert(data)
+        }
+    }
+
+    function View(AccReconcileID) {
+        $.ajax({
+               contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetAllVoucherXFund", "FundTransfer", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { AccReconcileID: AccReconcileID },
+                success: function (data) {
+
+                    var htm = "";
+                    if (data) {
+                        var thead = "<thead><tr><th>Head</th><th>Debit</th><th>Credit</th></tr></thead>";
+                        htm = `<div style="text-align:center;font-weight: bold;font-size: 14px;">Date : ${data.TrxDate}</div><table>${thead}<tbody>`;
+                        // Sender
+                        if (data.Sender) {
+                            htm += `<tr><td colspan="3" style="font-weight:bold;">Office:${data.Sender[0].Office} &nbsp;&nbsp;&nbsp;&nbsp;V.Type: ${data.Sender[0].VoucherType}</td></tr>`
+                            $.each(data.Sender, function (index, value) {
+                                htm += `<tr><td>${value.AccountHead}</td><td style="text-align:right;">${value.Debit}</td><td style="text-align:right;">${value.Credit}</td></tr>`
+                            });
+                        }
+                        // Receiver
+                        if (data.Receiver) {
+                            htm += `<tr><td colspan="3" style="font-weight:bold;">Office:${data.Receiver[0].Office} &nbsp;&nbsp;&nbsp;&nbsp;V.Type: ${data.Receiver[0].VoucherType}</td></tr>`;
+                            $.each(data.Sender, function (index, value) {
+                                htm +=`<tr><td>${value.AccountHead}</td><td style="text-align:right;">${value.Debit}</td><td style="text-align:right;">${value.Credit}</td></tr>`;
+                            });
+                        }
+                        // HO
+                        if (data.HO_vou) {
+                            htm += `<tr><td colspan="3" style="font-weight:bold;">Office:${data.HO_vou[0].Office} &nbsp;&nbsp;&nbsp;&nbsp;V.Type: ${data.HO_vou[0].VoucherType}</td></tr>
+                        <tr><td>${data.HO_vou[0].AccountHead}</td><td style="text-align:right;">${data.HO_vou[0].Debit}</td><td style="text-align:right;">${data.HO_vou[0].Credit}</td></tr>
+                        <tr><td>${data.HO_vou[1].AccountHead}</td><td style="text-align:right;">${data.HO_vou[1].Debit}</td><td style="text-align:right;">${data.HO_vou[1].Credit}</td></tr>`
+                        }
+                        htm += "</tbody></table>";
+                        console.log(htm)
+                        $("#dvVoucherShow").html(htm);
+                        $('#exampleModal').modal('show');
+                    }
+                },
+                error: function (err) {
+                    alert(err);
+
+                }
+            });
+       // var data = GenerateAjaxRequist("/FundTransfer/GetAllVoucherXFund", JSON.stringify({ AccReconcileID: AccReconcileID }), "GET");
+
+    }
+    $(document).ready(function () {
+        var transaction_Dt = '@gBanker.Web.Helpers.SessionHelper.TransactionDate.ToString("dd/MM/yyyy")';
+        var senderOffice = @gBanker.Web.Helpers.SessionHelper.LoginUserOfficeID;
+
+
+        $("#DateFromValue,#DateToValue").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1920:2100"
+        });
+
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'VoucherNo ASC',
+            actions: {
+                listAction: '/FundTransfer/GetReconcileVoucherList?trxDate=' + $("#TrxDate").val()
+            },
+            fields: {
+                TrxMasterID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ReceiverOffice: {
+                    title: 'ReceiverOffice',
+                    create: false,
+                    edit: false,
+                },
+                TrxDtMsg: {
+                    title: 'Trx Date',
+                    create: false,
+                    edit: false
+                },
+
+                ReffNo: {
+                    title: 'ReffNo',
+                    create: false,
+                    edit: false
+                },
+                Sndr_V_No: {
+                    title: 'Sndr.VoucherNo',
+                    create: false,
+                    edit: false
+                },
+                Rec_V_No: {
+                    title: 'Rec. VoucherNo',
+                    create: false,
+                    edit: false
+                },
+                HO_V_No: {
+                    title: 'HO. VoucherNo',
+                    create: false,
+                    edit: false
+                },
+                Debit: {
+                    title: 'Debit',
+                    create: false,
+                    edit: false
+                },
+                Credit: {
+                    title: 'Credit',
+                    create: false,
+                    edit: false
+                },
+                SenderOfficeId: {
+                    title: 'SenderOfficeId',
+                    create: false,
+                    edit: false
+                },
+                View: {
+                    title: "View",
+                    display: function (data) {
+                        if (data.record.IsAutoVoucher == true) {
+                            return null;
+                        }
+                        else {
+                            return `<div class="text-center delete-link"><a href="javascript:void" onclick="return View(${data.record.AccReconcileID});"><i class="fa fa-bar-chart-o"></i></a></div>`;
+                        }
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return `${transaction_Dt == data.record.TrxDtMsg && data.record.SenderOfficeId == senderOffice ? `<div class="text-center delete-link"><a href="javascript:void" onclick="return VoucherDelete(${data.record.AccReconcileID});"><i class="fa fa-trash-o"></i></a></div>`:''}`;
+                    }
+                }
+            }
+        });
+
+        //$('#grid').jtable('load');
+
+        reloadGrid();
+
+    });
+
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), DateFromValue: $('#DateFromValue').val(), DateToValue: $('#DateToValue').val() });
+        $("#loading").hide();
+    }
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Fund Transfer</h2>
+@Html.HiddenFor(model => model.TrxDate)
+
+<div class="row">
+    <div class="col-md-1">Date From:</div>
+    <div class="col-md-2">
+        <input type="text" id="DateFromValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-1"> Date To:</div>
+    <div class="col-md-2">
+        <input type="text" id="DateToValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-2">
+        <select id="filterColumn" class="form-control">
+            <option value="Viewall">View All</option>
+            <option value="OfficeCode">Office Code</option>
+            <option value="VoucherCode">Voucher No.</option>
+            <option value="TransactionType">Transaction Type</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-9"></div>
+    <div class="col-md-1">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dvVoucherShow">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Content/js/CommonMethod.js"></script>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

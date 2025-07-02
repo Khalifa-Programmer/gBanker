@@ -1,0 +1,3174 @@
+﻿@model gBanker.Web.ViewModels.MemberDetailViewModel
+@{
+    ViewBag.Title = "Member Details Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var gen = Model == null ? null : Model.GenderList;
+    var center = Model == null ? null : Model.CenterList;
+    var relation = Model == null ? null : Model.FamilyMemRelationshipList;
+    var mar = Model == null ? null : Model.MaritalStatusList;
+}
+<script type="text/javascript">
+    /*OLD form JS Start */
+    function LoadEditFamilyInfo(MemberFamilyID, MemName, Age, Gen, Relation, Occu, Nid, mno, mars, occa2, PhyDis, SocSec, Letter, Address, FinishClass, DropClass, Study, Signature) {
+        //$('#MemberID').val(MemberFamilyID);
+        $("#hdnFamilySave").val('U');
+        $("#hdnFamilyEditId").val(MemberFamilyID);
+        $('#FamilyMemName').val(MemName);
+        $('#FamilyMemAge').val(Age);
+        $('#FamilyMemGender').val(Gen);
+        $('#FamilyMemRelationship').val(Relation);
+        $('#FamilyMemOccupation').val(Occu);
+        if (Nid == 'null') {
+            $('#NationalIdNo').val('');
+        } else {
+            $('#NationalIdNo').val(Nid);
+        }
+        if (mno == 'null') {
+            $('#MobileNo').val('');
+        } else {
+            $('#MobileNo').val(mno);
+        }
+        if (mars == 'null') {
+            $('#MaritalStatus').val('');
+        } else {
+            $('#MaritalStatus').val(mars);
+        }
+        if (occa2 == 'null') {
+            $('#FamilyMemOccupation2').val('');
+        } else {
+            $('#FamilyMemOccupation2').val(occa2);
+        }
+        if (PhyDis == true)
+            $('#PhysicalDisability').prop('checked', true);
+        else
+            $('#PhysicalDisability').prop('checked', false);
+
+        if (SocSec == 'null') {
+            $('#SocialSecurity').val('');
+        } else {
+            $('#SocialSecurity').val(SocSec);
+        }
+
+        if (Letter == true)
+            $('#chkLetterWriting').prop('checked', true);
+        else
+            $('#chkLetterWriting').prop('checked', false);
+
+        if (Address == true)
+            $('#chkAddressWriting').prop('checked', true);
+        else
+            $('#chkAddressWriting').prop('checked', false);
+
+        if (FinishClass == true)
+            $('#chkClassFive').prop('checked', true);
+        else
+            $('#chkClassFive').prop('checked', false);
+
+        if (DropClass == true)
+            $('#chkDropClassFive').prop('checked', true);
+        else
+            $('#chkDropClassFive').prop('checked', false);
+
+        if (Study == true)
+            $('#chkStudying').prop('checked', true);
+        else
+            $('#chkStudying').prop('checked', false);
+
+        if (Signature == true)
+            $('#chkSignature').prop('checked', true);
+        else
+            $('#chkSignature').prop('checked', false);
+
+    }
+    function DeleteFamilyInfo(FamilyEditId) {
+        var r = confirm("Are you sure you want to cancel?");
+        if (r == true) {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemFamilyDelete", "MemberDetail", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { FamilyEditId: FamilyEditId },
+                success: function (mem_family_id) {
+                    if (mem_family_id > 0) {
+                        $(".family_success").show(800).fadeToggle(3000);
+                        $('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                        $('#gridFamilyNew').jtable('load', { MemId: $('#MemberID').val() });
+                    }
+                    else {
+                        $(".family_failed").show(800).fadeToggle(3000);
+                    }
+                },
+                error: function (err) {
+                    $(".family_failed").show(800).fadeToggle(3000);
+                }
+            });
+        }
+        else {
+            //
+        }
+    }
+    function LoadHouseInfo(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemHouseInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnHouseSave").val('U');
+                    $("#hdnHouseEditId").val(result.MemberHouseID);
+                    if(result.HomeWallPathkhari == true)
+                        $('#chkHomeWallPathkhari').prop('checked', true);
+                    else
+                        $('#chkHomeWallPathkhari').prop('checked', false);
+
+                    if (result.HomeWallBash == true)
+                        $('#chkHomeWallBash').prop('checked', true);
+                    else
+                        $('#chkHomeWallBash').prop('checked', false);
+
+                    if (result.HomeWallSchan == true)
+                        $('#chkHomeWallSchan').prop('checked', true);
+                    else
+                        $('#chkHomeWallSchan').prop('checked', false);
+
+                    if (result.HomeWallPaka == true)
+                        $('#chkHomeWallPaka').prop('checked', true);
+                    else
+                        $('#chkHomeWallPaka').prop('checked', false);
+
+                    if (result.HomeWallMati == true)
+                        $('#chkHomeWallMati').prop('checked', true);
+                    else
+                        $('#chkHomeWallMati').prop('checked', false);
+
+                    if (result.HomeWallTin == true)
+                        $('#chkHomeWallTin').prop('checked', true);
+                    else
+                        $('#chkHomeWallTin').prop('checked', false);
+
+                    if (result.HomeWallOther == true)
+                        $('#chkHomeWallOther').prop('checked', true);
+                    else
+                        $('#chkHomeWallOther').prop('checked', false);
+
+                    if (result.HomeRoofTin == true)
+                        $('#chkHomeRoofTin').prop('checked', true);
+                    else
+                        $('#chkHomeRoofTin').prop('checked', false);
+
+                    if (result.HomeRoofSchan == true)
+                        $('#chkHomeRoofSchan').prop('checked', true);
+                    else
+                        $('#chkHomeRoofSchan').prop('checked', false);
+
+                    if (result.HomeRoofKhar == true)
+                        $('#chkHomeRoofKhar').prop('checked', true);
+                    else
+                        $('#chkHomeRoofKhar').prop('checked', false);
+
+                    if (result.HomeRoofTinSchan == true)
+                        $('#chkHomeRoofTinSchan').prop('checked', true);
+                    else
+                        $('#chkHomeRoofTinSchan').prop('checked', false);
+
+                    if (result.HomeRoofOther == true)
+                        $('#chkHomeRoofOther').prop('checked', true);
+                    else
+                        $('#chkHomeRoofOther').prop('checked', false);
+
+                }
+                else {
+                    console.log('save');
+                    $("#hdnHouseSave").val('S');
+                    $("#hdnHouseEditId").val(0);
+                    $('#chkHomeWallPathkhari').prop('checked', false);
+                    $('#chkHomeWallBash').prop('checked', false);
+                    $('#chkHomeWallSchan').prop('checked', false);
+                    $('#chkHomeWallPaka').prop('checked', false);
+                    $('#chkHomeWallMati').prop('checked', false);
+                    $('#chkHomeWallTin').prop('checked', false);
+                    $('#chkHomeWallOther').prop('checked', false);
+                    $('#chkHomeRoofTin').prop('checked', false);
+                    $('#chkHomeRoofSchan').prop('checked', false);
+                    $('#chkHomeRoofKhar').prop('checked', false);
+                    $('#chkHomeRoofTinSchan').prop('checked', false);
+                    $('#chkHomeRoofOther').prop('checked', false);
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    function LoadLandInfo(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemLandInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnLandSave").val('U');
+                    $("#hdnLandEditId").val(result.MemberLandID);
+                    if (result.LandVita == true)
+                        $('#chkLandVita').prop('checked', true);
+                    else
+                        $('#chkLandVita').prop('checked', false);
+
+                    if (result.LandKrishi == true)
+                        $('#chkLandKrishi').prop('checked', true);
+                    else
+                        $('#chkLandKrishi').prop('checked', false);
+
+                    if (result.LandBagan == true)
+                        $('#chkLandBagan').prop('checked', true);
+                    else
+                        $('#chkLandBagan').prop('checked', false);
+
+                    if (result.LandPukur == true)
+                        $('#chkLandPukur').prop('checked', true);
+                    else
+                        $('#chkLandPukur').prop('checked', false);
+
+                    if (result.LandOnabadi == true)
+                        $('#chkLandOnabadi').prop('checked', true);
+                    else
+                        $('#chkLandOnabadi').prop('checked', false);
+
+                    if (result.LandBondhokDeya == true)
+                        $('#chkLandBondhokDeya').prop('checked', true);
+                    else
+                        $('#chkLandBondhokDeya').prop('checked', false);
+
+                    if (result.LandBorgaDeya == true)
+                        $('#chkLandBorgaDeya').prop('checked', true);
+                    else
+                        $('#chkLandBorgaDeya').prop('checked', false);
+
+                    if (result.LandBondhokNeya == true)
+                        $('#chkLandBondhokNeya').prop('checked', true);
+                    else
+                        $('#chkLandBondhokNeya').prop('checked', false);
+
+                    if (result.LandBorgaNeya == true)
+                        $('#chkLandBorgaNeya').prop('checked', true);
+                    else
+                        $('#chkLandBorgaNeya').prop('checked', false);
+
+                    if (result.LandKhash == true)
+                        $('#chkLandKhash').prop('checked', true);
+                    else
+                        $('#chkLandKhash').prop('checked', false);
+                    //alert(result.LandBorgaCondition);
+                    $('#txtLandBorgaCondition').val(result.LandBorgaCondition);
+                }
+                else {
+                    console.log('save');
+                    $("#hdnHouseSave").val('S');
+                    $("#hdnHouseEditId").val(0);
+                    $('#chkLandVita').prop('checked', false);
+                    $('#chkLandKrishi').prop('checked', false);
+                    $('#chkLandBagan').prop('checked', false);
+                    $('#chkLandPukur').prop('checked', false);
+                    $('#chkLandOnabadi').prop('checked', false);
+                    $('#chkLandBondhokDeya').prop('checked', false);
+                    $('#chkLandBorgaDeya').prop('checked', false);
+                    $('#chkLandBondhokNeya').prop('checked', false);
+                    $('#chkLandBorgaNeya').prop('checked', false);
+                    $('#chkLandKhash').prop('checked', false);
+                    $('#chkLandBorgaCondition').val('');
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    function LoadAssetInfo(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemAssetInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnAssetSave").val('U');
+                    $("#hdnAssetEditId").val(result.MemberAssetID);
+                    $('#txtAssetCow').val(result.AssetCow);
+                    $('#txtAssetGoat').val(result.AssetGoat);
+                    $('#txtAssetSheep').val(result.AssetSheep);
+                    $('#txtAssetDuck').val(result.AssetDuck);
+                    $('#txtAssetHen').val(result.AssetHen);
+                    $('#txtAssetCattleOther').val(result.AssetCattleOther);
+                    $('#txtAssetBed').val(result.AssetBed);
+                    $('#txtAssetChair').val(result.AssetChair);
+                    $('#txtAssetTable').val(result.AssetTable);
+                    $('#txtAssetCycle').val(result.AssetCycle);
+                    $('#txtAssetRadio').val(result.AssetRadio);
+                    $('#txtAssetOrnament').val(result.AssetOrnament);
+                    $('#txtAssetOther').val(result.AssetOther);
+                }
+                else {
+                    console.log('save');
+                    $("#hdnAssetSave").val('S');
+                    $("#hdnAssetEditId").val(0);
+                    $('#txtAssetCow').val('');
+                    $('#txtAssetGoat').val('');
+                    $('#txtAssetSheep').val('');
+                    $('#txtAssetDuck').val('');
+                    $('#txtAssetHen').val('');
+                    $('#txtAssetCattleOther').val('');
+                    $('#txtAssetBed').val('');
+                    $('#txtAssetChair').val('');
+                    $('#txtAssetTable').val('');
+                    $('#txtAssetCycle').val('');
+                    $('#txtAssetRadio').val('');
+                    $('#txtAssetOrnament').val('');
+                    $('#txtAssetOther').val('');
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    /*OLD form JS Start */
+
+
+    /*New form JS Start */
+    function LoadEditFamilyInfoNew(MemberFamilyID, MemName, Age, Gen, Relation, Occu, Nid, mno, mars, occa2, PhyDis, SocSec, Letter, Address, FinishClass, DropClass, Study, Signature) {
+        debugger;
+        //$('#MemberID').val(MemberFamilyID);
+        $("#hdnFamilySave").val('U');
+        $("#hdnFamilyEditId").val(MemberFamilyID);
+        $('#FamilyMemNames').val(MemName);
+        $('#FamilyMemAges').val(Age);
+        $('#FamilyMemGenders').val(Gen);
+        $('#FamilyMemRelationships').val(Relation);
+        $('#FamilyMemOccupations').val(Occu);
+        if (Nid == 'null') {
+            $('#NationalIdNo').val('');
+        } else {
+            $('#NationalIdNo').val(Nid);
+        }
+        if (mno == 'null') {
+            $('#MobileNo').val('');
+        } else {
+            $('#MobileNo').val(mno);
+        }
+        if (mars == 'null') {
+            $('#MaritalStatus').val('');
+        } else {
+            $('#MaritalStatus').val(mars);
+        }
+        if (occa2 == 'null') {
+            $('#FamilyMemOccupation2').val('');
+        } else {
+            $('#FamilyMemOccupation2').val(occa2);
+        }
+        if (PhyDis == true)
+            $('#PhysicalDisability').prop('checked', true);
+        else
+            $('#PhysicalDisability').prop('checked', false);
+
+        if (SocSec == 'null') {
+            $('#SocialSecurity').val('');
+        } else {
+            $('#SocialSecurity').val(SocSec);
+        }
+
+        if (Letter == true)
+            $('#chkLetterWritings').prop('checked', true);
+        else
+            $('#chkLetterWritings').prop('checked', false);
+
+        if (Address == true)
+            $('#chkAddressWritings').prop('checked', true);
+        else
+            $('#chkAddressWritings').prop('checked', false);
+
+        if (FinishClass == true)
+            $('#chkClassFives').prop('checked', true);
+        else
+            $('#chkClassFives').prop('checked', false);
+
+        if (DropClass == true)
+            $('#chkDropClassFives').prop('checked', true);
+        else
+            $('#chkDropClassFives').prop('checked', false);
+
+        if (Study == true)
+            $('#chkStudyings').prop('checked', true);
+        else
+            $('#chkStudyings').prop('checked', false);
+
+        if (Signature == true)
+            $('#chkSignatures').prop('checked', true);
+        else
+            $('#chkSignatures').prop('checked', false);
+
+    }
+    function DeleteFamilyInfo(FamilyEditId) {
+        var r = confirm("Are you sure you want to cancel?");
+        if (r == true) {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemFamilyDelete", "MemberDetail", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { FamilyEditId: FamilyEditId },
+                success: function (mem_family_id) {
+                    if (mem_family_id > 0) {
+                        $(".family_success").show(800).fadeToggle(3000);
+                        $('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                        $('#gridFamilyNew').jtable('load', { MemId: $('#MemberID').val() });
+                    }
+                    else {
+                        $(".family_failed").show(800).fadeToggle(3000);
+                    }
+                },
+                error: function (err) {
+                    $(".family_failed").show(800).fadeToggle(3000);
+                }
+            });
+        }
+        else {
+            //
+        }
+    }
+    function LoadHouseInfoNew(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemHouseInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnHouseSave").val('U');
+                    $("#hdnHouseEditId").val(result.MemberHouseID);
+                    if(result.HomeWallPathkhari == true)
+                        $('#chkHomeWallPathkharis').prop('checked', true);
+                    else
+                        $('#chkHomeWallPathkharis').prop('checked', false);
+
+                    if (result.HomeWallBash == true)
+                        $('#chkHomeWallBashs').prop('checked', true);
+                    else
+                        $('#chkHomeWallBashs').prop('checked', false);
+
+                    //if (result.HomeWallBash == true)
+                    //    $('#chkHomeWallBash').prop('checked', true);
+                    //else
+                    //    $('#chkHomeWallBash').prop('checked', false);
+
+                    if (result.HomeWallSchan == true)
+                        $('#chkHomeWallSchans').prop('checked', true);
+                    else
+                        $('#chkHomeWallSchans').prop('checked', false);
+
+                    if (result.HomeWallPaka == true)
+                        $('#chkHomeWallPakas').prop('checked', true);
+                    else
+                        $('#chkHomeWallPakas').prop('checked', false);
+
+                    if (result.HomeWallMati == true)
+                        $('#chkHomeWallMatis').prop('checked', true);
+                    else
+                        $('#chkHomeWallMatis').prop('checked', false);
+
+                    if (result.HomeWallTin == true)
+                        $('#chkHomeWallTins').prop('checked', true);
+                    else
+                        $('#chkHomeWallTins').prop('checked', false);
+
+                    if (result.HomeWallOther == true)
+                        $('#chkHomeWallOthers').prop('checked', true);
+                    else
+                        $('#chkHomeWallOthers').prop('checked', false);
+
+                    if (result.HomeRoofTin == true)
+                        $('#chkHomeRoofTins').prop('checked', true);
+                    else
+                        $('#chkHomeRoofTins').prop('checked', false);
+
+                    if (result.HomeRoofSchan == true)
+                        $('#chkHomeRoofSchans').prop('checked', true);
+                    else
+                        $('#chkHomeRoofSchans').prop('checked', false);
+
+                    if (result.HomeRoofKhar == true)
+                        $('#chkHomeRoofKhars').prop('checked', true);
+                    else
+                        $('#chkHomeRoofKhars').prop('checked', false);
+
+                    if (result.HomeRoofTinSchan == true)
+                        $('#chkHomeRoofTinSchans').prop('checked', true);
+                    else
+                        $('#chkHomeRoofTinSchans').prop('checked', false);
+
+                    if (result.HomeRoofOther == true)
+                        $('#chkHomeRoofOthers').prop('checked', true);
+                    else
+                        $('#chkHomeRoofOthers').prop('checked', false);
+
+
+
+                    if (result.HouseOwnerOwn == true)
+                        $('#chkHouseOwnerOwn').prop('checked', true);
+                    else
+                        $('#chkHouseOwnerOwn').prop('checked', false);
+
+                    if (result.HouseOwnerOther == true)
+                        $('#chkHouseOwnerOther').prop('checked', true);
+                    else
+                        $('#chkHouseOwnerOther').prop('checked', false);
+
+                    if (result.HouseOwnerKhasJomi == true)
+                        $('#chkHouseOwnerKhasJomi').prop('checked', true);
+                    else
+                        $('#chkHouseOwnerKhasJomi').prop('checked', false);
+
+                    if (result.HouseOwnerOtherLand == true)
+                        $('#chkHouseOwnerOtherLand').prop('checked', true);
+                    else
+                        $('#chkHouseOwnerOtherLand').prop('checked', false);
+
+                    $('#HouseOwnerOwnLandAmount').val(result.HouseOwnerOwnLandAmount);
+                    $('#NoOfRoomInHouse').val(result.NoOfRoomInHouse);
+                    $('#NoOfMainRoom').val(result.NoOfMainRoom);
+                    $('#OtherRoomName').val(result.OtherRoomName);
+                    $('#HouseMaterialTop').val(result.HouseMaterialTop);
+                    $('#HouseMaterialWall').val(result.HouseMaterialWall);
+                    $('#HouseMaterialFloor').val(result.HouseMaterialFloor);
+
+                }
+                else {
+                    console.log('save');
+                    $("#hdnHouseSave").val('S');
+                    $("#hdnHouseEditId").val(0);
+                    $('#chkHomeWallPathkharis').prop('checked', false);
+                    $('#chkHomeWallBashs').prop('checked', false);
+                    $('#chkHomeWallSchans').prop('checked', false);
+                    $('#chkHomeWallPakas').prop('checked', false);
+                    $('#chkHomeWallMatis').prop('checked', false);
+                    $('#chkHomeWallTins').prop('checked', false);
+                    $('#chkHomeWallOthers').prop('checked', false);
+                    $('#chkHomeRoofTins').prop('checked', false);
+                    $('#chkHomeRoofSchans').prop('checked', false);
+                    $('#chkHomeRoofKhars').prop('checked', false);
+                    $('#chkHomeRoofTinSchans').prop('checked', false);
+                    $('#chkHomeRoofOthers').prop('checked', false);
+
+                    $('#chkHouseOwnerOwn').prop('checked', false);
+                    $('#chkHouseOwnerOther').prop('checked', false);
+                    $('#chkHouseOwnerKhasJomi').prop('checked', false);
+                    $('#chkHouseOwnerOtherLand').prop('checked', false);
+
+                    $('#HouseOwnerOwnLandAmount').val(0);
+                    $('#NoOfRoomInHouse').val(0);
+                    $('#NoOfMainRoom').val(0);
+                    $('#OtherRoomName').val('');
+                    $('#HouseMaterialTop').val('');
+                    $('#HouseMaterialWall').val('');
+                    $('#HouseMaterialFloor').val('');
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    function LoadLandInfoNew(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemLandInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnLandSave").val('U');
+                    $("#hdnLandEditId").val(result.MemberLandID);
+                    if (result.LandVita == true)
+                        $('#chkLandVitas').prop('checked', true);
+                    else
+                        $('#chkLandVitas').prop('checked', false);
+
+                    if (result.LandKrishi == true)
+                        $('#chkLandKrishis').prop('checked', true);
+                    else
+                        $('#chkLandKrishis').prop('checked', false);
+
+                    if (result.LandBagan == true)
+                        $('#chkLandBagans').prop('checked', true);
+                    else
+                        $('#chkLandBagans').prop('checked', false);
+
+                    if (result.LandPukur == true)
+                        $('#chkLandPukurs').prop('checked', true);
+                    else
+                        $('#chkLandPukurs').prop('checked', false);
+
+                    if (result.LandOnabadi == true)
+                        $('#chkLandOnabadis').prop('checked', true);
+                    else
+                        $('#chkLandOnabadis').prop('checked', false);
+
+                    if (result.LandBondhokDeya == true)
+                        $('#chkLandBondhokDeyas').prop('checked', true);
+                    else
+                        $('#chkLandBondhokDeyas').prop('checked', false);
+
+                    if (result.LandBorgaDeya == true)
+                        $('#chkLandBorgaDeyas').prop('checked', true);
+                    else
+                        $('#chkLandBorgaDeyas').prop('checked', false);
+
+                    if (result.LandBondhokNeya == true)
+                        $('#chkLandBondhokNeyas').prop('checked', true);
+                    else
+                        $('#chkLandBondhokNeyas').prop('checked', false);
+
+                    if (result.LandBorgaNeya == true)
+                        $('#chkLandBorgaNeyas').prop('checked', true);
+                    else
+                        $('#chkLandBorgaNeyas').prop('checked', false);
+
+                    if (result.LandKhash == true)
+                        $('#chkLandKhashs').prop('checked', true);
+                    else
+                        $('#chkLandKhashs').prop('checked', false);
+                    //alert(result.LandBorgaCondition);
+                    $('#txtLandBorgaConditions').val(result.LandBorgaCondition);
+                }
+                else {
+                    console.log('save');
+                    $("#hdnHouseSave").val('S');
+                    $("#hdnHouseEditId").val(0);
+                    $('#chkLandVitas').prop('checked', false);
+                    $('#chkLandKrishis').prop('checked', false);
+                    $('#chkLandBagans').prop('checked', false);
+                    $('#chkLandPukurs').prop('checked', false);
+                    $('#chkLandOnabadis').prop('checked', false);
+                    $('#chkLandBondhokDeyas').prop('checked', false);
+                    $('#chkLandBorgaDeyas').prop('checked', false);
+                    $('#chkLandBondhokNeyas').prop('checked', false);
+                    $('#chkLandBorgaNeyas').prop('checked', false);
+                    $('#chkLandKhashs').prop('checked', false);
+                    $('#chkLandBorgaConditions').val('');
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    function LoadAssetInfoNew(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemAssetInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnAssetSave").val('U');
+                    $("#hdnAssetEditId").val(result.MemberAssetID);
+                    $('#txtAssetCows').val(result.AssetCow);
+                    $('#txtAssetGoats').val(result.AssetGoat);
+                    $('#txtAssetSheeps').val(result.AssetSheep);
+                    $('#txtAssetDucks').val(result.AssetDuck);
+                    $('#txtAssetHens').val(result.AssetHen);
+                    $('#txtAssetCattleOthers').val(result.AssetCattleOther);
+                    $('#txtAssetBeds').val(result.AssetBed);
+                    $('#txtAssetChairs').val(result.AssetChair);
+                    $('#txtAssetTables').val(result.AssetTable);
+                    $('#txtAssetCycles').val(result.AssetCycle);
+                    $('#txtAssetRadios').val(result.AssetRadio);
+                    $('#txtAssetOrnaments').val(result.AssetOrnament);
+                    $('#txtAssetOthers').val(result.AssetOther);
+                    $('#AgriculturalLandAmount').val(result.AgriculturalLandAmount);
+                    $('#PondLandAmount').val(result.PondLandAmount);
+                    $('#AbandonedLandAmount').val(result.AbandonedLandAmount);
+                }
+                else {
+                    console.log('save');
+                    $("#hdnAssetSave").val('S');
+                    $("#hdnAssetEditId").val(0);
+                    $('#txtAssetCows').val('');
+                    $('#txtAssetGoats').val('');
+                    $('#txtAssetSheeps').val('');
+                    $('#txtAssetDucks').val('');
+                    $('#txtAssetHens').val('');
+                    $('#txtAssetCattleOthers').val('');
+                    $('#txtAssetBeds').val('');
+                    $('#txtAssetChairs').val('');
+                    $('#txtAssetTables').val('');
+                    $('#txtAssetCycles').val('');
+                    $('#txtAssetRadios').val('');
+                    $('#txtAssetOrnaments').val('');
+                    $('#txtAssetOthers').val('');
+                    $('#AgriculturalLandAmount').val(0);
+                    $('#PondLandAmount').val(0);
+                    $('#AbandonedLandAmount').val(0);
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    function LoadOtherInfoNew(memberId) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOtherInfo", "MemberDetail", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemId: memberId },
+            success: function (result) {
+                if (result.TotCount > 0) {
+                    console.log('update');
+                    $("#hdnOtherSave").val('U');
+                    $("#hdnOtherEditId").val(result.MemberOtherInfoID);
+
+                    if (result.Tubewel == true)
+                        $('#rdoTubewel').prop('checked', true);
+                    else
+                        $('#rdoTubewel').prop('checked', false);
+
+                    if (result.Nodi == true)
+                        $('#rdoNodi').prop('checked', true);
+                    else
+                        $('#rdoNodi').prop('checked', false);
+
+                    if (result.Khal == true)
+                        $('#rdoKhal').prop('checked', true);
+                    else
+                        $('#rdoKhal').prop('checked', false);
+
+                    if (result.Pukur == true)
+                        $('#rdoPukur').prop('checked', true);
+                    else
+                        $('#rdoPukur').prop('checked', false);
+
+                    if (result.Filter == true)
+                        $('#rdoFilter').prop('checked', true);
+                    else
+                        $('#rdoFilter').prop('checked', false);
+
+                    if (result.PSF == true)
+                        $('#rdoPSF').prop('checked', true);
+                    else
+                        $('#rdoPSF').prop('checked', false);
+
+                    if (result.BristyrPani == true)
+                        $('#rdoBristyrPani').prop('checked', true);
+                    else
+                        $('#rdoBristyrPani').prop('checked', false);
+
+                    if (result.Saplai == true)
+                        $('#rdoSaplai').prop('checked', true);
+                    else
+                        $('#rdoSaplai').prop('checked', false);
+
+                    if (result.Others == true)
+                        $('#rdoOthers').prop('checked', true);
+                    else
+                        $('#rdoOthers').prop('checked', false);
+
+                    if (result.Lattin == true)
+                        $('#rdolattinYes').prop('checked', true);
+                    else
+                        $('#rdolattinYes').prop('checked', false);
+
+                    if (result.Lattin != true)
+                        $('#rdolattinNo').prop('checked', true);
+                    else
+                        $('#rdolattinNo').prop('checked', false);
+
+
+                }
+                else {
+                    console.log('save');
+                    $("#hdnOtherSave").val('S');
+                    $("#hdnOtherEditId").val(0);
+                    $('#rdoTubewel').prop('checked', false);
+                    $('#rdoNodi').prop('checked', false);
+                    $('#rdoKhal').prop('checked', false);
+                    $('#rdoPukur').prop('checked', false);
+                    $('#rdoFilter').prop('checked', false);
+                    $('#rdoPSF').prop('checked', false);
+                    $('#rdoBristyrPani').prop('checked', false);
+                    $('#rdoSaplai').prop('checked', false);
+                    $('#rdoOthers').prop('checked', false);
+                    $('#rdoLattin').prop('checked', false);
+                }
+            },
+            error: function (err) {
+                //$body.removeClass("loading");
+            }
+        });
+    }
+    /*New form JS Start */
+
+
+    $(document).ready(function () {
+        /*OLD form JQ Start */
+        $("#collapse1").on("hide.bs.collapse", function () {
+            $(".panel-title-1").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><i class="fa fa-plus"></i>&nbsp;Family Information</a>');
+        });
+        $("#collapse1").on("show.bs.collapse", function () {
+            $(".panel-title-1").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><i class="fa fa-minus"></i>&nbsp;Family Information</a>');
+        });
+        $("#collapse2").on("hide.bs.collapse", function () {
+            $(".panel-title-2").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><i class="fa fa-plus"></i>&nbsp;House Information</a>');
+        });
+        $("#collapse2").on("show.bs.collapse", function () {
+            $(".panel-title-2").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><i class="fa fa-minus"></i>&nbsp;House Information</a>');
+        });
+        $("#collapse3").on("hide.bs.collapse", function () {
+            $(".panel-title-3").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse3"><i class="fa fa-plus"></i>&nbsp;Land Information</a>');
+        });
+        $("#collapse3").on("show.bs.collapse", function () {
+            $(".panel-title-3").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse3"><i class="fa fa-minus"></i>&nbsp;Land Information</a>');
+        });
+        $("#collapse4").on("hide.bs.collapse", function () {
+            $(".panel-title-4").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse4"><i class="fa fa-plus"></i>&nbsp;Asset Information</a>');
+        });
+        $("#collapse4").on("show.bs.collapse", function () {
+            $(".panel-title-4").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse4"><i class="fa fa-minus"></i>&nbsp;Asset Information</a>');
+        });
+        $("#collapse5").on("hide.bs.collapse", function () {
+            $(".panel-title-5").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse5"><i class="fa fa-plus"></i>&nbsp;Family Information New (পরিবারে সদস্যদের তথ্য )</a>');
+        });
+        $("#collapse5").on("show.bs.collapse", function () {
+            $(".panel-title-5").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse5"><i class="fa fa-minus"></i>&nbsp;Family Information New (পরিবারে সদস্যদের তথ্য )</a>');
+        });
+        $("#collapse6").on("hide.bs.collapse", function () {
+            $(".panel-title-6").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse6"><i class="fa fa-plus"></i>&nbsp;House Information New (বাড়ি ও বসতভিটার অবস্থা )</a>');
+        });
+        $("#collapse6").on("show.bs.collapse", function () {
+            $(".panel-title-6").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse6"><i class="fa fa-minus"></i>&nbsp;House Information New (বাড়ি ও বসতভিটার অবস্থা )</a>');
+        });
+        $("#collapse7").on("hide.bs.collapse", function () {
+            $(".panel-title-7").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse7"><i class="fa fa-plus"></i>&nbsp;Land Information New</a>');
+        });
+        $("#collapse7").on("show.bs.collapse", function () {
+            $(".panel-title-7").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse7"><i class="fa fa-minus"></i>&nbsp;Land Information New</a>');
+        });
+        $("#collapse8").on("hide.bs.collapse", function () {
+            $(".panel-title-8").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse8"><i class="fa fa-plus"></i>&nbsp;Asset Information New ( জমি ও সম্পদের তথ্য : )</a>');
+        });
+        $("#collapse8").on("show.bs.collapse", function () {
+            $(".panel-title-8").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse8"><i class="fa fa-minus"></i>&nbsp;Asset Information New ( জমি ও সম্পদের তথ্য : )</a>');
+        });
+        $("#collapse9").on("hide.bs.collapse", function () {
+            $(".panel-title-9").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse9"><i class="fa fa-plus"></i>&nbsp;Other Information New ( অন্যান্য তথ্য : )</a>');
+        });
+        $("#collapse9").on("show.bs.collapse", function () {
+            $(".panel-title-9").html('<a data-toggle="collapse" data-parent="#accordion" href="#collapse9"><i class="fa fa-minus"></i>&nbsp;Other Information New ( অন্যান্য তথ্য : )</a>');
+        });
+
+
+
+
+        $("#memberAutoComplete").prop("readonly", true);
+        $("#hdnFamilySave").val('S');
+        $("#hdnFamilyEditId").val(0);
+        $("#hdnHouseSave").val('S');
+        $("#hdnHouseEditId").val(0);
+        $("#hdnLandSave").val('S');
+        $("#hdnLandEditId").val(0);
+
+        $("#CenterID").change(function () {
+            var cntr = $("#CenterID").val();
+            if (cntr > 0) {
+                $("#memberAutoComplete").prop("readonly", false);
+            }
+            else
+            {
+                $("#memberAutoComplete").prop("readonly", true);
+            }
+        });
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            $('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                            LoadHouseInfo($('#MemberID').val());
+                            LoadLandInfo($('#MemberID').val());
+                            LoadAssetInfo($('#MemberID').val());
+                            $('#gridFamilyNew').jtable('load', { MemId: $('#MemberID').val() });
+                            LoadHouseInfoNew($('#MemberID').val());
+                            LoadLandInfoNew($('#MemberID').val());
+                            LoadAssetInfoNew($('#MemberID').val());
+                            LoadOtherInfoNew($('#MemberID').val());
+
+                        }
+                        else if (data.length == 0) {
+                            alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            //messages: {
+            //    noResults: "", results: ""
+            //},
+            messages: {
+                noResults: '',
+                results: function (resultsCount) { }
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                //$('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                //$('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                return false;
+            }
+        });
+
+        $('#gridFamily').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'BusinessDate ASC',
+            actions: {
+                //listAction: '/MemberDetail/GetMemFamilyInfo?MemId=' +  $('#MemberID').val();
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberDetail/GetMemFamilyInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                MemberFamilyID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FamilyMemName: {
+                    title: 'Name',
+                    create: false,
+                    edit: false,
+                    type: 'label'
+                },
+                FamilyMemAge: {
+                    title: 'Age',
+                    create: false,
+                    edit: false
+                },
+                FamilyMemGender: {
+                    title: "Gender",
+                    display: function (data) {
+                        var gen='';
+                        if(data.record.FamilyMemGender == 'F')
+                            gen = 'Female';
+                        else
+                            gen = 'Male';
+                        return  gen;
+                    }
+                },
+                FamilyMemRelationship: {
+                    title: "Relation",
+                    display: function (data) {
+                        var relation='';
+                        if (data.record.FamilyMemRelationship == 1)
+                            relation = 'Self';
+                        else if (data.record.FamilyMemRelationship == 2)
+                            relation = 'Husband';
+                        else if (data.record.FamilyMemRelationship == 3)
+                            relation = 'Father';
+                        else if (data.record.FamilyMemRelationship == 4)
+                            relation = 'Mother';
+                        else if (data.record.FamilyMemRelationship == 5)
+                            relation = 'Brother';
+                        else if (data.record.FamilyMemRelationship == 6)
+                            relation = 'Sister';
+                        else if (data.record.FamilyMemRelationship == 7)
+                            relation = 'Uncle';
+                        return relation;
+                    }
+                },
+                FamilyMemOccupation: {
+                    title: 'Ocupation',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                NationalIdNo: {
+                    title: 'NID',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                MobileNo: {
+                    title: 'MobileNo',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                LetterWritingAbility: {
+                    title: "Letter Writing",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.LetterWritingAbility == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                AddressWritingAbility: {
+                    title: "Letter Writing",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.AddressWritingAbility == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                FinishedClassFive: {
+                    title: "Finish Class V",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.FinishedClassFive == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                DropBeforeClassFive: {
+                    title: "Drop Before Class V",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.DropBeforeClassFive == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                Studying: {
+                    title: "Studying",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.DropBeforeClassFive == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                SignatureAbility: {
+                    title: "Signature Ability",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.SignatureAbility == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                EditLink: {
+                    title: "Edit",
+                    sort: false,
+                    display: function (data) {
+                        return "<div class='text-center'><a href='#' OnClick='LoadEditFamilyInfo(" + data.record.MemberFamilyID + ',"' + data.record.FamilyMemName + '",' + data.record.FamilyMemAge + ',"' + data.record.FamilyMemGender + '","' + data.record.FamilyMemRelationship + '","' + data.record.FamilyMemOccupation + '","' + data.record.NationalIdNo + '","' + data.record.MobileNo + '","' + data.record.MaritalStatus + '","' + data.record.FamilyMemOccupation2 + '",' + data.record.PhysicalDisability + ',"' + data.record.SocialSecurity +'",'+ data.record.LetterWritingAbility + "," + data.record.AddressWritingAbility + "," + data.record.FinishedClassFive + "," + data.record.DropBeforeClassFive + "," + data.record.Studying + "," + data.record.SignatureAbility + ");'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        //<a href="#" OnClick="LoadEditFamilyInfo(' + sl + ');"><i class="fa fa-pencil-square-o"></i></a>
+
+                        //if (data.record.MemberStatus != '5')
+                        //    return "<div class='text-center'><a href='/Member/Edit/" + data.record.MemberID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        //else
+                        //    return null;
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        if (data.record.MemberStatus != '5')
+                            return '<div class="text-center delete-link"><a href="#" OnClick="DeleteFamilyInfo(' + data.record.MemberFamilyID + ')"><i class="fa fa-trash-o"></i></a></div>';
+                        else
+                            return null;
+                    }
+                }
+            }
+        });
+        $("#btnFamilySave").click(function (e) {
+            e.preventDefault();
+            var memName = $('#FamilyMemName').val();
+            var memAge = $('#FamilyMemAge').val();
+            var memGender = $('#FamilyMemGender').val();
+            var memRelation = $('#FamilyMemRelationship').val();
+            var memOccupation = $('#FamilyMemOccupation').val();
+            var nationalIdNo = $('#NationalIdNo').val();
+            var mobileNo = $('#MobileNo').val();
+            var MaritalStatus = $('#MaritalStatus').val();
+            var FamilyMemOccupation2 = $('#FamilyMemOccupation2').val();
+            var PhysicalDisability = 0;
+            if ($("#PhysicalDisability").is(":checked")) {
+                PhysicalDisability = 1;
+            }
+            var SocialSecurity = $('#SocialSecurity').val();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var letterWriting = 0;
+            var addressWriting = 0;
+            var finishClassFive = 0;
+            var dropBeforeClassFive = 0;
+            var studying = 0;
+            var signatureAbility = 0;
+            if ($("#chkLetterWriting").is(":checked")) {
+                letterWriting = 1;
+            }
+            if ($("#chkAddressWriting").is(":checked")) {
+                addressWriting = 1;
+            }
+            if ($("#chkClassFive").is(":checked")) {
+                finishClassFive = 1;
+            }
+            if ($("#chkDropClassFive").is(":checked")) {
+                dropBeforeClassFive = 1;
+            }
+            if ($("#chkStudying").is(":checked")) {
+                studying = 1;
+            }
+            if ($("#chkSignature").is(":checked")) {
+                signatureAbility = 1;
+            }
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveFamily", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, memName: memName, memAge: memAge, memGender: memGender, memRelation: memRelation, memOccupation: memOccupation, nationalIdNo: nationalIdNo, mobileNo: mobileNo, MaritalStatus: MaritalStatus, FamilyMemOccupation2: FamilyMemOccupation2, PhysicalDisability: PhysicalDisability, SocialSecurity: SocialSecurity,  letterWriting: letterWriting, addressWriting: addressWriting, finishClassFive: finishClassFive, dropBeforeClassFive: dropBeforeClassFive, studying: studying, signatureAbility: signatureAbility, mode: $("#hdnFamilySave").val(), FamilyEditId: $("#hdnFamilyEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Emp_Address_Id) {
+                        if (Emp_Address_Id > 0) {
+                            $('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                            $("#hdnFamilySave").val('S');
+                            $("#hdnFamilyEditId").val(0);
+
+                            $('#gridFamilyNew').jtable('load', { MemId: $('#MemberID').val() });
+                            $("#hdnFamilySave").val('S');
+                            $("#hdnFamilyEditId").val(0);
+
+                            $(".family_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".family_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+
+        $("#btnHouseSave").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var HomeWallPathkhari = 0;
+            var HomeWallBash = 0;
+            var HomeWallSchan = 0;
+            var HomeWallPaka = 0;
+            var HomeWallMati = 0;
+            var HomeWallTin = 0;
+            var HomeWallOther = 0;
+            var HomeRoofTin = 0;
+            var HomeRoofSchan = 0;
+            var HomeRoofKhar = 0;
+            var HomeRoofTinSchan = 0;
+            var HomeRoofOther = 0;
+
+            if ($("#chkHomeWallPathkhari").is(":checked")) {
+                HomeWallPathkhari = 1;
+            }
+            if ($("#chkHomeWallBash").is(":checked")) {
+                HomeWallBash = 1;
+            }
+            if ($("#chkHomeWallSchan").is(":checked")) {
+                HomeWallSchan = 1;
+            }
+            if ($("#chkHomeWallPaka").is(":checked")) {
+                HomeWallPaka = 1;
+            }
+            if ($("#chkHomeWallMati").is(":checked")) {
+                HomeWallMati = 1;
+            }
+            if ($("#chkHomeWallTin").is(":checked")) {
+                HomeWallTin = 1;
+            }
+            if ($("#chkHomeWallOther").is(":checked")) {
+                HomeWallOther = 1;
+            }
+            if ($("#chkHomeRoofTin").is(":checked")) {
+                HomeRoofTin = 1;
+            }
+            if ($("#chkHomeRoofSchan").is(":checked")) {
+                HomeRoofSchan = 1;
+            }
+            if ($("#chkHomeRoofKhar").is(":checked")) {
+                HomeRoofKhar = 1;
+            }
+            if ($("#chkHomeRoofTinSchan").is(":checked")) {
+                HomeRoofTinSchan = 1;
+            }
+            if ($("#chkHomeRoofOther").is(":checked")) {
+                HomeRoofOther = 1;
+            }
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveHouse", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, HomeWallPathkhari: HomeWallPathkhari, HomeWallBash: HomeWallBash, HomeWallSchan: HomeWallSchan, HomeWallPaka: HomeWallPaka, HomeWallMati: HomeWallMati, HomeWallTin: HomeWallTin, HomeWallOther: HomeWallOther, HomeRoofTin: HomeRoofTin, HomeRoofSchan: HomeRoofSchan, HomeRoofKhar: HomeRoofKhar, HomeRoofTinSchan: HomeRoofTinSchan, HomeRoofOther: HomeRoofOther, mode: $("#hdnHouseSave").val(), HouseEditId: $("#hdnHouseEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_house_id) {
+                        if (mem_house_id > 0) {
+                            $("#hdnHouseSave").val('S');
+                            $("#hdnHouseEditId").val(0);
+                            $('#chkHomeWallPathkhari').prop('checked', false);
+                            $('#chkHomeWallBash').prop('checked', false);
+                            $('#chkHomeWallSchan').prop('checked', false);
+                            $('#chkHomeWallPaka').prop('checked', false);
+                            $('#chkHomeWallMati').prop('checked', false);
+                            $('#chkHomeWallTin').prop('checked', false);
+                            $('#chkHomeWallOther').prop('checked', false);
+                            $('#chkHomeRoofTin').prop('checked', false);
+                            $('#chkHomeRoofSchan').prop('checked', false);
+                            $('#chkHomeRoofKhar').prop('checked', false);
+                            $('#chkHomeRoofTinSchan').prop('checked', false);
+                            $('#chkHomeRoofOther').prop('checked', false);
+                            $(".house_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".house_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnHouseCancel").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemHouseDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { HouseEditId: $("#hdnHouseEditId").val() },
+                    success: function (mem_house_id) {
+                        if (mem_house_id > 0) {
+                            $(".house_success").show(800).fadeToggle(3000);
+                            $("#hdnHouseSave").val('S');
+                            $("#hdnHouseEditId").val(0);
+                            $('#chkHomeWallPathkhari').prop('checked', false);
+                            $('#chkHomeWallBash').prop('checked', false);
+                            $('#chkHomeWallSchan').prop('checked', false);
+                            $('#chkHomeWallPaka').prop('checked', false);
+                            $('#chkHomeWallMati').prop('checked', false);
+                            $('#chkHomeWallTin').prop('checked', false);
+                            $('#chkHomeWallOther').prop('checked', false);
+                            $('#chkHomeRoofTin').prop('checked', false);
+                            $('#chkHomeRoofSchan').prop('checked', false);
+                            $('#chkHomeRoofKhar').prop('checked', false);
+                            $('#chkHomeRoofTinSchan').prop('checked', false);
+                            $('#chkHomeRoofOther').prop('checked', false);
+                        }
+                        else {
+                            $(".house_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".house_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+
+        $("#btnLandSave").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var LandVita = 0;
+            var LandKrishi = 0;
+            var LandBagan = 0;
+            var LandPukur = 0;
+            var LandOnabadi = 0;
+            var LandBondhokDeya = 0;
+            var LandBorgaDeya = 0;
+            var LandBondhokNeya = 0;
+            var LandBorgaNeya = 0;
+            var LandKhash = 0;
+            //var LandBorgaCondition = 0;
+            //var HomeRoofOther = 0;
+
+            if ($("#chkLandVita").is(":checked")) {
+                LandVita = 1;
+            }
+            if ($("#chkLandKrishi").is(":checked")) {
+                LandKrishi = 1;
+            }
+            if ($("#chkLandBagan").is(":checked")) {
+                LandBagan = 1;
+            }
+            if ($("#chkLandPukur").is(":checked")) {
+                LandPukur = 1;
+            }
+            if ($("#chkLandOnabadi").is(":checked")) {
+                LandOnabadi = 1;
+            }
+            if ($("#chkLandBondhokDeya").is(":checked")) {
+                LandBondhokDeya = 1;
+            }
+            if ($("#chkLandBorgaDeya").is(":checked")) {
+                LandBorgaDeya = 1;
+            }
+            if ($("#chkLandBondhokNeya").is(":checked")) {
+                LandBondhokNeya = 1;
+            }
+            if ($("#chkLandBorgaNeya").is(":checked")) {
+                LandBorgaNeya = 1;
+            }
+            if ($("#chkLandKhash").is(":checked")) {
+                LandKhash = 1;
+            }
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveLand", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, LandVita: LandVita, LandKrishi: LandKrishi, LandBagan: LandBagan, LandPukur: LandPukur, LandOnabadi: LandOnabadi, LandBondhokDeya: LandBondhokDeya, LandBorgaDeya: LandBorgaDeya, LandBondhokNeya: LandBondhokNeya, LandBorgaNeya: LandBorgaNeya, LandKhash: LandKhash, LandBorgaCondition: $("#txtLandBorgaCondition").val(), mode: $("#hdnLandSave").val(), LandEditId: $("#hdnLandEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_land_id) {
+                        if (mem_land_id > 0) {
+                            $("#hdnLandSave").val('S');
+                            $("#hdnLandEditId").val(0);
+                            $('#chkLandVita').prop('checked', false);
+                            $('#chkLandKrishi').prop('checked', false);
+                            $('#chkLandBagan').prop('checked', false);
+                            $('#chkLandPukur').prop('checked', false);
+                            $('#chkLandOnabadi').prop('checked', false);
+                            $('#chkLandBondhokDeya').prop('checked', false);
+                            $('#chkLandBorgaDeya').prop('checked', false);
+                            $('#chkLandBondhokNeya').prop('checked', false);
+                            $('#chkLandBorgaNeya').prop('checked', false);
+                            $('#chkLandKhash').prop('checked', false);
+                            $('#txtLandBorgaCondition').val('');
+                            $(".land_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".land_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnLandCancel").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemLandDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { LandEditId: $("#hdnLandEditId").val() },
+                    success: function (mem_house_id) {
+                        if (mem_house_id > 0) {
+                            $(".land_success").show(800).fadeToggle(3000);
+                            $("#hdnHouseSave").val('S');
+                            $("#hdnHouseEditId").val(0);
+                            $('#chkLandVita').prop('checked', false);
+                            $('#chkLandKrishi').prop('checked', false);
+                            $('#chkLandBagan').prop('checked', false);
+                            $('#chkLandPukur').prop('checked', false);
+                            $('#chkLandOnabadi').prop('checked', false);
+                            $('#chkLandBondhokDeya').prop('checked', false);
+                            $('#chkLandBorgaDeya').prop('checked', false);
+                            $('#chkLandBondhokNeya').prop('checked', false);
+                            $('#chkLandBorgaNeya').prop('checked', false);
+                            $('#chkLandKhash').prop('checked', false);
+                            $('#chkLandBorgaCondition').val('');
+                        }
+                        else {
+                            $(".land_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".land_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+
+        $("#btnAssetSave").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveAsset", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, AssetCow: $("#txtAssetCow").val(), AssetGoat: $("#txtAssetGoat").val(), AssetSheep: $("#txtAssetSheep").val(), AssetDuck: $("#txtAssetDuck").val(), AssetHen: $("#txtAssetHen").val(), AssetCattleOther: $("#txtAssetCattleOther").val(), AssetBed: $("#txtAssetBed").val(), AssetChair: $("#txtAssetChair").val(), AssetTable: $("#txtAssetTable").val(), AssetCycle: $("#txtAssetCycle").val(), AssetRadio: $("#txtAssetRadio").val(), AssetOrnament: $("#txtAssetOrnament").val(), AssetOther: $("#txtAssetOther").val(), mode: $("#hdnAssetSave").val(), AssetEditId: $("#hdnAssetEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_asset_id) {
+                        if (mem_asset_id > 0) {
+                            $("#hdnAssetSave").val('S');
+                            $("#hdnAssetEditId").val(0);
+                            $('#txtAssetCow').val('');
+                            $('#txtAssetGoat').val('');
+                            $('#txtAssetSheep').val('');
+                            $('#txtAssetDuck').val('');
+                            $('#txtAssetHen').val('');
+                            $('#txtAssetCattleOther').val('');
+                            $('#txtAssetBed').val('');
+                            $('#txtAssetChair').val('');
+                            $('#txtAssetTable').val('');
+                            $('#txtAssetCycle').val('');
+                            $('#txtAssetRadio').val('');
+                            $('#txtAssetOrnament').val('');
+                            $('#txtAssetOther').val('');
+                            $(".asset_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".asset_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnAssetCancel").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemAssetDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AssetEditId: $("#hdnAssetEditId").val() },
+                    success: function (mem_asset_id) {
+                        if (mem_asset_id > 0) {
+                            $(".asset_success").show(800).fadeToggle(3000);
+                            $("#hdnAssetSave").val('S');
+                            $("#hdnAssetEditId").val(0);
+                            $('#txtAssetCow').val('');
+                            $('#txtAssetGoat').val('');
+                            $('#txtAssetSheep').val('');
+                            $('#txtAssetDuck').val('');
+                            $('#txtAssetHen').val('');
+                            $('#txtAssetCattleOther').val('');
+                            $('#txtAssetBed').val('');
+                            $('#txtAssetChair').val('');
+                            $('#txtAssetTable').val('');
+                            $('#txtAssetCycle').val('');
+                            $('#txtAssetRadio').val('');
+                            $('#txtAssetOrnament').val('');
+                            $('#txtAssetOther').val('');
+                        }
+                        else {
+                            $(".asset_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".asset_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+        /*OLD form JQ Start */
+
+
+
+
+        /*New form JQ Start */
+
+
+        $('#gridFamilyNew').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'BusinessDate ASC',
+            actions: {
+                //listAction: '/MemberDetail/GetMemFamilyInfo?MemId=' +  $('#MemberID').val();
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberDetail/GetMemFamilyInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                MemberFamilyID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                FamilyMemName: {
+                    title: 'Name',
+                    create: false,
+                    edit: false,
+                    type: 'label'
+                },
+                FamilyMemAge: {
+                    title: 'AgeN',
+                    create: false,
+                    edit: false
+                },
+                FamilyMemGender: {
+                    title: "GenderN",
+                    display: function (data) {
+                        var gen='';
+                        if(data.record.FamilyMemGender == 'F')
+                            gen = 'Female';
+                        else
+                            gen = 'Male';
+                        return  gen;
+                    }
+                },
+                FamilyMemRelationship: {
+                    title: "Relation",
+                    display: function (data) {
+                        var relation='';
+                        if (data.record.FamilyMemRelationship == 1)
+                            relation = 'Self';
+                        else if (data.record.FamilyMemRelationship == 2)
+                            relation = 'Husband';
+                        else if (data.record.FamilyMemRelationship == 3)
+                            relation = 'Father';
+                        else if (data.record.FamilyMemRelationship == 4)
+                            relation = 'Mother';
+                        else if (data.record.FamilyMemRelationship == 5)
+                            relation = 'Brother';
+                        else if (data.record.FamilyMemRelationship == 6)
+                            relation = 'Sister';
+                        else if (data.record.FamilyMemRelationship == 7)
+                            relation = 'Uncle';
+                        return relation;
+                    }
+                },
+                FamilyMemOccupation: {
+                    title: 'Ocupation',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                NationalIdNo: {
+                    title: 'NID',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                MobileNo: {
+                    title: 'MobileNo',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                MaritalStatus: {
+                    title: 'Marital Status',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                FamilyMemOccupation2: {
+                    title: 'OccU 2',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                PhysicalDisability: {
+                    title: "Physical Disability",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.PhysicalDisability == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                SocialSecurity: {
+                    title: 'OccU 2',
+                    type: 'label',
+                    create: false,
+                    edit: false
+                },
+                LetterWritingAbility: {
+                    title: "Letter Writing",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.LetterWritingAbility == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                AddressWritingAbility: {
+                    title: "Letter Writing",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.AddressWritingAbility == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                FinishedClassFive: {
+                    title: "Finish Class V",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.FinishedClassFive == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                DropBeforeClassFive: {
+                    title: "Drop Before Class V",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.DropBeforeClassFive == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                Studying: {
+                    title: "Studying",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.DropBeforeClassFive == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                SignatureAbility: {
+                    title: "Signature Ability",
+                    display: function (data) {
+                        var result = '';
+                        if (data.record.SignatureAbility == true)
+                            result = 'Yes';
+                        else
+                            result = 'No';
+                        return result;
+                    }
+                },
+                EditLink: {
+                    title: "Edit",
+                    sort: false,
+                    display: function (data) {
+                        //return "<div class='text-center'><a href='#' OnClick='LoadEditFamilyInfoNew(" + data.record.MemberFamilyID + ',"' + data.record.FamilyMemName + '",' + data.record.FamilyMemAge + ',"' + data.record.FamilyMemGender + '","' + data.record.FamilyMemRelationship + '","' + data.record.FamilyMemOccupation + '","' + data.record.NationalIdNo + '","' + data.record.MobileNo + '","' + data.record.MaritalStatus + '","' + data.record.FamilyMemOccupation2 + '",' + data.record.PhysicalDisability + "," + data.record.LetterWritingAbility + "," + data.record.AddressWritingAbility + "," + data.record.FinishedClassFive + "," + data.record.DropBeforeClassFive + "," + data.record.Studying + "," + data.record.SignatureAbility + ");'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        return "<div class='text-center'><a href='#' OnClick='LoadEditFamilyInfoNew(" + data.record.MemberFamilyID + ',"' + data.record.FamilyMemName + '",' + data.record.FamilyMemAge + ',"' + data.record.FamilyMemGender + '","' + data.record.FamilyMemRelationship + '","' + data.record.FamilyMemOccupation + '","' + data.record.NationalIdNo + '","' + data.record.MobileNo + '","' + data.record.MaritalStatus + '","' + data.record.FamilyMemOccupation2 + '",' + data.record.PhysicalDisability + ',"' + data.record.SocialSecurity + '",' + data.record.LetterWritingAbility + "," + data.record.AddressWritingAbility + "," + data.record.FinishedClassFive + "," + data.record.DropBeforeClassFive + "," + data.record.Studying + "," + data.record.SignatureAbility + ");'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        if (data.record.MemberStatus != '5')
+                            return '<div class="text-center delete-link"><a href="#" OnClick="DeleteFamilyInfo(' + data.record.MemberFamilyID + ')"><i class="fa fa-trash-o"></i></a></div>';
+                        else
+                            return null;
+                    }
+                }
+            }
+        });
+        $("#btnFamilySaveNew").click(function (e) {
+            e.preventDefault();
+            var memName = $('#FamilyMemNames').val();
+            var memAge = $('#FamilyMemAges').val();
+            var memGender = $('#FamilyMemGenders').val();
+            var memRelation = $('#FamilyMemRelationships').val();
+            var memOccupation = $('#FamilyMemOccupations').val();
+            var nationalIdNo = $('#NationalIdNo').val();
+            var mobileNo = $('#MobileNo').val();
+            var MaritalStatus = $('#MaritalStatus').val();
+            var FamilyMemOccupation2 = $('#FamilyMemOccupation2').val();
+            var PhysicalDisability = 0;
+            if ($("#PhysicalDisability").is(":checked")) {
+                PhysicalDisability = 1;
+            }
+            var SocialSecurity = $('#SocialSecurity').val();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var letterWriting = 0;
+            var addressWriting = 0;
+            var finishClassFive = 0;
+            var dropBeforeClassFive = 0;
+            var studying = 0;
+            var signatureAbility = 0;
+            if ($("#chkLetterWritings").is(":checked")) {
+                letterWriting = 1;
+            }
+            if ($("#chkAddressWritings").is(":checked")) {
+                addressWriting = 1;
+            }
+            if ($("#chkClassFives").is(":checked")) {
+                finishClassFive = 1;
+            }
+            if ($("#chkDropClassFives").is(":checked")) {
+                dropBeforeClassFive = 1;
+            }
+            if ($("#chkStudyings").is(":checked")) {
+                studying = 1;
+            }
+            if ($("#chkSignatures").is(":checked")) {
+                signatureAbility = 1;
+            }
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveFamily", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, memName: memName, memAge: memAge, memGender: memGender, memRelation: memRelation, memOccupation: memOccupation, nationalIdNo: nationalIdNo, mobileNo: mobileNo, MaritalStatus: MaritalStatus, FamilyMemOccupation2: FamilyMemOccupation2, PhysicalDisability: PhysicalDisability, SocialSecurity: SocialSecurity, letterWriting: letterWriting, addressWriting: addressWriting, finishClassFive: finishClassFive, dropBeforeClassFive: dropBeforeClassFive, studying: studying, signatureAbility: signatureAbility, mode: $("#hdnFamilySave").val(), FamilyEditId: $("#hdnFamilyEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Emp_Address_Id) {
+                        if (Emp_Address_Id > 0) {
+                            $('#gridFamilyNew').jtable('load', { MemId: $('#MemberID').val() });
+                            $("#hdnFamilySave").val('S');
+                            $("#hdnFamilyEditId").val(0);
+                            $('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                            $("#hdnFamilySave").val('S');
+                            $("#hdnFamilyEditId").val(0);
+                            $(".family_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".family_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+
+        $("#btnHouseSaveNew").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var HomeWallPathkhari = 0;
+            var HomeWallBash = 0;
+            var HomeWallSchan = 0;
+            var HomeWallPaka = 0;
+            var HomeWallMati = 0;
+            var HomeWallTin = 0;
+            var HomeWallOther = 0;
+            var HomeRoofTin = 0;
+            var HomeRoofSchan = 0;
+            var HomeRoofKhar = 0;
+            var HomeRoofTinSchan = 0;
+            var HomeRoofOther = 0;
+
+            var HouseOwnerOwn = 0;
+            var HouseOwnerOther = 0;
+            var HouseOwnerKhasJomi = 0;
+            var HouseOwnerOtherLand = 0;
+
+            if ($("#chkHomeWallPathkharis").is(":checked")) {
+                HomeWallPathkhari = 1;
+            }
+            if ($("#chkHomeWallBashs").is(":checked")) {
+                HomeWallBash = 1;
+            }
+            if ($("#chkHomeWallSchans").is(":checked")) {
+                HomeWallSchan = 1;
+            }
+            if ($("#chkHomeWallPakas").is(":checked")) {
+                HomeWallPaka = 1;
+            }
+            if ($("#chkHomeWallMatis").is(":checked")) {
+                HomeWallMati = 1;
+            }
+            if ($("#chkHomeWallTins").is(":checked")) {
+                HomeWallTin = 1;
+            }
+            if ($("#chkHomeWallOthers").is(":checked")) {
+                HomeWallOther = 1;
+            }
+            if ($("#chkHomeRoofTins").is(":checked")) {
+                HomeRoofTin = 1;
+            }
+            if ($("#chkHomeRoofSchans").is(":checked")) {
+                HomeRoofSchan = 1;
+            }
+            if ($("#chkHomeRoofKhars").is(":checked")) {
+                HomeRoofKhar = 1;
+            }
+            if ($("#chkHomeRoofTinSchans").is(":checked")) {
+                HomeRoofTinSchan = 1;
+            }
+            if ($("#chkHomeRoofOthers").is(":checked")) {
+                HomeRoofOther = 1;
+            }
+
+
+            if ($("#chkHouseOwnerOwn").is(":checked")) {
+                HouseOwnerOwn = 1;
+            }
+            if ($("#chkHouseOwnerOther").is(":checked")) {
+                HouseOwnerOther = 1;
+            }
+            if ($("#chkHouseOwnerKhasJomi").is(":checked")) {
+                HouseOwnerKhasJomi = 1;
+            }
+            if ($("#chkHouseOwnerOtherLand").is(":checked")) {
+                HouseOwnerOtherLand = 1;
+            }
+
+
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveHouse", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, HomeWallPathkhari: HomeWallPathkhari, HomeWallBash: HomeWallBash, HomeWallSchan: HomeWallSchan, HomeWallPaka: HomeWallPaka, HomeWallMati: HomeWallMati, HomeWallTin: HomeWallTin, HomeWallOther: HomeWallOther, HomeRoofTin: HomeRoofTin, HomeRoofSchan: HomeRoofSchan, HomeRoofKhar: HomeRoofKhar, HomeRoofTinSchan: HomeRoofTinSchan, HomeRoofOther: HomeRoofOther, HouseOwnerOwn, HouseOwnerOther, HouseOwnerKhasJomi, HouseOwnerOtherLand, HouseOwnerOwnLandAmount: $("#HouseOwnerOwnLandAmount").val(), NoOfRoomInHouse: $("#NoOfRoomInHouse").val(), NoOfMainRoom: $("#NoOfMainRoom").val(), OtherRoomName: $("#OtherRoomName").val(), HouseMaterialTop: $("#HouseMaterialTop").val(), HouseMaterialWall: $("#HouseMaterialWall").val(), HouseMaterialFloor: $("#HouseMaterialFloor").val(), mode: $("#hdnHouseSave").val(), HouseEditId: $("#hdnHouseEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_house_id) {
+                        if (mem_house_id > 0) {
+                            $("#hdnHouseSave").val('S');
+                            $("#hdnHouseEditId").val(0);
+                            $('#chkHomeWallPathkharis').prop('checked', false);
+                            $('#chkHomeWallBashs').prop('checked', false);
+                            $('#chkHomeWallSchans').prop('checked', false);
+                            $('#chkHomeWallPakas').prop('checked', false);
+                            $('#chkHomeWallMatis').prop('checked', false);
+                            $('#chkHomeWallTins').prop('checked', false);
+                            $('#chkHomeWallOthers').prop('checked', false);
+                            $('#chkHomeRoofTins').prop('checked', false);
+                            $('#chkHomeRoofSchans').prop('checked', false);
+                            $('#chkHomeRoofKhars').prop('checked', false);
+                            $('#chkHomeRoofTinSchans').prop('checked', false);
+                            $('#chkHomeRoofOthers').prop('checked', false);
+
+                            $('#chkHouseOwnerOwn').prop('checked', false);
+                            $('#chkHouseOwnerOther').prop('checked', false);
+                            $('#chkHouseOwnerKhasJomi').prop('checked', false);
+                            $('#chkHouseOwnerOtherLand').prop('checked', false);
+                            $('#HouseOwnerOwnLandAmount').val('');
+                            $('#NoOfRoomInHouse').val('');
+                            $('#NoOfMainRoom').val('');
+                            $('#OtherRoomName').val('');
+                            $('#HouseMaterialTop').val('');
+                            $('#HouseMaterialWall').val('');
+                            $('#HouseMaterialFloor').val('');
+
+                            $(".house_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".house_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnHouseCancelNew").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemHouseDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { HouseEditId: $("#hdnHouseEditId").val() },
+                    success: function (mem_house_id) {
+                        if (mem_house_id > 0) {
+                            $(".house_success").show(800).fadeToggle(3000);
+                            $("#hdnHouseSave").val('S');
+                            $("#hdnHouseEditId").val(0);
+                            $('#chkHomeWallPathkharis').prop('checked', false);
+                            $('#chkHomeWallBashs').prop('checked', false);
+                            $('#chkHomeWallSchans').prop('checked', false);
+                            $('#chkHomeWallPakas').prop('checked', false);
+                            $('#chkHomeWallMatis').prop('checked', false);
+                            $('#chkHomeWallTins').prop('checked', false);
+                            $('#chkHomeWallOthers').prop('checked', false);
+                            $('#chkHomeRoofTins').prop('checked', false);
+                            $('#chkHomeRoofSchans').prop('checked', false);
+                            $('#chkHomeRoofKhars').prop('checked', false);
+                            $('#chkHomeRoofTinSchans').prop('checked', false);
+                            $('#chkHomeRoofOthers').prop('checked', false);
+
+                            $('#chkHouseOwnerOwn').prop('checked', false);
+                            $('#chkHouseOwnerOther').prop('checked', false);
+                            $('#chkHouseOwnerKhasJomi').prop('checked', false);
+                            $('#chkHouseOwnerOtherLand').prop('checked', false);
+                            $('#HouseOwnerOwnLandAmount').val('');
+                            $('#NoOfRoomInHouse').val('');
+                            $('#NoOfMainRoom').val('');
+                            $('#OtherRoomName').val('');
+                            $('#HouseMaterialTop').val('');
+                            $('#HouseMaterialWall').val('');
+                            $('#HouseMaterialFloor').val('');
+                        }
+                        else {
+                            $(".house_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".house_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+
+        $("#btnLandSaveNew").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var LandVita = 0;
+            var LandKrishi = 0;
+            var LandBagan = 0;
+            var LandPukur = 0;
+            var LandOnabadi = 0;
+            var LandBondhokDeya = 0;
+            var LandBorgaDeya = 0;
+            var LandBondhokNeya = 0;
+            var LandBorgaNeya = 0;
+            var LandKhash = 0;
+            //var LandBorgaCondition = 0;
+            //var HomeRoofOther = 0;
+
+            if ($("#chkLandVitas").is(":checked")) {
+                LandVita = 1;
+            }
+            if ($("#chkLandKrishis").is(":checked")) {
+                LandKrishi = 1;
+            }
+            if ($("#chkLandBagans").is(":checked")) {
+                LandBagan = 1;
+            }
+            if ($("#chkLandPukurs").is(":checked")) {
+                LandPukur = 1;
+            }
+            if ($("#chkLandOnabadis").is(":checked")) {
+                LandOnabadi = 1;
+            }
+            if ($("#chkLandBondhokDeyas").is(":checked")) {
+                LandBondhokDeya = 1;
+            }
+            if ($("#chkLandBorgaDeyas").is(":checked")) {
+                LandBorgaDeya = 1;
+            }
+            if ($("#chkLandBondhokNeyas").is(":checked")) {
+                LandBondhokNeya = 1;
+            }
+            if ($("#chkLandBorgaNeyas").is(":checked")) {
+                LandBorgaNeya = 1;
+            }
+            if ($("#chkLandKhashs").is(":checked")) {
+                LandKhash = 1;
+            }
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveLand", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, LandVita: LandVita, LandKrishi: LandKrishi, LandBagan: LandBagan, LandPukur: LandPukur, LandOnabadi: LandOnabadi, LandBondhokDeya: LandBondhokDeya, LandBorgaDeya: LandBorgaDeya, LandBondhokNeya: LandBondhokNeya, LandBorgaNeya: LandBorgaNeya, LandKhash: LandKhash, LandBorgaCondition: $("#txtLandBorgaCondition").val(), mode: $("#hdnLandSave").val(), LandEditId: $("#hdnLandEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_land_id) {
+                        if (mem_land_id > 0) {
+                            $("#hdnLandSave").val('S');
+                            $("#hdnLandEditId").val(0);
+                            $('#chkLandVitas').prop('checked', false);
+                            $('#chkLandKrishis').prop('checked', false);
+                            $('#chkLandBagans').prop('checked', false);
+                            $('#chkLandPukurs').prop('checked', false);
+                            $('#chkLandOnabadis').prop('checked', false);
+                            $('#chkLandBondhokDeyas').prop('checked', false);
+                            $('#chkLandBorgaDeyas').prop('checked', false);
+                            $('#chkLandBondhokNeyas').prop('checked', false);
+                            $('#chkLandBorgaNeyas').prop('checked', false);
+                            $('#chkLandKhashs').prop('checked', false);
+                            $('#txtLandBorgaConditions').val('');
+                            $(".land_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".land_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnLandCancelNew").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemLandDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { LandEditId: $("#hdnLandEditId").val() },
+                    success: function (mem_house_id) {
+                        if (mem_house_id > 0) {
+                            $(".land_success").show(800).fadeToggle(3000);
+                            $("#hdnHouseSave").val('S');
+                            $("#hdnHouseEditId").val(0);
+                            $('#chkLandVitas').prop('checked', false);
+                            $('#chkLandKrishis').prop('checked', false);
+                            $('#chkLandBagans').prop('checked', false);
+                            $('#chkLandPukurs').prop('checked', false);
+                            $('#chkLandOnabadis').prop('checked', false);
+                            $('#chkLandBondhokDeyas').prop('checked', false);
+                            $('#chkLandBorgaDeyas').prop('checked', false);
+                            $('#chkLandBondhokNeyas').prop('checked', false);
+                            $('#chkLandBorgaNeyas').prop('checked', false);
+                            $('#chkLandKhashs').prop('checked', false);
+                            $('#chkLandBorgaConditions').val('');
+                        }
+                        else {
+                            $(".land_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".land_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+
+        $("#btnAssetSaveNew").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveAsset", "MemberDetail", "http")',
+                    data: { centerId: centerId, memId: memId, AssetCow: $("#txtAssetCows").val(), AssetGoat: $("#txtAssetGoats").val(), AssetSheep: $("#txtAssetSheeps").val(), AssetDuck: $("#txtAssetDucks").val(), AssetHen: $("#txtAssetHens").val(), AssetCattleOther: $("#txtAssetCattleOthers").val(), AssetBed: $("#txtAssetBeds").val(), AssetChair: $("#txtAssetChairs").val(), AssetTable: $("#txtAssetTables").val(), AssetCycle: $("#txtAssetCycles").val(), AssetRadio: $("#txtAssetRadios").val(), AssetOrnament: $("#txtAssetOrnaments").val(), AssetOther: $("#txtAssetOthers").val(), AgriculturalLandAmount: $("#AgriculturalLandAmount").val(), PondLandAmount: $("#PondLandAmount").val(), AbandonedLandAmount: $("#AbandonedLandAmount").val(), mode: $("#hdnAssetSave").val(), AssetEditId: $("#hdnAssetEditId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_asset_id) {
+                        if (mem_asset_id > 0) {
+                            $("#hdnAssetSave").val('S');
+                            $("#hdnAssetEditId").val(0);
+                            $('#txtAssetCows').val('');
+                            $('#txtAssetGoats').val('');
+                            $('#txtAssetSheeps').val('');
+                            $('#txtAssetDucks').val('');
+                            $('#txtAssetHens').val('');
+                            $('#txtAssetCattleOthers').val('');
+                            $('#txtAssetBeds').val('');
+                            $('#txtAssetChairs').val('');
+                            $('#txtAssetTables').val('');
+                            $('#txtAssetCycles').val('');
+                            $('#txtAssetRadios').val('');
+                            $('#txtAssetOrnaments').val('');
+                            $('#txtAssetOthers').val('');
+                            $('#AgriculturalLandAmount').val('');
+                            $('#PondLandAmount').val('');
+                            $('#AbandonedLandAmount').val('');
+                            $(".asset_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".asset_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnAssetCancelNew").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemAssetDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AssetEditId: $("#hdnAssetEditId").val() },
+                    success: function (mem_asset_id) {
+                        if (mem_asset_id > 0) {
+                            $(".asset_success").show(800).fadeToggle(3000);
+                            $("#hdnAssetSave").val('S');
+                            $("#hdnAssetEditId").val(0);
+                            $('#txtAssetCows').val('');
+                            $('#txtAssetGoats').val('');
+                            $('#txtAssetSheeps').val('');
+                            $('#txtAssetDucks').val('');
+                            $('#txtAssetHens').val('');
+                            $('#txtAssetCattleOthers').val('');
+                            $('#txtAssetBeds').val('');
+                            $('#txtAssetChairs').val('');
+                            $('#txtAssetTables').val('');
+                            $('#txtAssetCycles').val('');
+                            $('#txtAssetRadios').val('');
+                            $('#txtAssetOrnaments').val('');
+                            $('#txtAssetOthers').val('');
+                            $('#AgriculturalLandAmount').val('');
+                            $('#PondLandAmount').val('');
+                            $('#AbandonedLandAmount').val('');
+                        }
+                        else {
+                            $(".asset_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".asset_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+
+        $("#btnOtherSaveNew").click(function (e) {
+            e.preventDefault();
+            var centerId = $('#CenterID').val();
+            var memId = $('#MemberID').val();
+            var rdoTubewel = 0;
+            if ($("#rdoTubewel").is(":checked")) {
+                rdoTubewel = 1;
+            }
+            var rdoNodi = 0;
+            if ($("#rdoNodi").is(":checked")) {
+                rdoNodi = 1;
+            }
+            var rdoKhal = 0;
+            if ($("#rdoKhal").is(":checked")) {
+                rdoKhal = 1;
+            }
+            var rdoPukur = 0;
+            if ($("#rdoPukur").is(":checked")) {
+                rdoPukur = 1;
+            }
+            var rdoFilter = 0;
+            if ($("#rdoFilter").is(":checked")) {
+                rdoFilter = 1;
+            }
+            var rdoPSF = 0;
+            if ($("#rdoPSF").is(":checked")) {
+                rdoPSF = 1;
+            }
+            var rdoBristyrPani = 0;
+            if ($("#rdoBristyrPani").is(":checked")) {
+                rdoBristyrPani = 1;
+            }
+            var rdoSaplai = 0;
+            if ($("#rdoSaplai").is(":checked")) {
+                rdoSaplai = 1;
+            }
+            var rdoOthers = 0;
+            if ($("#rdoOthers").is(":checked")) {
+                rdoOthers = 1;
+            }
+            var rdolattinYes = 0;
+            if ($("#rdolattinYes").is(":checked")) {
+                rdolattinYes = 1;
+            }
+
+            if (memId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveOther", "MemberDetail", "http")',
+                    data: {
+                        centerId: centerId,
+                        memId: memId,
+                        rdoTubewel: rdoTubewel,
+                        rdoNodi: rdoNodi,
+                        rdoKhal: rdoKhal,
+                        rdoPukur: rdoPukur,
+                        rdoFilter: rdoFilter,
+                        rdoPSF: rdoPSF,
+                        rdoBristyrPani: rdoBristyrPani,
+                        rdoSaplai: rdoSaplai,
+                        rdoOthers: rdoOthers,
+                        rdolattinYes: rdolattinYes,
+                        mode: $("#hdnOtherSave").val(),
+                        OtherEditId: $("#hdnOtherEditId").val()
+                    },
+                    dataType: 'json',
+                    async: true,
+                    success: function (mem_other_id) {
+                        if (mem_other_id > 0) {
+                            $("#hdnOtherSave").val('S');
+                            $("#hdnOtherEditId").val(0);
+                            $('#rdoTubewel').prop('checked', false);
+                            $('#rdoNodi').prop('checked', false);
+                            $('#rdoKhal').prop('checked', false);
+                            $('#rdoPukur').prop('checked', false);
+                            $('#rdoFilter').prop('checked', false);
+                            $('#rdoPSF').prop('checked', false);
+                            $('#rdoBristyrPani').prop('checked', false);
+                            $('#rdoSaplai').prop('checked', false);
+                            $('#rdoOthers').prop('checked', false);
+                            $('#rdolattinYes').prop('checked', false);
+                            $('#rdolattinNo').prop('checked', false);
+                            $(".other_success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".other_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(error)
+                    }
+                });
+            }
+        });
+        $("#btnOtherCancelNew").click(function (e) {
+            var r = confirm("Are you sure you want to cancel?");
+            if (r == true) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemOtherDelete", "MemberDetail", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { OtherEditId: $("#hdnOtherEditId").val() },
+                    success: function (mem_other_id) {
+                        if (mem_other_id > 0) {
+                            $(".other_success").show(800).fadeToggle(3000);
+                            $("#hdnOtherSave").val('S');
+                            $("#hdnOtherEditId").val(0);
+                            $('#rdoTubewel').prop('checked', false);
+                            $('#rdoNodi').prop('checked', false);
+                            $('#rdoKhal').prop('checked', false);
+                            $('#rdoPukur').prop('checked', false);
+                            $('#rdoFilter').prop('checked', false);
+                            $('#rdoPSF').prop('checked', false);
+                            $('#rdoBristyrPani').prop('checked', false);
+                            $('#rdoSaplai').prop('checked', false);
+                            $('#rdoOthers').prop('checked', false);
+                            $('#rdolattinYes').prop('checked', false);
+                            $('#rdolattinNo').prop('checked', false);
+                        }
+                        else {
+                            $(".asset_failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function (err) {
+                        $(".asset_failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                //
+            }
+        });
+        /*New form JQ Start */
+
+    });
+
+</script>
+<h2 class="page-title">Member Details</h2>
+<div class="">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                @Html.HiddenFor(model => model.MemberID)
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion" style="margin-top:20px;">
+        <div class="panel-group" id="accordion">
+
+            @*OLD PANEL*@
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-1">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><i class="fa fa-minus"></i>&nbsp;Family Information</a>
+                    </h4>
+                </div>
+                <div id="collapse1" class="panel-collapse collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemName, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemName, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemAge, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemAge, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemGender, htmlAttributes: new { @class = "control-label" })
+                                    @Html.DropDownListFor(model => model.FamilyMemGender, gen, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemRelationship, htmlAttributes: new { @class = "control-label" })
+                                    @Html.DropDownListFor(model => model.FamilyMemRelationship, relation, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemOccupation, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemOccupation, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                &nbsp;
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkLetterWriting" /><label style="padding-left:5px;">Letter Writing</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkAddressWriting" /><label style="padding-left:5px;">Address Writing</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkClassFive" /><label style="padding-left:5px;">Finished Class Five</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkDropClassFive" /><label style="padding-left:2px;">Drop Before Class Five</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkStudying" /><label style="padding-left:5px;">Studying</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkSignature" /><label style="padding-left:5px;">Signature Ability</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group form-action">
+                                    <div class="family_success success" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="family_failed failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" id="btnFamilySave" />
+                                    <input type="hidden" value="" id="hdnFamilySave" />
+                                    <input type="hidden" value="" id="hdnFamilyEditId" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="gridFamily"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-2">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><i class="fa fa-plus"></i>&nbsp;Home Information</a>
+                    </h4>
+                </div>
+                <div id="collapse2" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-3">
+                                <input type="checkbox" id="chkHomeWallPathkhari" /><label style="padding-left:5px;">Pathkhari</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeWallBash" /><label style="padding-left:5px;">Bash</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeWallSchan" /><label style="padding-left:5px;">Schan</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeWallPaka" /><label style="padding-left:5px;">Paka</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeWallMati" /><label style="padding-left:5px;">Mati</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeWallTin" /><label style="padding-left:5px;">Tin</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeWallOther" /><label style="padding-left:5px;">Others</label>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="checkbox" id="chkHomeRoofTin" /><label style="padding-left:5px;">Tin</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeRoofSchan" /><label style="padding-left:5px;">Schan</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeRoofKhar" /><label style="padding-left:5px;">Khar</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeRoofTinSchan" /><label style="padding-left:5px;">Tin and Schan</label>
+                                <br />
+                                <input type="checkbox" id="chkHomeRoofOther" /><label style="padding-left:5px;">Others</label>
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">&nbsp;</div>
+                            <div class="col-md-4">
+                                <div class="house_success success" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Saved Sucessfully</p>
+                                </div>
+                                <div class="house_failed failed" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Fail to save</p>
+                                </div>
+                                <br />
+                                <input type="submit" value="Save" class="btn btn-primary" id="btnHouseSave" />
+                                <input type="submit" value="Cancel" class="btn btn-danger" id="btnHouseCancel" />
+                                <input type="hidden" value="" id="hdnHouseSave" />
+                                <input type="hidden" value="" id="hdnHouseEditId" />
+                            </div>
+                            <div class="col-md-4">&nbsp;</div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-3">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse3"><i class="fa fa-plus"></i>&nbsp;Land Information</a>
+                    </h4>
+                </div>
+                <div id="collapse3" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-3">
+                                <input type="checkbox" id="chkLandVita" /><label style="padding-left:5px;">Land Vita</label>
+                                <br />
+                                <input type="checkbox" id="chkLandKrishi" /><label style="padding-left:5px;">Land Krishi</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBagan" /><label style="padding-left:5px;">Land Bagan</label>
+                                <br />
+                                <input type="checkbox" id="chkLandPukur" /><label style="padding-left:5px;">Land Pukur</label>
+                                <br />
+                                <input type="checkbox" id="chkLandOnabadi" /><label style="padding-left:5px;">Land Onabadi</label>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="checkbox" id="chkLandBondhokDeya" /><label style="padding-left:5px;">Land Bondhok Deya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBorgaDeya" /><label style="padding-left:5px;">Land Borga Deya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBondhokNeya" /><label style="padding-left:5px;">Land Bondhok Neya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBorgaNeya" /><label style="padding-left:5px;">Land Borga Neya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandKhash" /><label style="padding-left:5px;">Khash Land</label>
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-6">
+                                <input type="text" id="txtLandBorgaCondition" placeholder="Borga Condition" class="form-control" />
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-6" style="margin-top:10px;">
+                                <div class="land_success success" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Saved Sucessfully</p>
+                                </div>
+                                <div class="land_failed failed" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Fail to save</p>
+                                </div>
+                                <br />
+                                <input type="submit" value="Save" class="btn btn-primary" id="btnLandSave" />
+                                <input type="submit" value="Cancel" class="btn btn-danger" id="btnLandCancel" />
+                                <input type="hidden" value="" id="hdnLandSave" />
+                                <input type="hidden" value="" id="hdnLandEditId" />
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-4">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse4"><i class="fa fa-plus"></i>&nbsp;Asset Information</a>
+                    </h4>
+                </div>
+                <div id="collapse4" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="form-inline">
+                            <div class="row">
+                                <div class="col-md-2">&nbsp;</div>
+                                <div class="col-md-4">
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:20px;">Cow</label>
+                                        <input type="text" id="txtAssetCow" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:20px;">Goat</label>
+                                        <input type="text" id="txtAssetGoat" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:16px;">Sheep</label><input type="text" id="txtAssetSheep" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:20px;">Duck</label><input type="text" id="txtAssetDuck" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Hen</label><input type="text" id="txtAssetHen" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:15px;">Others</label><input type="text" id="txtAssetCattleOther" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:34px;">Bed</label><input type="text" id="txtAssetBed" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Chair</label><input type="text" id="txtAssetChair" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Table</label><input type="text" id="txtAssetTable" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Cycle</label><input type="text" id="txtAssetCycle" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Radio</label><input type="text" id="txtAssetRadio" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:5px;">Ornament</label><input type="text" id="txtAssetOrnament" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:23px;">Others</label><input type="text" id="txtAssetOther" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-2">&nbsp;</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">&nbsp;</div>
+                                <div class="col-md-6" style="margin-top:10px;">
+                                    <div class="asset_success success" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="asset_failed failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" id="btnAssetSave" />
+                                    <input type="submit" value="Cancel" class="btn btn-danger" id="btnAssetCancel" />
+                                    <input type="hidden" value="" id="hdnAssetSave" />
+                                    <input type="hidden" value="" id="hdnAssetEditId" />
+                                </div>
+                                <div class="col-md-3">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            @*NEW PANEL*@
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-5" style="color:cornflowerblue">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse5" style="color:cornflowerblue"><i class="fa fa-minus"></i>&nbsp;Family Information New (পরিবারে সদস্যদের তথ্য : )</a>
+                    </h4>
+                </div>
+                <div id="collapse5" class="panel-collapse collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemNames, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemNames, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemAges, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemAges, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemGenders, htmlAttributes: new { @class = "control-label" })
+                                    @Html.DropDownListFor(model => model.FamilyMemGenders, gen, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemRelationships, htmlAttributes: new { @class = "control-label" })
+                                    @Html.DropDownListFor(model => model.FamilyMemRelationships, relation, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemOccupations, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemOccupations, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                &nbsp;
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkLetterWritings" /><label style="padding-left:5px;">Letter Writing</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkAddressWritings" /><label style="padding-left:5px;">Address Writing</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkClassFives" /><label style="padding-left:5px;">Finished Class Five</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkDropClassFives" /><label style="padding-left:2px;">Drop Before Class Five</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkStudyings" /><label style="padding-left:5px;">Studying</label>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="chkSignatures" /><label style="padding-left:5px;">Signature Ability</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.NationalIdNo, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.NationalIdNo, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.MobileNo, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.MobileNo, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.MaritalStatus, htmlAttributes: new { @class = "control-label" })
+                                    @Html.DropDownListFor(model => model.MaritalStatus, mar, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.FamilyMemOccupation2, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.FamilyMemOccupation2, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="checkbox" id="PhysicalDisability" /><label style="padding-left:5px;">Physical Disability</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.SocialSecurity, htmlAttributes: new { @class = "control-label" })
+                                    @Html.EditorFor(model => model.SocialSecurity, new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group form-action">
+                                    <div class="family_success success" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="family_failed failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" id="btnFamilySaveNew" />
+                                    @*<input type="hidden" value="" id="hdnFamilySave" />
+                                        <input type="hidden" value="" id="hdnFamilyEditId" />*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive"><div id="gridFamilyNew"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-6" style="color:cornflowerblue">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse6" style="color:cornflowerblue"><i class="fa fa-plus"></i>&nbsp;Home Information New (বাড়ি ও বসতভিটার অবস্থা : )</a>
+                    </h4>
+                </div>
+                <div id="collapse6" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="checkbox" id="chkHomeWallPathkharis" /><label style="padding-left:5px;">Pathkhari</label>&nbsp;
+                                <input type="checkbox" id="chkHomeWallBashs" /><label style="padding-left:5px;">Bash</label>&nbsp;
+                                <input type="checkbox" id="chkHomeWallSchans" /><label style="padding-left:5px;">Schan</label>&nbsp;
+                                <input type="checkbox" id="chkHomeWallPakas" /><label style="padding-left:5px;">Paka</label>&nbsp;
+                                <input type="checkbox" id="chkHomeWallMatis" /><label style="padding-left:5px;">Mati</label>&nbsp;
+                                <input type="checkbox" id="chkHomeWallTins" /><label style="padding-left:5px;">Tin</label>&nbsp;
+                                <input type="checkbox" id="chkHomeWallOthers" /><label style="padding-left:5px;">Others</label>&nbsp;
+                            </div>
+                            <div class="col-md-6">
+                                <input type="checkbox" id="chkHomeRoofTins" /><label style="padding-left:5px;">Tin</label>&nbsp;
+                                <input type="checkbox" id="chkHomeRoofSchans" /><label style="padding-left:5px;">Schan</label>&nbsp;
+                                <input type="checkbox" id="chkHomeRoofKhars" /><label style="padding-left:5px;">Khar</label>&nbsp;
+                                <input type="checkbox" id="chkHomeRoofTinSchans" /><label style="padding-left:5px;">Tin and Schan</label>&nbsp;
+                                <input type="checkbox" id="chkHomeRoofOthers" /><label style="padding-left:5px;">Others</label>&nbsp;
+                            </div>
+                        </div><hr>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div><h6>বাড়ির মালিকানা :</h6></div>
+                                <input type="radio" name="HouseOwner" id="chkHouseOwnerOwn" /><label style="padding-left:5px;">নিজের </label>&nbsp;
+                                <input type="radio" name="HouseOwner" id="chkHouseOwnerOther" /><label style="padding-left:5px;">অন্যের </label>&nbsp;
+                                <input type="radio" name="HouseOwner" id="chkHouseOwnerKhasJomi" /><label style="padding-left:5px;">খাস জমির উপর </label>&nbsp;
+                                <input type="radio" name="HouseOwner" id="chkHouseOwnerOtherLand" /><label style="padding-left:5px;">অন্যের জমির উপর </label>&nbsp;
+                            </div>
+                            <div class="col-md-3">
+                                <p>নিজের হলে বসতভিটার পরিমান শতাংশ কত ?</p><input type="text" name="HouseOwnerOwnLandAmount" id="HouseOwnerOwnLandAmount" value="" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div><hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div><h6>বাড়িতে কয়টি ঘর আছে ?</h6></div>
+                                <input type="number" name="NoOfRoomInHouse" id="NoOfRoomInHouse" value="" />
+                            </div>
+                            <div class="col-md-3">
+                                <div><h6>মূল ঘরের কক্ষ সংখ্যা কত ?</h6></div>
+                                <input type="number" name="NoOfMainRoom" id="NoOfMainRoom" value="" />
+                            </div>
+                            <div class="col-md-3">
+                                <div><h6>বাড়িতে অন্য কি ঘর আছে  ?</h6></div>
+                                <input type="text" name="OtherRoomName" id="OtherRoomName" value="" />
+                            </div>
+                        </div><hr>
+                        <div class="row">
+                            <div style="margin-left:15px;"><h6>বাড়ি তৈরির উপাদান :</h6></div>
+                            <div class="col-md-4">
+                                <span> ছাদ / চালা / ছাউনি</span>&nbsp;<input type="text" name="HouseMaterialTop" id="HouseMaterialTop" value="" />
+                            </div>
+                            <div class="col-md-3">
+                                <span>দেয়াল </span>&nbsp;<input type="text" name="HouseMaterialWall" id="HouseMaterialWall" value="" />
+                            </div>
+                            <div class="col-md-3">
+                                <span>মেঝে </span>&nbsp;<input type="text" name="HouseMaterialFloor" id="HouseMaterialFloor" value="" />
+                            </div>
+                        </div><hr>
+                        <div class="row">
+                            <div class="col-md-4">&nbsp;</div>
+                            <div class="col-md-4">
+                                <div class="house_success success" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Saved Sucessfully</p>
+                                </div>
+                                <div class="house_failed failed" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Fail to save</p>
+                                </div>
+                                <br />
+                                <input type="submit" value="Save" class="btn btn-primary" id="btnHouseSaveNew" />
+                                <input type="submit" value="Cancel" class="btn btn-danger" id="btnHouseCancelNew" />
+                                @*<input type="hidden" value="" id="hdnHouseSave" />
+                                    <input type="hidden" value="" id="hdnHouseEditId" />*@
+                            </div>
+                            <div class="col-md-4">&nbsp;</div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-7" style="color:cornflowerblue">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse7" style="color:cornflowerblue"><i class="fa fa-plus"></i>&nbsp;Land Information New</a>
+                    </h4>
+                </div>
+                <div id="collapse7" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-3">
+                                <input type="checkbox" id="chkLandVitas" /><label style="padding-left:5px;">Land Vita</label>
+                                <br />
+                                <input type="checkbox" id="chkLandKrishis" /><label style="padding-left:5px;">Land Krishi</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBagans" /><label style="padding-left:5px;">Land Bagan</label>
+                                <br />
+                                <input type="checkbox" id="chkLandPukurs" /><label style="padding-left:5px;">Land Pukur</label>
+                                <br />
+                                <input type="checkbox" id="chkLandOnabadis" /><label style="padding-left:5px;">Land Onabadi</label>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="checkbox" id="chkLandBondhokDeyas" /><label style="padding-left:5px;">Land Bondhok Deya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBorgaDeyas" /><label style="padding-left:5px;">Land Borga Deya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBondhokNeyas" /><label style="padding-left:5px;">Land Bondhok Neya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandBorgaNeyas" /><label style="padding-left:5px;">Land Borga Neya</label>
+                                <br />
+                                <input type="checkbox" id="chkLandKhashs" /><label style="padding-left:5px;">Khash Land</label>
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-6">
+                                <input type="text" id="txtLandBorgaConditions" placeholder="Borga Condition" class="form-control" />
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">&nbsp;</div>
+                            <div class="col-md-6" style="margin-top:10px;">
+                                <div class="land_success success" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Saved Sucessfully</p>
+                                </div>
+                                <div class="land_failed failed" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Fail to save</p>
+                                </div>
+                                <br />
+                                <input type="submit" value="Save" class="btn btn-primary" id="btnLandSaveNew" />
+                                <input type="submit" value="Cancel" class="btn btn-danger" id="btnLandCancelNew" />
+                                @*<input type="hidden" value="" id="hdnLandSave" />
+                                    <input type="hidden" value="" id="hdnLandEditId" />*@
+                            </div>
+                            <div class="col-md-3">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-8" style="color:cornflowerblue">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse8" style="color:cornflowerblue"><i class="fa fa-plus"></i>&nbsp;Asset Information New ( জমি ও সম্পদের তথ্য : )</a>
+                    </h4>
+                </div>
+                <div id="collapse8" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="form-inline">
+                            <div class="row">
+                                <div class="col-md-2">&nbsp;</div>
+                                <div class="col-md-4">
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:20px;">Cow</label>
+                                        <input type="text" id="txtAssetCows" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:20px;">Goat</label>
+                                        <input type="text" id="txtAssetGoats" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:16px;">Sheep</label><input type="text" id="txtAssetSheeps" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:20px;">Duck</label><input type="text" id="txtAssetDucks" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Hen</label><input type="text" id="txtAssetHens" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:15px;">Others</label><input type="text" id="txtAssetCattleOthers" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:34px;">Bed</label><input type="text" id="txtAssetBeds" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Chair</label><input type="text" id="txtAssetChairs" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Table</label><input type="text" id="txtAssetTables" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Cycle</label><input type="text" id="txtAssetCycles" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:28px;">Radio</label><input type="text" id="txtAssetRadios" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:5px;">Ornament</label><input type="text" id="txtAssetOrnaments" class="form-control" />
+                                    </div>
+                                    <div class="form-group" style="padding:10px;">
+                                        <label style="padding-right:23px;">Others</label><input type="text" id="txtAssetOthers" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-2">&nbsp;</div>
+                            </div><hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div><h6>কৃষি জমির পরিমান শতাংশ </h6></div>
+                                    <input type="number" name="AgriculturalLandAmount" id="AgriculturalLandAmount" value="" />
+                                </div>
+                                <div class="col-md-4">
+                                    <div><h6>ঘের / পুকুর থাকলে জমির পরিমান শতাংশ </h6></div>
+                                    <input type="number" name="PondLandAmount" id="PondLandAmount" value="" />
+                                </div>
+                                <div class="col-md-5">
+                                    <div><h6>পরিত্যাক্ত বা অনুর্বর বা অন্য কাজে ব্যবহৃত জমির পরিমান </h6></div>
+                                    <input type="number" name="AbandonedLandAmount" id="AbandonedLandAmount" value="" />
+                                </div>
+                            </div><hr>
+                            <div class="row">
+                                <div class="col-md-3">&nbsp;</div>
+                                <div class="col-md-6" style="margin-top:10px;">
+                                    <div class="asset_success success" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="asset_failed failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" id="btnAssetSaveNew" />
+                                    <input type="submit" value="Cancel" class="btn btn-danger" id="btnAssetCancelNew" />
+                                    @*<input type="hidden" value="" id="hdnAssetSave" />
+                                        <input type="hidden" value="" id="hdnAssetEditId" />*@
+                                </div>
+                                <div class="col-md-3">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-9" style="color:cornflowerblue">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse9" style="color:cornflowerblue"><i class="fa fa-plus"></i>&nbsp;Other Information New ( অন্যান্য তথ্য : )</a>
+                    </h4>
+                </div>
+                <div id="collapse9" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="form-inline">
+                            <div class="row">
+                                <hr>
+                                <div class="col-md-5">
+                                    <div><h6>খাবার পানির উৎস :</h6></div>
+                                    <input type="radio" name="watersources" id="rdoTubewel" /><label style="padding-left:5px;">টিউবয়েল  </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoNodi" /><label style="padding-left:5px;">নদী  </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoKhal" /><label style="padding-left:5px;">খাল  </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoPukur" /><label style="padding-left:5px;">পুকুর  </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoFilter" /><label style="padding-left:5px;">ফিল্টার   </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoPSF" /><label style="padding-left:5px;">পিএসএফ </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoBristyrPani" /><label style="padding-left:5px;">বৃষ্টির পানি </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoSaplai" /><label style="padding-left:5px;">সাপ্লাই </label>&nbsp;
+                                    <input type="radio" name="watersources" id="rdoOthers" /><label style="padding-left:5px;">অন্যান্য </label>&nbsp;
+                                </div>
+                                <div class="col-md-4">
+                                    <div><h6>ল্যাট্টিন আছে ?</h6></div>
+                                    <input type="radio" name="lattin" id="rdolattinYes" /><label style="padding-left:5px;">হ্যা </label>&nbsp;
+                                    <input type="radio" name="lattin" id="rdolattinNo" /><label style="padding-left:5px;">না </label>&nbsp;
+                                </div>
+                            </div><hr>
+                            <div class="row">
+                                <div class="col-md-3">&nbsp;</div>
+                                <div class="col-md-6" style="margin-top:10px;">
+                                    <div class="other_success success" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="other_failed failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" id="btnOtherSaveNew" />
+                                    <input type="submit" value="Cancel" class="btn btn-danger" id="btnOtherCancelNew" />
+                                    <input type="hidden" value="" id="hdnOtherSave" />
+                                    <input type="hidden" value="" id="hdnOtherEditId" />
+                                </div>
+                                <div class="col-md-3">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

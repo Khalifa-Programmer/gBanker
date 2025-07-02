@@ -1,0 +1,372 @@
+﻿@model gBanker.Web.ViewModels.DesignationViewModel
+
+@{
+    ViewBag.Title = "Manage Designation";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    var DepartmentList = Model == null ? null : Model.Department;
+    var DesTypeList = Model == null ? null : Model.DesignationType;
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    //Save Work Area
+    function UpdateDesignation() {
+       // alert("Update");
+        var DesignationName = $("#DesignationName").val();
+        var DesignationID = $("#DesignationID").val();
+        var DepartmentID = $("#DepartmentID").val();
+        var DesignationTypeID = $("#DesignationTypeID").val();
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateDeignation", "Designation", "http")', //UpdateWorkArea(string WorkAreaName, int PRWorkAreaID)
+            data: { DesignationID: DesignationID, DesignationName: DesignationName, DepartmentID: DepartmentID, DesignationTypeID: DesignationTypeID },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Update Successfully");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Update");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }// End of Function
+
+
+    //Save Work Area
+    function SaveDesignation() {
+
+        var DesignationName = $("#DesignationName").val();
+        var DepartmentID = $("#DepartmentID").val();
+        var DesignationTypeID = $("#DesignationTypeID").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateDesignation", "Designation", "http")', //CreateWorkArea(string WorkAreaName)
+            data: { DesignationName: DesignationName, DepartmentID: DepartmentID, DesignationTypeID: DesignationTypeID},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Saved Successfully");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Saved");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }// End of Function
+
+
+
+    //Promotion Config JS
+    function GetDataDesignation(DesignationID) {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDesignationList", "Designation", "http")',
+            data: { DesignationID: DesignationID, jtStartIndex: 1, jtPageSize: 5, jtSorting: true, filterColumn: null, filterValue: null },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.each(data, function (id, option) {
+                    $('#DesignationName').val(option.DesignationName);
+                    $('#DesignationID').val(option.DesignationID);
+                    $('#DepartmentID').val(option.DepartmentID);
+                    $('#DesignationTypeID').val(option.DesignationTypeID);
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                clear();
+            }
+        });
+    }
+    function clear()
+    {
+        $("#DesignationName").val('');
+        $("#DesignationID").val('');
+        $("#DepartmentID").val();
+        $("#DesignationTypeID").val();
+    }
+    //Save Work Area
+    function DeleteDesignation(DesignationID) {
+
+        var DesignationName = $("#DesignationName").val();
+        var DepartmentID = $("#DepartmentID").val();
+        var DesignationTypeID = $("#DesignationTypeID").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DeleteDesignation", "Designation", "http")', //CreateWorkArea(string WorkAreaName)
+            data: { DesignationID: DesignationID, DesignationName: DesignationName, DepartmentID: DepartmentID, DesignationTypeID: DesignationTypeID},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Delete Successfully");
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Delete. ");
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+
+
+    }// End of Function
+
+
+    function Edit(id)
+    {
+        GetDataDesignation(id);
+
+    }
+
+    function Delete(id)
+    {
+
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                DeleteDesignation(id);
+                return true;
+            }
+            else {
+
+                return false;
+            }
+        });
+
+    }
+
+    //End Save Work Area
+
+    $(document).ready(function () {
+
+
+        $('#DesignationName').on('keyup keypress', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode === 13) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+
+
+
+        $("#btnReset").click(function () {
+
+            $("#DesignationName").val('');
+            $("#DesignationID").val('');
+            $("#DepartmentID").val('');
+            $("#DesignationTypeID").val('');
+
+        });
+
+        $("#btnDesignationSave").click(function () {
+
+            var name =  $("#DesignationName").val();
+            var id = $("#DesignationID").val();
+            var depID = $("#DepartmentID").val();
+            var desID = $("#DesignationTypeID").val();
+            if (name == '') {
+                $.alert.open("Please Give Designation Name.");
+                return false;
+            }
+            else if (depID == null) {
+                $.alert.open("Please Select Department.");
+                return false;
+            }
+            else if (desID == null) {
+                $.alert.open("Please Select Designation Type.");
+                return false;
+            }
+            else if (id != 0)
+            {
+                // Update
+                UpdateDesignation();
+                clear();
+            }
+            else
+            {
+                // Save
+                SaveDesignation();
+                clear();
+            }
+
+        });
+
+        $('#grid2').jtable({
+            paging: true,
+            pageSize: 5,
+            sorting: false,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: '/Designation/GetDesignationList'
+            },
+            fields: {
+                rowSl: {
+                    title: 'SI No',
+                    width: '10%'
+                },
+                DesignationID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                DesignationName: {
+                    title: 'Designation',
+                    width: '30%'
+                },
+                DepartmentName: {
+                    title: 'Department',
+                    width: '20%'
+                },
+                DesignationTypeName: {
+                    title: 'Designation Type',
+                    width: '20%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Edit(' + data.record.DesignationID + ')"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Delete(' + data.record.DesignationID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid2();
+        //$('#grid').jtable('load');
+        $("#filterColumn").change(function () {
+            if ($(this).val() === "ViewAll") {
+                $("#filterValue").val('');
+            }
+        });
+
+        function reloadGrid2() {
+            //$("#loading").show();
+            $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            //$("#loading").hide();
+        }
+
+
+
+
+
+    });// End Document Rready
+</script>
+
+<h2 class="page-title">Designation </h2>
+&nbsp;
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DesignationName, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.DesignationName, new { htmlAttributes = new { @class = "form-control", @Placeholder = "Designation Name" } })
+                            @Html.HiddenFor(model => model.DesignationID)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DepartmentID, new { @class = "control-label col-md-4 required" })
+                        <div class="col-md-8">
+                            @Html.DropDownListFor(model => model.DepartmentID, DepartmentList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DesignationType, new { @class = "control-label col-md-4 required" })
+                        <div class="col-md-8">
+                            @Html.DropDownListFor(model => model.DesignationTypeID, DesTypeList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <div class="form-group form-action" style="padding:10px;margin:5px;">
+                            &nbsp;
+                            <input type="button" value="Save" id="btnDesignationSave" class="btn btn-success" />
+                            &nbsp;
+                            <input type="button" value="Reset" id="btnReset" class="btn btn-facebook" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    &nbsp;
+                </div>
+                &nbsp;
+                <div id="grid2">
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+}
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

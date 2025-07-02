@@ -1,0 +1,177 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.WorkingAreaLogViewModel>
+
+@{
+    ViewBag.Title = "WorkingAreaLog List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        //GetEmpList();
+        //GetCollDay();
+        $('#grid').jtable({
+            //title: 'Center List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'ProgramName ASC',
+
+            actions: {
+
+                //listAction: '/Center/GetCenterInfo',
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/WorkingAreaLog/GetWorkingLogInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+                updateAction: '/WorkingAreaLog/Edit'
+                //,deleteAction: '/Center/Delete'
+            },
+            fields: {
+                WorkingAreaLogID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                Program: {
+                    title: 'ProgramName',
+                    create: false,
+                    edit: true//,
+                    //width: '10%'
+                    //options: '/WorkingAreaLog/GetProductList'
+                },
+                WorkingArea: {
+                    title: 'WorkingArea',
+                    create: false,
+                    edit: false,
+                    width: '10%'
+                },
+                Upzilla: {
+                    title: 'Upzilla',
+                    list :false,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                },
+               
+                Municipality: {
+                    title: 'UP/Municipality',
+                    list: true,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                },
+                SelfEnterprenuerMale: {
+                    title: 'SelfEmp.Male',
+                    list: true,
+                    create: false,
+                    edit: true
+                },
+                SelfEnterprenuerFeMale: {
+                    title: 'SelfEmp.FeMale',
+                    list: true,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                },
+                PaidEnterPrenuerOwnFamilyMale: {
+                    title: 'PaidEmp.Male',
+                    list: true,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                },
+                PaidEnterPrenuerOwnFamilyFeMale: {
+                    title: 'PaidEmp.FeMale',
+                    list: true,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                },
+                PaidEnterPrenuerOutSideMale: {
+                    title: 'PaidEmp.OutSideMale',
+                    list: true,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                },
+                PaidEnterPrenuerOutSideFeMale: {
+                    title: 'PaidEmp.OutSideFeMale',
+                    list: true,
+                    create: false,
+                    edit: true,
+                    width: '10%'
+                }
+                //,
+                //EditLink: {
+                //    title: "Edit",
+                //    display: function (data) {
+                //        // return "<a href='/Product/Edit/" + data.record.ProductID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                //        return "<div class='text-center'><a href='/WorkingAreaLog/Edit/" + data.record.WorkingAreaLogID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                //        // return '<a href="/Product/Edit/' + data.record.ProductID + '">Edit</a>';
+                //    }
+                //},
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">WorkingAreaLog List</h2>
+
+
+
+@*<div class="row">
+    <div class="col-md-4">
+        @Html.Label("Employee", new { @class = "control-label" })
+        @Html.DropDownList("EmpList", null, new { @ID = "ddlEmp", @class = "form-control" })
+    </div>
+    <div class="col-md-4">
+        @Html.Label("CollectionDay", new { @class = "control-label" })
+        @Html.DropDownList("CenList", null, new { @ID = "ddlColDay", @class = "form-control" })
+    </div>
+    <div class="col-md-4" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>*@
+<br />
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

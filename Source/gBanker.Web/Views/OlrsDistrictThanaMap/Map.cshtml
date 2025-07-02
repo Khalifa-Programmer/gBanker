@@ -1,0 +1,65 @@
+﻿
+@model DistrictThanaMappingViewModel
+
+@{
+    ViewBag.Title = "District Thana Mapping";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<h2 class="page-title">District Thana Map</h2>
+
+@using (Html.BeginForm("Map", "OlrsDistrictThanaMap", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.DistrictCode, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.DistrictCode, Model.DistrictList, new { @class = "form-control chosen" })
+                    @Html.ValidationMessageFor(model => model.DistrictCode)
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OlrsDistrictCode, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.OlrsDistrictCode, Model.OlrsDistrictList, new { @class = "form-control chosen" })
+                    @Html.ValidationMessageFor(model => model.OlrsDistrictCode)
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                @Html.LabelFor(model => model.ThanaCode, htmlAttributes: new { @class = "control-label required" })
+                @Html.DropDownListFor(model => model.ThanaCode, Model.ThanaList, new { @class = "form-control chosen-thana" })
+                @Html.ValidationMessageFor(model => model.ThanaCode)
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OlrsThanaCode, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.OlrsThanaCode, Model.OlrsThanaList, new { @class = "form-control chosen-OlrsThana" })
+                    @Html.ValidationMessageFor(model => model.OlrsThanaCode)
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="form-group form-action">
+                        <button type="submit" class="btn btn-sm btn-primary btn-process"> Save </button>
+                        <button type="button" id="btnView" class="btn btn-sm btn-primary btn-process"> View </button>
+                     </div>
+                </div>
+            </div>
+        </div>
+        <div id="grid"></div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <link href="~/Assets/plugins/choosen/chosen.css" rel="stylesheet" />
+    <script src="~/Assets/plugins/choosen/chosen.jquery.js"></script>
+    <script src="~/Assets/js/olrs/olrsDistrictThanaMapManager.js"></script>
+}

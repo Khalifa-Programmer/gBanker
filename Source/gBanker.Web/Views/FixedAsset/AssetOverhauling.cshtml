@@ -1,0 +1,753 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Asset Overhauling";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    function GetHO(ddlVal) {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlHO').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetZone(HO_val, ddlVal) {
+        var ddlZone = $("#ddlZone");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetZoneList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZone.html('');
+                $.each(data, function (id, option) {
+                    ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+
+                    $('#ddlZone').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetArea(HO_val, zone_val, ddlVal) {
+        var ddlArea = $("#ddlArea");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlArea.html('');
+                $.each(data, function (id, option) {
+                    ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+                if (ddlVal != null) {
+                    $('#ddlArea').val(ddlVal);
+                }
+                else {
+                    $("#ddlArea").prop('selectedIndex', 0);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetOffice(HO_val, zone_val, area_val, ddlVal) {
+        var ddlOffice = $("#ddlOffice");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlOffice').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function CheckOffcLevel() {
+        var offcLevel = $('#lblOffcLevel').html();
+        var firstLevel = $('#lblFirstLevel').html();
+        var secondLevel = $('#lblSecondLevel').html();
+        var thirdLevel = $('#lblThirdLevel').html();
+        var fourthLevel = $('#lblFourthLevel').html();
+        //alert(offcLevel);
+        if (offcLevel == 1) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+        }
+        if (offcLevel == 2) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            // GetArea(firstLevel, secondLevel, thirdLevel);
+            GetArea(firstLevel, secondLevel, null);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+        }
+        if (offcLevel == 3) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+        }
+        if (offcLevel == 4) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+            $("#ddlOffice").prop("disabled", true);
+        }
+
+    }
+
+    $(document).ready(function () {
+        CheckOffcLevel();
+        $("#ddlHO").change(function () {
+            var HO_val = $("#ddlHO").val();
+            if (HO_val > 0) {
+                var ddlZone = $("#ddlZone");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetZoneList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlZone.html('');
+                        $.each(data, function (id, option) {
+                            ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        GetOfficeWiseAssetGroup();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlZone").empty();
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlArea.html('');
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        GetOfficeWiseAssetGroup();
+                        $("#ddlOffice").empty();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetOfficeList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlOffice.html('');
+                        $.each(data, function (id, option) {
+                            ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        GetOfficeWiseAssetGroup();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+        //GetAssetOverhaulingInfo();
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        $("#EffectiveDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+       });
+
+
+        $("#EffectiveDate").change(function () {
+            GetOfficeWiseAssetGroup();
+        });
+
+        $("#AssetGroupID").change(function () {
+            var office_id = GetWorkingOfficeID();
+            var EffectiveDate = $("#EffectiveDate").val();
+            var groupId = $("#AssetGroupID").val();
+            var ddlAssetName = $("#AssetID");
+            if (office_id != "" && groupId != "" && EffectiveDate != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetGroupWiseAssetName", "FixedAsset", "http")',
+                    data: { office_id: office_id, groupId: groupId, assetOutDate: EffectiveDate },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data.length > 0) {
+                            ddlAssetName.empty('');
+                            $.each(data, function (id, option) {
+                                ddlAssetName.append($('<option></option>').val(option.Value).html(option.Text));
+                            });
+                        } else {
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                        }
+                    }
+                });
+            }
+            else {
+                $("#AssetID").html("<option value=''>Please Select</option>")
+            }
+        });
+        $("#AssetID").change(function () {
+            GetAssetOverhaulingInfo();
+            var office_id = GetWorkingOfficeID();
+            var EffectiveDate = $("#EffectiveDate").val();
+            var assetCode = $("#AssetID").val();
+            var ddlAssetSerial = $("#AssetSerial");
+            if (office_id != "" && EffectiveDate != "" && assetCode != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetWiseAssetSerial", "FixedAsset", "http")',
+                    data: { office_id: office_id, assetOutDate: EffectiveDate, assetCode: assetCode },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlAssetSerial.html('');
+                        $.each(data, function (id, option) {
+                            ddlAssetSerial.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    }                    
+                });
+            }
+        })
+       
+        $("#AssetSerial").change(function () {
+            var office_id = GetWorkingOfficeID();
+            var EffectiveDate = $("#EffectiveDate").val();
+            var assetSerial = $("#AssetSerial").val();
+            if (assetSerial != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetSerialWiseAssetInfo", "FixedAsset", "http")',
+                    data: { office_id:office_id, assetOutDate: EffectiveDate, assetSerial: assetSerial },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data.length > 0) {
+                            $("#CurrTotalCost").val(data[0].TotalCost).attr('readonly', true);
+                            $("#Deprate").val(data[0].Deprate).attr('readonly', true); 
+                            $("#DailyTransactionId").val(data[0].DailyTransactionId);
+                        } else {
+                            $("#CurrTotalCost").val('');
+                            $("#Deprate").val('');
+                        }
+                    }
+                });
+            }
+        })
+
+
+        $("#btnReset").click(function () {
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+            ClearForm();
+        });
+
+    });
+    function GetWorkingOfficeID() {
+        if ($("#ddlHO").val() > 0) {
+            var office_id;
+            if ($("#ddlZone").val() > 0) {
+                if ($("#ddlArea").val() > 0) {
+                    if ($("#ddlOffice").val() > 0) {
+                        office_id = $("#ddlOffice").val();
+                    }
+                    else {
+                        office_id = $("#ddlArea").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlZone").val();
+                }
+            }
+            else {
+                office_id = $("#ddlHO").val();
+            }
+        }
+        return office_id;
+    }
+    function GetOfficeWiseAssetGroup() {
+        var office_id = GetWorkingOfficeID();
+        var EffectiveDate = $("#EffectiveDate").val();
+        var ddlAssetGroup = $("#AssetGroupID");
+        if (office_id != "" && EffectiveDate != "") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetOfficeWiseAssetGroup", "FixedAsset", "http")',
+                data: { officeID: office_id, assetOutDate: EffectiveDate },
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        ddlAssetGroup.empty('');
+                        $.each(data, function (id, option) {
+                            ddlAssetGroup.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    } else {
+                        ddlAssetGroup.html("<option value=''>Please Select</option>");
+                    }
+                }
+            });
+        } else {
+            $.alert.open('Please Select Any office and Effective Date');
+        }
+    }
+
+    function SaveAssetOverhauling() {
+        var office_id = GetWorkingOfficeID();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetID = $("#AssetID").val();
+        var assetSerial = $("#AssetSerial").val();
+        var currTotalCost = $("#CurrTotalCost").val();
+        var overhaulingCost = $("#OverhaulingCost").val();
+        var deprate = $("#Deprate").val();
+        var effectiveDate = $("#EffectiveDate").val();
+        var remarks = $("#Remarks").val();
+        var DailyTransactionId =  $("#DailyTransactionId").val();
+
+        if (office_id!="" && assetGroupID != "" && assetID != "" && assetSerial != "" && currTotalCost != "" && overhaulingCost != "" && effectiveDate != "") {
+            var AssetOverhaulingInfo = {
+                OfficeID: office_id,
+                AssetGroupID: assetGroupID,
+                AssetID: assetID,
+                AssetSerial: assetSerial,
+                CurrTotalCost: currTotalCost,
+                OverhaulingCost: overhaulingCost,
+                DepriciationRate: deprate,
+                EffectiveDate: effectiveDate,
+                Remarks: remarks,
+                DailyTransactionId: DailyTransactionId
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveAssetOverhauling", "FixedAsset", "http")',
+                data: JSON.stringify({ AssetOverhaulingInfo: AssetOverhaulingInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetAssetOverhaulingInfo();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        } else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function ClearForm() {
+        $("#AssetGroupID").val('');
+        $("#AssetID").val('');
+        $("#AssetSerial").val('');
+        $("#CurrTotalCost").val('');
+        $("#OverhaulingCost").val('');
+        $("#Deprate").val('');
+        $("#EffectiveDate").val('');
+        $("#Remarks").val('');
+    }
+    function GetAssetOverhaulingInfo() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        var OfficeID = GetWorkingOfficeID();
+                        var assetGroupID = $("#AssetGroupID").val();
+                        var assetID = $("#AssetID").val();
+                        $.ajax({
+                            url: '/FixedAsset/GetAssetOverhaulingInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&OfficeID=' + OfficeID + '&assetGroupID=' + assetGroupID + '&assetID=' + assetID,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                AssetOverhaulingID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetGroupID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GroupName: {
+                    width: '10%',
+                    title: 'GroupName'
+                },
+                AssetID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetName: {
+                    width: '10%',
+                    title: 'AssetName'
+                },
+                AssetSerial: {
+                    width: '10%',
+                    title: 'AssetSerial',
+                },
+                CurrTotalCost: {
+                    width: '10%',
+                    title: 'CurrTotalCost',
+                },
+                OverhaulingCost: {
+                    width: '10%',
+                    title: 'OverhaulingCost'
+                },
+                DepriciationRate: {
+                    width: '10%',
+                    title: 'DeprRate'
+                },
+                EffectiveDate: {
+                    width: '10%',
+                    title: 'EffectiveDate',
+                },
+                Remarks: {
+                    width: '10%',
+                    title: 'Remarks',
+                },
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+
+                        return '<div class="text-center"><a href="#" OnClick="EditAssetOverhauling( ' + data.record.AssetOverhaulingID + ',' + "'" + data.record.AssetGroupID + "'" + ',' + "'" + data.record.AssetID + "'" + ',' + "'" + data.record.AssetSerial + "'" + ',' + "'" + data.record.CurrTotalCost + "'" + ',' + "'" + data.record.OverhaulingCost + "'" + ',' + data.record.DepriciationRate +
+                            ',' + "'" + data.record.EffectiveDate + "'" + ',' + "'" + data.record.Remarks + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteAssetOverhauling(' + data.record.AssetOverhaulingID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+
+        });
+        $('#grid').jtable('load');
+    }
+
+
+    function EditAssetOverhauling(AssetOverhaulingID, AssetGroupID, AssetID, AssetSerial, CurrTotalCost, OverhaulingCost, DepriciationRate, EffectiveDate, Remarks) {
+        debugger;
+        $("#AssetOverhaulingID").val(AssetOverhaulingID);
+        $("#AssetGroupID").val(AssetGroupID).trigger('change').attr('Disabled', true);
+        $("#AssetID").val(AssetID).trigger('change').attr('Disabled', true);
+        $("#AssetSerial").val(AssetSerial).trigger('change').attr('Disabled', true);
+        $("#CurrTotalCost").val(CurrTotalCost);
+        $("#OverhaulingCost").val(OverhaulingCost);
+        $("#Deprate").val(DepriciationRate);
+        $("#EffectiveDate").val(EffectiveDate);
+        $("#Remarks").val(Remarks);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+    function UpdateAssetOverhauling() {
+        var office_id = GetWorkingOfficeID();
+        var assetOverhaulingID = $("#AssetOverhaulingID").val();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetID = $("#AssetID").val();
+        var assetSerial = $("#AssetSerial").val();
+        var currTotalCost = $("#CurrTotalCost").val();
+        var overhaulingCost = $("#OverhaulingCost").val();
+        var deprate = $("#Deprate").val();
+        var effectiveDate = $("#EffectiveDate").val();
+        var remarks = $("#Remarks").val();
+
+        if (assetGroupID != "" && assetID != "" && assetSerial != "" && currTotalCost != "" && overhaulingCost != "" && effectiveDate != "") {
+            var AssetOverhaulingInfo = {
+                OfficeID :office_id,
+                AssetOverhaulingID: assetOverhaulingID,
+                AssetGroupID: assetGroupID,
+                AssetID: assetID,
+                AssetSerial: assetSerial,
+                CurrTotalCost: currTotalCost,
+                OverhaulingCost: overhaulingCost,
+                DepriciationRate: deprate,
+                EffectiveDate: effectiveDate,
+                Remarks: remarks
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateAssetOverhauling", "FixedAsset", "http")',
+                data: JSON.stringify({ AssetOverhaulingInfo: AssetOverhaulingInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetAssetOverhaulingInfo();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        } else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function DeleteAssetOverhauling(AssetOverhaulingID) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteAssetOverhauling", "FixedAsset", "http")',
+                    data: { AssetOverhaulingID: AssetOverhaulingID },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            GetAssetOverhaulingInfo();
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+</script>
+
+
+<h2 class="page-title">Asset Overhauling</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.AssetOverhaulingID)
+    @Html.HiddenFor(model => model.DailyTransactionId)
+    @Html.Partial("~/Views/Shared/_OfficeNavigationPane.cshtml")
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Effective Date</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EffectiveDate, new { @class = "form-control", @autocomplete = "off" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Group</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetGroupID, Model.AssetGroupIdList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Name</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetID, Model.AssetCodeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Serial</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetSerial, Model.AssetSerialList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Current Total Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CurrTotalCost, new { @class = "form-control", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Overhauling Cost</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OverhaulingCost, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Rate of Depriciation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.Deprate, new { @class = "form-control", @readonly= "readonly" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">       
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Remarks</label>
+                <div class="col-sm-7">
+                    @Html.TextAreaFor(model => model.Remarks, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Save" id="btnSave" onclick="SaveAssetOverhauling()" class="btn btn-primary" />
+            <input type="button" value="Update" id="btnUpdate" onclick="UpdateAssetOverhauling()" class="btn btn-primary" />
+            <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}

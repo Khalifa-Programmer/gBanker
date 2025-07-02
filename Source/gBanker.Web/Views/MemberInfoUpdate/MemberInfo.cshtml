@@ -1,0 +1,297 @@
+﻿@model gBanker.Web.ViewModels.LoaneeTransferViewModel
+@{
+    ViewBag.Title = "Update Member basic info";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model == null ? null : Model.CenterList;
+    var group = Model == null ? null : Model.GroupList;
+}
+
+<script type="text/javascript">
+
+    function saveBanglaName(MemberId) {
+        var bnName = $("#txtbnName" + MemberId).val();
+
+        if (MemberId > 0 && bnName != null && bnName.length > 0) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("saveEmpBnName", "MemberInfoUpdate", "http")',
+                data: { MemberId: MemberId, bnName: bnName },
+                dataType: 'json',
+                async: true,
+                success: function (Member_Id) {
+                    if (Member_Id > 0) {
+                        // $.alert.open('info', 'Saved Successfully');
+                    }
+                },
+                error: function (request, status, error) {
+                    $.alert.open('info', 'Failed to Save');
+                }
+            });
+        }
+
+    }// END of Function
+
+    function savePhoneNo(MemberId) {
+        var value = $("#txtPhoneNo" + MemberId).val();
+
+        if (MemberId > 0 && value != null && value.length > 0) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("savePhoneNo", "MemberInfoUpdate", "http")',
+                data: { MemberId: MemberId, Phone: value },
+                dataType: 'json',
+                async: true,
+                success: function (Member_Id) {
+                    if (Member_Id > 0) {
+                        // $.alert.open('info', 'Saved Successfully');
+                    }
+                },
+                error: function (request, status, error) {
+                    $.alert.open('info', 'Failed to Save');
+                }
+            });
+        }
+
+    }// END of Function
+
+    function saveNID(MemberId) {
+        var value = $("#txtNID" + MemberId).val();
+
+        if (MemberId > 0 && value != null && value.length > 0) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("saveNID", "MemberInfoUpdate", "http")',
+                data: { MemberId: MemberId, NId: value },
+                dataType: 'json',
+                async: true,
+                success: function (Member_Id) {
+                    if (Member_Id > 0) {
+                        // $.alert.open('info', 'Saved Successfully');
+                    }
+                },
+                error: function (request, status, error) {
+                    $.alert.open('info', 'Failed to Save');
+                }
+            });
+        }
+
+    }// END of Function
+
+
+
+    $(document).ready(function () {
+        $("#loading").hide();
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 500,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberInfoUpdate/GetLoaneeInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                MemberID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office',
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Samity',
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Code',
+                    create: false,
+                    edit: false
+                },
+                FullName: {
+                    title: 'Member',
+                    create: false,
+                    edit: false
+                },
+                NewOfficeID: {
+
+                    title: 'Member Name (Bangla)',
+                    width: '30%',
+                    display: function (data) {
+                        var bngName = '';
+                        if (data.record.MemberNameBng != null)
+                            bngName = data.record.MemberNameBng;
+
+                        return '<input type="text" id=txtbnName' + data.record.MemberID + ' onClick="this.select();" onBlur="saveBanglaName(' + data.record.MemberID + ');" value="' + bngName + '"  />';
+ 
+                    }
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '30%',
+                    display: function (data) {
+                        var bngName = '';
+                        if (data.record.PhoneNo != null)
+                            bngName = data.record.PhoneNo;
+                        return '<input type="text" id=txtPhoneNo' + data.record.MemberID + ' onClick="this.select();" onBlur="savePhoneNo(' + data.record.MemberID + ');" value="' + bngName + '"  />';
+                    }
+                } ,
+
+                NationalID: {
+                    title: 'National ID',
+                    width: '30%',
+                    display: function (data) {
+                        var bngName = '';
+                        if (data.record.NationalID != null)
+                            bngName = data.record.NationalID;
+
+                        return '<input type="text" id=txtNID' + data.record.MemberID + ' onClick="this.select();" onBlur="saveNID(' + data.record.MemberID + ');" value="' + bngName + '"  />';
+
+                    }
+
+                }
+
+            }
+        });
+        //$('#grid').jtable('load');
+        //$('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+    });
+
+
+    function LoadMember()
+    {
+        $("#loading").show();
+        var centerId = $("#CenterID").val();
+        var groupId = $("#GroupID").val();
+        $.ajax({
+            type: "POST",
+            url: "/MemberInfoUpdate/GetMemberList?centerId=" + centerId + "&groupId=" + groupId,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //data: { centerId: centerId, groupId: groupId },
+            async: true,
+            success: function (data) {
+
+                $("#ddlMember").empty();
+                $("#ddlMember").append($("<option     />").val('0').text('Select Member'));
+                $.each(data.Options, function () {
+
+                    $("#ddlMember").append($("<option     />").val(this.Value).text(this.Text));
+                });
+
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+        $('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+        $("#loading").hide();
+    }
+    function MemberChange()
+    {
+        $("#loading").show();
+        $('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+        $("#loading").hide();
+    }
+
+
+    function loadDivisionCode(dropdownid) {
+        $("#loading").show();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberDivisionCode", "MemberInfoUpdate", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { MemberID: dropdownid },
+
+            success: function (result) {
+                //$("#Penalty").val(result.penalty);
+                //$("#Withdrawal").val(result.withdrawal);
+                //$("#SavingInstallment").val(result.savInstall);
+                //$("#NoOfAccount").val(result.LoanTerm);
+                //$("#Balance").val(result.Balance);
+
+                $("#" + dropdownid.replace('-', '')).val(result.Options);
+
+            },
+            error: function (err) {
+              //  $body.removeClass("loading");
+            }
+        });
+
+
+    }
+
+
+
+    function loadOfficeDropdown(dropdownid) {
+        $("#loading").show();
+        $.ajax({
+            type: "POST",
+            url: "/MemberInfoUpdate/GetOfficeList",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+               // $("#" + dropdownid).append($("<option     />").val('0').text('Select Office'));
+                $.each(data.Options, function () {
+                  //  $("#" + dropdownid).append($("<option     />").val(this.Value).text(this.DisplayText));
+                });
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+
+    }
+
+    
+     
+    
+</script>
+
+@using (Html.BeginForm())
+{
+    <h2 class="page-title">Member List</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.CenterName, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control", @onchange = "LoadMember();" })
+            </div>
+        </div>
+        
+    </div>
+    <div id="grid"></div>
+   
+
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,795 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.LoanDisburseViewModel>
+
+@{
+    ViewBag.Title = "Loan Disbursement List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    //var AccCode = Model == null ? null : Model.GetAccountCodeList;
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<style type="text/css">
+
+     th{
+        height:40px;
+        vertical-align:top;
+        margin-top:0px!important;
+        padding-top:0px!important;
+     }
+     span.jtable-column-header-text
+     {
+         margin-top:0px !important;
+     }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        confirmDayInitiated();
+
+        $("#btnSend").click(function (e) {
+            e.preventDefault();
+            var msgBody = $('#lblMsg').html();
+            var receiver = $('#ReceiverPhoneNo').val();
+            var memId = $('#ReceiverMemberId').val();
+            var disburseDt = $('#ReceiverdisburseDt').val();
+            if (receiver != null && disburseDt != null) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SendSMS", "LoanDisburse", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    data: { msgBody: msgBody, receiver: receiver, memId: memId, disburseDt: disburseDt },
+                    success: function (result) {
+                        $('#smsBox').hide();
+                        var msg, css;
+                        if (result != '') {
+                            msg = "SMS has been sent successfully";
+                            css = "success";
+                        }
+                        else if (result == '') {
+                            msg = "Failed to Save";
+                            css = "failed";
+                        }
+                        else {
+                            msg = "Failed to Send";
+                            css = "failed";
+                        }
+                        reloadGrid();
+                        alert(msg);
+                        //$("#dvMessage").attr('class', css);
+                        //$("#dvMessage").html(msg);
+                        //$("#dvMessage").show();
+                        //if (result == null)
+                        //    $("#dvMessage").toggle('fade', 1500);
+                    },
+                    error: function (request, status, error) {
+                        //$("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html(request.statusText);
+                        $("#dvMessage").show();
+                    }
+                });
+            }
+            else {
+                alert("Please set a phone number for this member.")
+            }
+
+        });
+
+        ////////////////////////////////////
+        $("#PrincipalLoan").blur(function () {
+            var principal = $("#PrincipalLoan").val();
+            var prodId = $("#ProductID").val();
+            var duration = $("#Duration").val();
+            if (parseFloat(principal) > 50000) {
+                $("#TransType").val("102");
+                $("#BankName").prop("readonly", false);
+                $("#ChequeNo").prop("readonly", false);
+                $("#ChequeIssueDate").prop("readonly", false);
+            }
+            else {
+                $("#TransType").val("101");
+                $("#BankName").prop("readonly", true);
+                $("#ChequeNo").prop("readonly", true);
+                $("#ChequeIssueDate").prop("readonly", true);
+            }
+
+            @*$.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetInstallment", "LoanApprovalElegible", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { productid: $("#ProductID").val(), principal: principal, duration: duration },
+
+                success: function (result) {
+
+
+                    $("#LoanInstallment").val(result.loan);
+                    $("#IntInstallment").val(result.interest);
+                    $("#Duration").val(result.duration);
+
+                }
+            });*@
+        });
+        $('#btnProduct').click(function (e) {
+            e.preventDefault();
+            var startDate = "24/11/2012";
+            var endDate = "30/11/2012";
+            
+            var url = '/LoanDisburse/GenerateReport?fromDate=' + startDate + '&toDate=' + endDate ;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/LoanDisburse/GetLoanDisburseInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+               
+                updateAction: '/LoanDisburse/Edit',
+               deleteAction: '/LoanDisburse/DeleteDisburse'
+               
+            },
+            fields: {
+                LoanSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '6%',
+                    create: false,
+                    edit: false
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '6%',
+                    create: false,
+                    edit: false
+                },
+                MemberID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Info',
+                    width: '8%',
+                    create: false,
+                    edit: true,
+                    display: function (data) {
+                        return data.record.MemberCode + ' - ' + data.record.FirstName;
+                    },
+                    input: function (data) {
+                        if (data.record) {
+                            return '<label>' + data.record.MemberCode + ' - ' + data.record.FirstName + '</label>';
+                            //return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.MemberCode + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+
+                ProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InvestorID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    width: '5%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<label>'  + data.record.ProductCode + ', ' + data.record.ProductName +  '</label>';
+
+                        //return '<input type="text" disabled="disabled"  "name="Product" value="' + data.record.ProductCode + ', ' + data.record.ProductName + '" />';
+                    }
+                },
+                PurposeID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                PurposeName: {
+                    title: 'Purpose Name',
+                    width: '6%',
+                    create: false,
+                    edit: false
+                },
+                MemberCategoryID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EmployeeId: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                LoanTerm: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                PrincipalLoan: {
+                    list: true,
+                    create: false,
+                    edit: true,
+                    title: 'Principal Loan',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" disabled="disabled" onkeypress="return checkNumberic(event);" onblur="checkTrxType(event,' + data.record.LoanSummaryID + ',' + data.record.PrincipalLoan + '); "name="PrincipalLoan" style="width:200px"  value="' + data.record.PrincipalLoan + '" />';
+                        } else {
+                            return '<input type="text" name="PrincipalLoan" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                InterestRate: {
+                    list: true,
+                    create: false,
+                    edit: false,
+                    title: 'SC Rate',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.InterestRate + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+                IntCharge: {
+                    list: true,
+                    create: false,
+                    edit: false,
+                    title: 'SC Charge',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.IntCharge + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+
+                DisburseAmountWithSC: {
+                    title: 'Dis.Amt.Wi.SC',
+                    width: '4%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<label>' + (data.record.PrincipalLoan + data.record.IntCharge) + '</label>';
+
+                        //return '<input type="text" disabled="disabled"  "name="Product" value="' + data.record.ProductCode + ', ' + data.record.ProductName + '" />';
+                    }
+                },
+
+
+                LoanInstallment: {
+                    title: 'Loan Inst.',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" disabled="disabled" onblur="checkLoanInstallment(' + data.record.LoanSummaryID + ');"' + ' name="LoanInstallment" style="width:200px"  value="' + data.record.LoanInstallment + '" />';
+                        } else {
+                            return '<input type="text" name="LoanInstallment" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                IntInstallment: {
+                    title: 'SC Inst.',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" disabled="disabled" onblur="checkInterestInstallment(' + data.record.LoanSummaryID + ');"' + ' name="IntInstallment" style="width:200px"  value="' + data.record.IntInstallment + '" />';
+                        } else {
+                            return '<input type="text" name="IntInstallment" style="width:200px" value="" />';
+                        }
+                    }
+                },
+
+                InstallmentTotal: {
+                    title: 'Installment Total',
+                    width: '4%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<label>' + (data.record.LoanInstallment + data.record.IntInstallment) + '</label>';
+
+                        //return '<input type="text" disabled="disabled"  "name="Product" value="' + data.record.ProductCode + ', ' + data.record.ProductName + '" />';
+                    }
+                },
+
+                CSFAmount: {
+                    title: 'Insurance Amount',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" disabled="disabled" ' + ' name="CSFAmount" style="width:200px"  value="' + data.record.CSFAmount + '" />';
+                        } else {
+                            return '<input type="text" name="CSFAmount" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                Duration: {
+                    list: false,
+                    create: false,
+                    edit: false,
+                    title: 'Duration',
+                },
+                ApproveDate: {
+
+                    list: false,
+                    create: false,
+                    edit: false,
+                    displayFormat: 'dd-mm-yy',
+                    title: 'ApproveDate',
+                    type: 'date',
+                },
+                TransType: {
+                    title: 'TransType',
+                   // options: { '101': 'Cash', '102': 'Bank', '103': 'Transfer' },
+                    list: true,
+                    create: false,
+                    edit: true,
+                    input: function (data) {
+                        if (data.record) {
+                            return '<input type="text" disabled="disabled"  name="TransType" style="width:200px"  value="' + data.record.TransType + '" />';
+                        } else {
+                            return '<input type="text" name="TransType" style="width:200px" value="" />';
+                        }
+                    }
+                    
+                   
+                },
+
+                BankName: {
+                    list: true,
+                    create: false,
+                    options: '/LoanDisburse/GetAccCode',
+                    edit: true,
+                    title: 'Bank Name',
+                    width: '5%',
+                    display: function (data) {
+                        if (data.record.TransType == "Cash") {
+                            return '<label>' + '</label>';
+                        } else {
+                            return '<label>' + data.record.BankName + '</label>';
+
+                        }
+                       // return '<input type="text" disabled="disabled"  "name="Product" value="' + data.record.ProductCode + ', ' + data.record.ProductName + '" />';
+                    }
+                   
+                },
+                ChequeNo: {
+                    list: true,
+                    create: false,
+                    edit: true,
+                    title: 'Cheque No',
+                    width: '5%'
+                   
+                },
+                ChequeIssueDate: {
+                    edit: true,
+                    title: 'Cheque Issue Date',
+                    width: '12%',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false
+                   
+                }
+                ,
+
+                InstallmentStartDate: {
+                    title: 'Ins.StartDate',
+                    width: '5%',
+                    //type: 'date',
+                    //displayFormat: 'd-M-yy'
+                    //,
+                    //display: function (data) {
+                    //    return moment(data.record.InstallmentStartDate).format('dd-MM-yyyy');  //Specfiy Date root Path.
+                    //}
+                    input: function (data) {
+                        //debugger;
+                        //alert(data.record.InstallmentStartDate);
+                        if (data.record) {
+                            return '<input type="text" name="InstallmentStartDate" style="width:200px" disabled="disabled" value="' + data.record.InstallmentStartDate + '" />';
+                        } else {
+                            return '<input type="text" name="InstallmentStartDate" style="width:200px" value="" />';
+                        }
+                    }
+                },
+                DisburseDate: {
+
+                    title: 'Disburse Date',
+                    width: '12%',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    create: false,
+                    edit: false,
+                }
+                ,
+                DisburseStatus: {
+                    title: 'Status',
+                    width: '5%',
+                    input: function (data) {
+                        if (data.record) {
+                            var dbDate = '';
+                            if (data.record.DisburseStatus !== null)
+                                dbDate = data.record.DisburseStatus;
+                            return '<input type="text" name="DisburseStatus" disabled="disabled"  value="' + dbDate + '" />';
+                        } else {
+                            return '<input type="hidden" name="DisburseStatus" value="" />';
+                        }
+                    }
+                },
+               
+               
+                DetailLink: {
+                    title: "View",
+                    sort: false,
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="RepaymentSchedule(' + data.record.MemberID + ',' + data.record.ProductID + ');"><i class="fa fa-share-square-o"></i></a></div>';
+
+                    }
+                },
+                
+                DetailPrint: {
+                    title: "Print",
+                    sort: false,
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="PrintRepaymentSchedule(' + data.record.MemberID + ',' + data.record.ProductID + ');"><i class="fa fa-share-square-o"></i></a></div>';
+
+                    }
+                }
+
+                ,
+                SMS: {
+            title: "SMS",
+            sort: false,
+            create: false,
+            edit: false,
+            width: '10%',
+            display: function (data) {                        
+                if (data.record.DisburseDate == null) {
+                    return null;
+                    //return '<div class="text-center"><a href="#" OnClick="LoadSmsBox(' + "'" + data.record.FirstName + "'," + data.record.PrincipalLoan + ",'" + data.record.PurposeName + "','" + data.record.DisburseDtMsg + "'," + data.record.LoanInstallment + "," + data.record.IntInstallment + ",'" + data.record.InstallmentStartDtMsg + "','" + data.record.PhoneNo + "'," + data.record.MemberID + ');"><i class="fa fa-share-square-o"></i></a></div>';
+                }
+                else {
+                    if (data.record.SmsStatus == 'Sent') {
+
+                        return '<span style="color:green;">SMS has sent</span>'
+                    }
+                    else if (data.record.SmsStatus == 'Fail') {
+
+                        return '<span style="color:red;">Fail</span>&nbsp;' + '<div class="text-center"><a href="#" OnClick="LoadSmsBox(' + "'" + data.record.FirstName + "'," + data.record.PrincipalLoan + ",'" + data.record.PurposeName + "','" + data.record.DisburseDtMsg + "'," + data.record.LoanInstallment + "," + data.record.IntInstallment + ",'" + data.record.InstallmentStartDtMsg + "','" + data.record.PhoneNo + "'," + data.record.MemberID + ');"><i class="fa fa-share-square-o"></i></a></div>';
+                    }
+                    else
+                        return '<div class="text-center"><a href="#" OnClick="LoadSmsBox(' + "'" + data.record.FirstName + "'," + data.record.PrincipalLoan + ",'" + data.record.PurposeName + "','" + data.record.DisburseDtMsg + "'," + data.record.LoanInstallment + "," + data.record.IntInstallment + ",'" + data.record.InstallmentStartDtMsg + "','" + data.record.PhoneNo + "'," + data.record.MemberID + ');"><i class="fa fa-share-square-o"></i></a></div>';
+                }                        
+            }
+        }
+
+                //DetailPrint: {
+                //    title: "Print",
+                //    sort: false,
+                //    create: false,
+                //    edit: false,
+                //    display: function (data) {
+                //        return '<div class="text-center"><a href="#" OnClick="PrintRepaymentSchedule(' + data.record.MemberID + ',' + data.record.ProductID + ');"><i class="fa fa-share-square-o"></i></a></div>';
+
+                //    }19
+                //}
+            }
+        });
+
+        
+        // $('#grid').jtable('load');
+        reloadGrid();
+        $('#EditDialogSaveButton').click(function () {            
+            $("#Edit-DisburseStatus").val('Disbursed');            
+        });
+        $('#DeleteDialogSaveButton').click(function () {
+            $("#DeleteDisburse-DisburseStatus").val('');
+        });
+
+    });
+    function CloseSms() {
+        //e.preventDefault();
+        $('#smsBox').hide();
+    }
+    function LoadSmsBox(memName, principalLoan, purposeName, disburseDate, loanInstallment, intInstallment, installmentStartDtMsg, phoneNo, memId) {
+
+        //$('#lblMsg').html("Thank you " + memName +", your principal amount is " + principalLoan + " for " + purposeName + " on " + disburseDate + ". Your Loan Installment is " + loanInstallment + " and Interest Installment is " + intInstallment + ". Your Installment start date is " + installmentStartDtMsg );
+        $('#lblMsg').html(memName + ", loan amount is " + principalLoan + " on " + disburseDate + ". Loan Inst. is " + loanInstallment + " and Interest Inst. is " + intInstallment + ".");
+        $('#ReceiverPhoneNo').val(phoneNo);
+        $('#ReceiverMemberId').val(memId);
+        $('#ReceiverdisburseDt').val(disburseDate);
+        $('#smsBox').show();
+
+        //$('#smsBox').show();
+        //$('#loading').modal('hide');
+        //$('.modal').modal('hide');
+        //$('#smsBox').modal();
+    }
+    function CloseSms() {
+        //e.preventDefault();
+        $('#smsBox').hide();
+    }
+    function checkNumberic(e) {
+       
+            if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+                return false;
+            }
+       
+
+
+    }
+    function checkLoanInstallment(loanInstallmentId) {
+        //alert(loanInstallmentId);
+    }
+    function checkInterestInstallment(loanInstallmentId) {
+        //alert(loanInstallmentId);
+    }
+    function checkTrxType(e, loanInstallmentId, PrincipalLoan) {
+       
+        //alert(loanInstallmentId);
+        var TransTypeId = 'TransType' + loanInstallmentId;
+        var principal = $("#PrincipalLoan").val();
+        var prodId = $("#ProductID").val();
+        var duration = $("#Duration").val();
+        if (parseFloat(PrincipalLoan) > 50000) {
+            $("#TransType").val('102');
+            $('#' + TransTypeId).val("102");
+           
+
+            $("#BankName").prop("readonly", false);
+            $("#ChequeNo").prop("readonly", false);
+            $("#ChequeIssueDate").prop("readonly", false);
+        }
+        else {
+            $("#TransType").val('101');
+            $("#BankName").prop("readonly", true);
+            $("#ChequeNo").prop("readonly", true);
+            $("#ChequeIssueDate").prop("readonly", true);
+        }
+
+    }
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        //if ($('#txtOption').val() == 'true') {
+        //    $('#SMSgrid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        //    $('#grid').hide();
+        //}
+        //else {
+        //    $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+        //    $('#SMSgrid').hide();
+        //}
+    }
+    function PrintRepaymentSchedule(memId, prodid) {
+
+
+
+        var url = '/LoanDisburse/GenerateRepaymentReport?MemberID=' + memId + '&ProductID=' + prodid
+        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    }
+    function RepaymentSchedule(memId, prodid) {
+        var dtTable = $('#tblRepaymentScheduleDetails');
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            //url: '@Url.Action("LoanDisburse", "GetRepaymentSchedule", "http")',
+            url: '/LoanDisburse/GetRepaymentSchedule?MemberID=' + memId + '&ProductID=' + prodid,
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (List_LoanRepaymentScheduleModel) {
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                $.each(List_LoanRepaymentScheduleModel, function (index, acc) {
+                    var sl = index + 1;
+                    tableBody.append('<tr id="tableRow">' +
+                                 //'<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                        '<td>' + acc.CenterCode + '</td>' +
+                                        '<td>' + acc.LoanTerm + '</td>' +
+                                        '<td>' + acc.RepaymentDate + '</td>' +
+                                        '<td>' + acc.InstallmentNo + '</td>' +
+                                        '<td>' + acc.PrincipalLoan + '</td>' +
+                                        '<td>' + acc.LoanInstallment + '</td>' +
+                                        '<td>' + acc.LoanBalnce + '</td>' +
+                                        '<td>' + acc.IntInstallment + '</td>' +
+                                        '<td>' + acc.IntCharge + '</td>' +
+                                        '<td>' + acc.InterestBalance + '</td>' +
+                                 '</tr>')
+                })
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+        $('#RepaymentScheduleBox').show();
+    }
+    function ClosePopupRepay() {
+        $('#RepaymentScheduleBox').hide();
+        //reloadGrid();
+    }
+</script>
+
+
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title">Loan Disbursement List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="MemberCode">Member Code</option>
+            <option value="ProductCode">Product Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+<br />
+<div id="grid"></div>
+
+<div id="RepaymentScheduleBox" style="margin: 0px; padding: 0px; position: absolute; right: 20%; top: 180px; width: 100%; z-index: 1; display: none; text-align:center;">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content" style="width:1000px;">
+            @*<div class="modal-header">
+                <h4 class="modal-title">
+                    Repayment Schedule
+                </h4>
+            </div>*@
+            <div class="modal-body" style="width: 100%;">
+                @*<div id="LoanGrid"></div>*@
+                <div style="background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+                                            border-color: #2b5177; height:35px;">
+                    <div style="text-shadow: 0 1px 0 #666; color:#fff; font-weight:bold; padding-top:6px; padding-left:5px;">Repayment Schedule</div>
+
+                </div>
+                <table id="tblRepaymentScheduleDetails" cellpadding="5" cellspacing="0" width="100%">
+                    <thead class="tHead">
+                        <tr>
+                            @*<th style="height:35px; vertical-align:middle; text-align:center;">
+                                    Sl
+                                </th>*@
+
+                            <th style="vertical-align:middle;">
+                                Samity Code
+                            </th>
+                            <th style="vertical-align:middle;">
+                                Loan Term
+                            </th>
+
+                            <th style="vertical-align:middle;">
+                                Repayment Date
+                            </th>
+                            <th style="vertical-align:middle;">
+                                Installment No
+                            </th>
+
+                            <th style="vertical-align:middle; text-align:right;">
+                                Principal Loan
+                            </th>
+                            <th style="vertical-align:middle; text-align:right;">
+                                Loan Paid
+                            </th>
+                            <th style="vertical-align:middle; text-align:center;">
+                                Loan Balance
+                            </th>
+                            <th style="vertical-align:middle; text-align:right;">
+                                SCharge Paid
+                            </th>
+                            <th style="vertical-align:middle; text-align:right;">
+                                S.Charge
+                            </th>
+                            <th style="vertical-align:middle; text-align:right;">
+                                S.Charge Balance
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <input type="submit" value="Close" id="btnClose" class="btn btn-danger" onclick="ClosePopupRepay()" />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        
+        <input id="btnProduct" type="submit" value="Disbursement Info" class="btn btn-primary" />
+        
+    </div>
+</div>
+<div id="smsBox" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 180px; width: 100%; height: 100%; z-index: 1;
+        display: none">
+    @*<p style="position: absolute; top: 30%; left: 45%; background-color: White;">*@
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    Send SMS
+                </h4>
+            </div>
+            <div class="modal-body">
+
+                <label id="lblMsg"></label>
+            </div>
+            <div class="modal-footer">
+                <input type="submit" value="Send" id="btnSend" class="btn btn-success" />
+                &nbsp;
+                <input type="submit" value="Cancel" id="btnCancel" class="btn btn-danger" onclick="CloseSms()" />
+                <input type="hidden" id="ReceiverPhoneNo" value="" />
+                <input type="hidden" id="ReceiverMemberId" value="" />
+                <input type="hidden" id="ReceiverdisburseDt" value="" />
+            </div>
+        </div>
+    </div>
+    @*</p>*@
+</div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

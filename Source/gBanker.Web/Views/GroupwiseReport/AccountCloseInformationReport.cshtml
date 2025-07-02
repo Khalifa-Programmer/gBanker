@@ -1,0 +1,116 @@
+﻿
+@{
+    ViewBag.Title = "AccountCloseInformationReport";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetCenter();
+        $("#txtFromDt").datepicker(
+               {
+                   dateFormat: "dd-M-yy",
+                   showAnim: "scale"
+               });
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var url;
+            var center = $("#ddlCenter").val();
+            if (center > 0 && DateFrom != '' && DateTo != '') {
+                url = '/GroupwiseReport/GenerateAccountCloseInformationReport?Qtype=2&Center=' + center + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+            }
+            else if (center == 0 && DateFrom != '' && DateTo != '') {
+                url = '/GroupwiseReport/GenerateAccountCloseInformationReport?Qtype=1&Center=0 &DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+            }
+            else {
+                alert('Date field cannot be blank')
+            }
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+        });
+    });
+</script>
+<h2 class="page-title">Account Close Information Report</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+

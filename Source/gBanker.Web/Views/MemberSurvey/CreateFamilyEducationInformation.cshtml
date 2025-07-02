@@ -1,0 +1,309 @@
+﻿@model gBanker.Web.ViewModels.SurveyMemberMasterViewModel
+@{
+    ViewBag.Title = "CreateFamilyEducationInformation";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+@using (Html.BeginForm(null, null, new { @id = string.Empty }, FormMethod.Post, new { @id = "create", @mode = "create" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="accordion">
+        <div class="panel-group" id="accordion">
+
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title panel-title-8">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse8"><i class="fa fa-plus"></i>&nbsp;Survey Member Family Education Information</a>
+                    </h4>
+                </div>
+                <div id="collapse8" class="panel-collapse collapse">
+                    @Html.ActionLink("Member Survey List", "Index", null, new { @class = "btn btn-success btn-sm pull-right" })
+                    <div class="panel-body">
+                        @{
+                            Html.RenderPartial("~/Views/MemberSurvey/Partial/_SurveyMemberFamilyEducationInformation.cshtml", @Model);
+                        }
+                        <div class="row">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input id="btnSurveyMemberFamilyEducationInformation" type="submit" value="Save" class="btn btn-primary" onclick="SaveSurveyMemberFamilyEducationInformation()" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="page-title">Member Family Education List</h4>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            &nbsp;
+                        </div>
+                    </div>
+
+                    <div id="grid"></div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            &nbsp;
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="row">
+                @Html.HiddenFor(model => model.SMEducationId)
+            </div>
+
+        </div>
+    </div>
+
+
+    <script src="~/Scripts/bootbox.min.js"></script>
+    <script type="text/javascript">
+
+
+        $(document).ready(function () {
+            $("#DateFrom").datepicker(
+                {
+                    dateFormat: "dd-M-yy",
+                    showAnim: "scale",
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "1920:2100"
+
+                });
+            $("#DateFrom").datepicker(
+                'setDate', new Date());
+
+            $("#DateTo").datepicker(
+                {
+                    dateFormat: "dd-M-yy",
+                    showAnim: "scale",
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "1920:2100"
+
+                });
+            $("#DateTo").datepicker(
+                'setDate', new Date());
+
+            GetsCodeWiseIds();
+            GRIDLOAD();
+        });
+
+        function GetsCodeWiseIds() {
+            debugger;
+            var sCode = $('#SurveyCode').val();
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetsCodeWiseIdforSurveyMemberFamilyEducationInformation", "MemberSurvey")',
+                data: { sCode: sCode },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    $("#SurveyFamilyId").val(data.SurveyFamilyId);
+                    $("#InstituteId").val(data.InstituteId);
+                    $("#ClassName").val(data.ClassName);
+                    $("#DateFrom").val(data.DateFrom);
+                    $("#DateTo").val(data.DateTo);
+                    $(".RemarksMemberFamilyEducationInformation").val(data.Remarks);
+                    $("#SMEducationId").val(data.SMEducationId);
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+
+        function GenerateSurveyMemberFamilyEducationInformation() {
+            var item = {};
+            item.SMEducationId = $("#SMEducationId").val();
+            item.SurveyId = $("#SurveryId").val();
+            //item.SurveyFamilyId = $("#SurveyFamilyId").val();
+            item.InstituteId = $("#InstituteId").val();
+            item.ClassName = $("#ClassName").val();
+            item.DateFrom = $("#DateFrom").val();
+            item.DateTo = $("#DateTo").val();
+            item.Remarks = $(".RemarksMemberFamilyEducationInformation").val();
+            return item;
+        }
+
+
+
+        function SaveSurveyMemberFamilyEducationInformation() {
+            var MemberSurvey = GenerateSurveyMemberFamilyEducationInformation();
+            var sCode = $("#SurveyCode").val();
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: true,
+                cache: false,
+                url: '@Url.Action("SaveSurveyMemberFamilyEducationInformation", "MemberSurvey")',
+                data: JSON.stringify({ MemberSurvey: MemberSurvey, sCode: sCode }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data == "Save Successfull") {
+                        bootbox.alert({
+                            message: "Save Successfull",
+                            size: 'small'
+                        });
+                    } else if(data == "Updated successfully"){
+                        bootbox.alert({
+                            message: "Updated Successfull",
+                            size: 'small'
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+
+            });
+        }
+
+        function GRIDLOAD(parameters) {
+            $('#grid').jtable({
+                paging: true,
+                pageSize: 20,
+                sorting: true,
+                defaultSorting: 'InventoryId ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        //var carId = $("#VMCarId").val();
+                        //if (carId == '' || carId == "" || carId == null) {
+                        //    carId = 0;
+                        //}
+
+                        return $.Deferred(function ($dfd) {
+
+                            $.ajax({
+                                //url: '/MemberSurvey/ListMemberSurvey?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&carId=' + carId,
+                                url: '/MemberSurvey/ListSurveyMemberFamilyEducationInformation?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+
+                                success: function (data) {
+                                    $dfd.resolve(data);
+
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    }
+
+                },
+                fields: {
+                    Id: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    //SurveyId: {
+                    //    title: 'Survey Id',
+                    //    width: '10%'
+                    //},
+
+                    SMEducationId: {
+                        title: 'SMEducationId',
+                        width: '10%'
+                    },
+
+                    SurveyCode: {
+                        title: 'SurveyCode',
+                        width: '10%'
+                    },
+
+                    SurveyFamilyId: {
+                        title: 'SurveyFamilyId',
+                        width: '10%'
+                    },
+                    InstituteId: {
+                        title: 'InstituteId',
+                        width: '10%'
+                    },
+                    ClassName: {
+                        title: 'ClassName',
+                        width: '10%'
+                    },
+                    DateFromString: {
+                        title: 'DateFromString',
+                        width: '10%'
+                    },
+                    DateToString: {
+                        title: 'DateToString',
+                        width: '10%'
+                    },
+
+                    Edit: {
+                        title: "Edit",
+                        sorting: false,
+                        display: function (data) {
+                            return "<div class='text-center'><a href='/MemberSurvey/CreateFamilyEducationInformation?sCode=" + data.record.SurveyCode + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                        }
+                    },
+                    Delete: {
+                        title: "Delete",
+                        display: function (data) {
+                            return '<div class="text-center"><a href="#" OnClick="InformationDelete(' + data.record.SMEducationId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                        }
+
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+
+
+        function InformationDelete(Id) {
+            $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+                if (button == 'yes') {
+                    $.ajax({
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("InformationDeleteEducationInformation", "MemberSurvey", "http")',
+                        data: { Id: Id },
+                        dataType: 'json',
+                        async: true,
+                        success: function (data) {
+                            if (data.result == 1) {
+                                $('#grid').jtable('load');
+                                $.alert.open("Error", data.message);
+                            } else {
+                                $.alert.open("Error", data.message);
+                            }
+
+                        },
+                        error: function (request, status, error) {
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                    return true;
+                }
+                else {
+                    hiddenField.value = 'false';
+                    return false;
+                }
+            });
+        }
+
+
+
+
+    </script>
+
+                            }
+
+
+@section Scripts {
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+
+}
+

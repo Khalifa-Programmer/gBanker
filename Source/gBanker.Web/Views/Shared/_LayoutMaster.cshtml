@@ -1,0 +1,684 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>@ViewBag.Title</title>
+    <link rel="shortcut icon" href="../images/LOGO_G.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="~/content/bootstrap.css" rel="stylesheet">
+    <link href="~/content/ui-libs/font-awesome-4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- The styles -->
+    <link href="~/Content/charisma-master/css/bootstrap-cerulean.min.css" rel="stylesheet" id="bs-css">
+    <link href="~/Content/charisma-master/css/charisma-app.css" rel="stylesheet">
+    <link href="~/Content/charisma-master/bower_components/fullcalendar/dist/fullcalendar.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/bower_components/fullcalendar/dist/fullcalendar.print.css" rel='stylesheet' media='print'>
+    <link href="~/Content/charisma-master/bower_components/chosen/chosen.min.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/bower_components/colorbox/example3/colorbox.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/bower_components/responsive-tables/responsive-tables.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/bower_components/bootstrap-tour/build/css/bootstrap-tour.min.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/jquery.noty.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/noty_theme_default.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/elfinder.min.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/elfinder.theme.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/jquery.iphone.toggle.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/uploadify.css" rel='stylesheet'>
+    <link href="~/Content/charisma-master/css/animate.min.css" rel='stylesheet'>
+    <link href="~/Content/themes/base/jquery-ui.css" rel='stylesheet'>
+
+    <link href="~/Content/charisma-master/css/custom.css" rel='stylesheet'>
+
+    <link href="~/Content/alert/css/alert.css" rel="stylesheet" />
+    <link href="~/Content/alert/themes/light/theme.css" rel="stylesheet" />
+    @*@Styles.Render("~/Content/css")*@
+    <link href="~/Scripts/jtable/themes/lightcolor/blue/jtable.min.css" rel='stylesheet' />  @Styles.Render("~/Content/css")
+    <link href="~/Assets/css/gbanker6-custom.css" rel="stylesheet" />
+    <!-- jQuery -->
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Content/alert/js/alert.js"></script>
+    <script type="text/javascript" src="//www.google.com/jsapi"></script>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="content/ui-libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="content/ui-libs/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    @Scripts.Render("~/bundles/gapi")
+
+    @using gBanker.Web.Helpers;
+
+    <script type="text/javascript">
+
+        var orgId = "@SessionHelper.LoginUserOrganizationID";
+        console.log(orgId);
+
+
+            $(document).ready(function () {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '/Account/GetSecurityStamp',
+                    data: {},
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data == 'logout') {
+                            logOffSession();
+                        }
+                        console.log('STamp:', data);
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            });
+
+            function logOffSession() {
+
+                $.ajax({
+                    url: '/Account/LogOutSession?logOff=true',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (resp) {
+                        window.location.href = resp;
+                    },
+                    error: function (err) {
+
+                    }
+                });
+            }
+    </script>
+
+</head>
+<body>
+    @*<div id="loading" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document" style="max-width: 250px;">
+                <div class="modal-content">
+                    <div class="modal-body" style="padding: 10px">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div id="spinner" class="showbox">
+                                    <div class="loader">
+                                        <svg class="circular" viewBox="25 25 50 50">
+                                            <circle class="path" cx="50" cy="50" r="15" fill="none" stroke-width="3" stroke-miterlimit="10" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-9 text-left" style="padding-top: 22px; padding-left: 30px">Please Wait....</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    <div id="loading" style="display:none" class="modal">
+        Pls Wait........
+    </div>
+    @{
+        var parentModules = gBanker.Web.Helpers.SessionHelper.AllPrentModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+        var userModules = gBanker.Web.Helpers.SessionHelper.UserSecurityModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+
+    }
+    @Html.Partial("_headerTop")
+    <div class="container-fluid ch-container">
+        <div class="row">
+            @Html.Partial("_leftMenu")
+
+            <div id="content" class="col-lg-10 col-sm-10">
+                <!-- content starts -->
+
+                <div class="row">
+                    <div class="col-md-12">
+                        @if (ViewContext.RouteData.Values["controller"].ToString().ToLower() != "home")
+                        {
+                            <ul class="breadcrumb">
+                                <li>
+                                    @Html.ActionLink("Home", "Index", "Home")
+                                </li>
+                                <li>
+                                    @Html.ActionLink(ViewContext.RouteData.Values["controller"].ToString(), "Index")
+                                </li>
+                                <li class="active">
+                                    @Html.ActionLink(ViewContext.RouteData.Values["action"].ToString(), ViewContext.RouteData.Values["action"].ToString())
+                                </li>
+                            </ul>
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12"><div id="dvMessage"></div></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 content">@RenderBody()</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12"><div id="dvMessageDown"></div></div>
+                </div>
+
+                <!-- content ends -->
+            </div><!--/#content.col-md-0-->
+
+        </div><!--/fluid-row-->
+
+        <footer class="row">
+            <p class="col-md-9 col-sm-9 col-xs-12 copyright">
+                Copyright &copy; <a href="http://grameencommunications.org/" target="_blank">Grameen Communications</a> @DateTime.Now.Year
+            </p>
+        </footer>
+
+    </div><!--/.fluid-container-->
+    @Scripts.Render("~/bundles/bootstrap")
+
+    <!-- external javascript -->
+    <!-- library for cookie management -->
+    <script src="~/Content/charisma-master/js/jquery.cookie.js"></script>
+    <!-- calender plugin -->
+    <script src='~/Content/charisma-master/bower_components/moment/min/moment.min.js'></script>
+    <script src='~/Content/charisma-master/bower_components/fullcalendar/dist/fullcalendar.min.js'></script>
+    <!-- data table plugin -->
+    <script src='~/Content/charisma-master/js/jquery.dataTables.min.js'></script>
+    <!-- select or dropdown enhancer -->
+    <script src="~/Content/charisma-master/bower_components/chosen/chosen.jquery.min.js"></script>
+    <!-- plugin for gallery image view -->
+    <script src="~/Content/charisma-master/bower_components/colorbox/jquery.colorbox-min.js"></script>
+    <!-- notification plugin -->
+    <script src="~/Content/charisma-master/js/jquery.noty.js"></script>
+    <!-- library for making tables responsive -->
+    <script src="~/Content/charisma-master/bower_components/responsive-tables/responsive-tables.js"></script>
+    <!-- tour plugin -->
+    <script src="~/Content/charisma-master/bower_components/bootstrap-tour/build/js/bootstrap-tour.min.js"></script>
+    <!-- star rating plugin -->
+    <script src="~/Content/charisma-master/js/jquery.raty.min.js"></script>
+    <!-- for iOS style toggle switch -->
+    <script src="~/Content/charisma-master/js/jquery.iphone.toggle.js"></script>
+    <!-- autogrowing textarea plugin -->
+    <script src="~/Content/charisma-master/js/jquery.autogrow-textarea.js"></script>
+    <!-- multiple file upload plugin -->
+    <script src="~/Content/charisma-master/js/jquery.uploadify-3.1.min.js"></script>
+    <!-- history.js for cross-browser state change on ajax -->
+    <script src="~/Content/charisma-master/js/jquery.history.js"></script>
+    <!-- application script for Charisma demo -->
+
+    <script src="~/Content/charisma-master/js/charisma.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+
+    @Scripts.Render("~/bundles/validateunobtrusive")
+
+    <script type="text/javascript">
+
+        function confirmDayInitiated() {
+            var isDayInitiated = "@gBanker.Web.Helpers.SessionHelper.IsDayInitiated";
+            if (isDayInitiated.toLowerCase() == 'false') {
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html("Please run the start work process.");
+                $("#dvMessage").show();
+            }
+        }
+        function clearAllControls(url) {
+            var splits = url.split("/");
+            var edit = false;
+            for (var i = 0; i < splits.length; i++) {
+                if (splits[i] == "Edit") {
+                    edit = true;
+                    break;
+                }
+            }
+            if (!edit) {
+                $('input[type="text"], input[type="number"]').each(function (index) {
+                    var defaultValue = $(this).attr('defaultValue');
+                    if (defaultValue != null && defaultValue.length > 0)
+                        $(this).val(defaultValue);
+                    else
+                        $(this).val('');
+                });
+            }
+        }
+
+        $(document).ready(function () {
+            /*jquery to implement css*/
+            $('ul.dropdown-menu.mega-dropdown-menu').on('click', function (event) {
+                event.stopPropagation();
+            });
+
+            $('#expand-all-main-menu').click(function (event) {
+                $('.sidebar-nav .nav li.accordion').toggleClass('active');
+                $('.sidebar-nav .nav li.accordion a i').toggleClass('fa-plus-circle fa-minus-circle');
+                $('.sidebar-nav .nav li.accordion ul').toggle();
+                $('#expand-all-main-menu>i').toggleClass('fa-expand fa-compress');
+
+                if ($('#expand-all-main-menu').attr('title')) {
+                    $('#expand-all-main-menu').removeAttr('title');
+                    $('#expand-all-main-menu').attr('title', 'Compress All Menu');
+                } else {
+                    $('#expand-all-main-menu').attr('title', 'Expand All Menu');
+                }
+
+            });
+
+            $('.sidebar-nav li.accordion a').click(function () {
+                $(this).find('i').toggleClass('fa-plus-circle fa-minus-circle');
+            });
+
+            $('.page-title').nextAll('div.row:first').addClass('content-filter');
+            $('.page-title').nextAll('form').addClass('form-create');
+            $('.content form').addClass('form-create');
+
+            $('.content-filter').next('br').remove();
+            $('form .form-horizontal').removeClass();
+
+            $('#grid').wrap("<div class='row'><div class='col-md-12'></div></div>");
+            $('#grid .jtable-main-container').addClass('table-responsive');
+            $('#grid table.jtable').addClass('table');
+
+
+            $('.form-create .col-md-12, .content-filter .col-md-12').addClass('col-sm-12 col-xs-12');
+            $('.form-create .col-md-11, .content-filter .col-md-11').addClass('col-sm-11 col-xs-12');
+            $('.form-create .col-md-10, .content-filter .col-md-10').addClass('col-sm-10 col-xs-12');
+            $('.form-create .col-md-9, .content-filter .col-md-9').addClass('col-sm-9 col-xs-12');
+            $('.form-create .col-md-8, .content-filter .col-md-8').addClass('col-sm-8 col-xs-12');
+            $('.form-create .col-md-7, .content-filter .col-md-7').addClass('col-sm-7 col-xs-12');
+            $('.form-create .col-md-6, .content-filter .col-md-6').addClass('col-sm-6 col-xs-12');
+            $('.form-create .col-md-5, .content-filter .col-md-5').addClass('col-sm-5 col-xs-12');
+            $('.form-create .col-md-4, .content-filter .col-md-4').addClass('col-sm-4 col-xs-12');
+            $('.form-create .col-md-3, .content-filter .col-md-3').addClass('col-sm-3 col-xs-12');
+            $('.form-create .col-md-2, .content-filter .col-md-2').addClass('col-sm-2 col-xs-12');
+            $('.form-create .col-md-1, .content-filter .col-md-1').addClass('col-sm-1 col-xs-12');
+
+
+            $('.content-filter label.control-label, .form-create label.control-label').parent().removeClass('text-right');
+            $('.content-filter select.form-control, .form-create select.form-control').parent().addClass('form-group');
+            $('.content-filter .form-control, .form-create .form-control').parent().addClass('form-group');
+            $('.content-filter .btn.btn-primary, .form-create .btn.btn-primary').parent().addClass('form-group');
+            $('.content-filter label.control-label').css({ 'min-width': '200px' });
+
+
+            $('form#MemProfile img.thumb-img').css({ 'width': '75px', 'margin-bottom': '20px' });
+            $('form#MemProfile img#thumbnil').parent().removeClass('col-xs-12').addClass('col-xs-4');
+            $('form#MemProfile img#FingerThumb').parent().removeClass('col-xs-12').addClass('col-xs-4');
+            $('form#MemProfile input#ImgFile').parent().parent().removeClass('col-xs-12').addClass('col-xs-8');
+            $('form#MemProfile input#ThumbImgFile').parent().parent().removeClass('col-xs-12').addClass('col-xs-8');
+
+
+            if (($(document).find("title").text() == 'Loan Collection List' && $('#content .content .page-title').text() == 'Loan Collection')) {
+                $('.content-filter .btn.btn-primary').parent().removeAttr('style').removeAttr('align').removeClass().addClass('col-md-12 col-sm-4 col-xs-12');
+                $('.content-filter #filterColumn, .content-filter #filterValue, .content-filter #sortColumn, .content-filter #sortOrder').parent().removeClass().addClass('col-md-6 col-sm-6 col-xs-12');
+                $('.content-filter .form-group').parent().removeClass().addClass('col-md-4 col-sm-6 col-xs-12');
+                $('.content-filter .btn.btn-primary').parent().addClass('form-group');
+
+                $('.content-filter #filterColumn, .content-filter #filterValue, .content-filter #sortColumn, .content-filter #sortOrder').parent().css({ 'margin-bottom': '5px' });
+
+                $(window).resize(function () {
+                    if ($(window).width() < 1280 && $(window).width() >= 768) {
+                        $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                    }
+                });
+                if ($(window).width() < 1280 && $(window).width() >= 768) {
+                    $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                }
+            }
+
+            if (($(document).find("title").text() == 'Savings Collection List' && $('#content .content .page-title').text() == 'Savings Collection')) {
+                $('.form-create>div.row:first').addClass('content-filter');
+                $('.content-filter>:nth-child(1)').removeClass().addClass('col-md-4 col-sm-4 col-xs-12');
+                $('.content-filter>:nth-child(2)').removeClass().addClass('col-md-8 col-sm-8 col-xs-12');
+                $('.content-filter>:nth-child(2) div.row>div.form-group').removeClass().addClass('col-md-4 col-sm-4 col-xs-12');
+
+                $('.content-filter .btn.btn-primary').parent().removeAttr('style').removeAttr('align');
+
+                $(window).resize(function () {
+                    if ($(window).width() < 768) {
+                        $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                        $('#filterValue').css({ 'margin-top': '5px' });
+                    }
+                });
+                if ($(window).width() < 768) {
+                    $('.content-filter .btn.btn-primary').css({ 'margin-top': '20px' });
+                    $('#filterValue').css({ 'margin-top': '5px' });
+                }
+            }
+
+            if (($(document).find("title").text() == 'OverdueAgeing' && $('#content .content .page-title').text() == 'Overdue Ageing Report') || ($(document).find("title").text() == 'Provision Calculation' && $('#content .content .page-title').text() == 'Provision Calculation')) {
+                $(window).resize(function () {
+                    if ($(window).width() <= 980) {
+                        $('form.form-create input:checkbox').removeAttr('style').css({ 'margin-left': '20px', 'margin-top': '30px' });
+                    }
+                });
+                if ($(window).width() <= 980) {
+                    $('form.form-create input:checkbox').removeAttr('style').css({ 'margin-left': '20px', 'margin-top': '30px' });
+                }
+
+                $(window).resize(function () {
+                    if ($(window).width() < 768) {
+                        $('form.form-create input:checkbox').parent().removeClass('col-xs-12').addClass('col-xs-2');
+                        $('form.form-create .form-group').parent().removeClass('col-xs-12').addClass('col-xs-10 pull-right');
+                    }
+                });
+                if ($(window).width() < 768) {
+                    $('form.form-create input:checkbox').parent().removeClass('col-xs-12').addClass('col-xs-2');
+                    $('form.form-create .form-group').parent().removeClass('col-xs-12').addClass('col-xs-10 pull-right');
+                }
+
+                $('form.form-create input:checkbox').parent().removeClass('col-xs-12').addClass('col-lg-1 col-xs-2 text-right');
+                $('form.form-create .form-group').parent().removeClass('col-xs-12').addClass('col-lg-5 col-xs-10');
+
+                $('form.form-create input.btn.btn-primary').parent().parent().removeClass('col-lg-12').addClass('col-lg-11 col-md-11 col-sm-11 col-xs-10 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-2');
+            }
+            /*jquery to implement css*/
+
+            //=============below function is used to restore menu navigation=======
+            activateMenuNavigation();
+            $('input').bind('focus', function (e) {
+                $("#dvMessage").hide();
+                $("#dvMessageDown").hide();
+            });
+
+            // Handle the form submit event, and make the Ajax request:
+            $("form").on("submit", function (event) {
+
+                //$.validator.setDefaults({ ignore: ":hidden:not(select)" }) //for all select
+
+                //$.validator.setDefaults({ ignore: ":hidden:not(.chosen)" })
+                //$.validator.setDefaults({ ignore: ":hidden:not(select)" });
+                $.validator.addMethod('chosen-required', function (value, element, requiredValue) {
+                    return requiredValue == false || element.value != '';
+                }, $.validator.messages.required);
+
+                var _currentForm = $(this).closest('form');
+                if (_currentForm.valid()) {
+
+                    if ($('#BatchFile').length > 0)
+                    {
+                        return true;
+                    }
+                    event.preventDefault();
+                    $("#loading").show();
+                    var url = $(this).attr("action");
+                    var formData = $(this).serialize();
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: formData,
+                        dataType: "json",
+                        success: function (resp) {
+                            $("#loading").hide();
+                            debugger;
+                            var result = resp.Result;
+                            var msg = resp.Message;
+                            var userData = resp.UserData;
+                            var css = "failed";
+                            if (result == "OK")
+                                css = "success";
+                            $("#dvMessage").attr('class', css);
+                            $("#dvMessage").html(msg);
+                            $("#dvMessage").show();
+                            /////Dou
+                            $("#dvMessageDown").attr('class', css);
+                            $("#dvMessageDown").html(msg);
+                            $("#dvMessageDown").show();
+                            if (result == "OK") {
+                                $("#dvMessage").toggle('fade', 3000);
+                                ////////////////
+                                $("#dvMessageDown").toggle('fade', 3000);
+
+                                var $DoNotClearFormData = $("#DoNotClearFormData");
+                                if ($DoNotClearFormData && $DoNotClearFormData.val() === "DoNotClearFormData") {
+                                    //form will will not clear the form
+                                }
+                                else {
+                                    clearAllControls(url);
+                                }
+
+                                //scroll to top of the page
+                                $("html, body").animate({ scrollTop: 0 }, "slow");
+                            }
+                            if (typeof callback != 'undefined') {
+                                callback(userData);
+                            }
+                        },
+                        error: function (err) {
+                            $("#loading").hide();
+                            var msg = err.responseText;
+                            var css = "failed";
+                            $("#dvMessage").attr('class', css);
+                            $("#dvMessage").html(msg);
+                            $("#dvMessage").show();
+                            //$("#dvMessage").toggle('fade',1500);
+
+                            $("#dvMessageDown").attr('class', css);
+                            $("#dvMessageDown").html(msg);
+                            $("#dvMessageDown").show();
+                        }
+
+                    })
+                }
+            });
+
+        });
+
+        function showDetailLink(moduleId) {
+            var divId = "subTab_" + moduleId;
+            $("#" + divId).show();
+            $(".sub-tabs2").each(function (i, element) {
+                var id = element.id;
+                if (id != divId)
+                    $("#" + id).hide();
+            });
+        }
+
+        function activateMenuNavigation() {
+            try {
+                var menuids = '@gBanker.Web.Helpers.SessionHelper.CurrentModuleKeys';
+                if (menuids.length > 0) {
+                    var ids = menuids.split("_");
+                    if (ids.length == 3) {
+                        var parent1 = ids[0];
+                        var parent2 = ids[1];
+                        var parent3 = ids[2];
+                        if (parent1 != -1) {
+                            $("#parent_" + parent1).attr('class', 'active');
+                            $("#" + parent1).attr('class', 'tab-pane active');
+                            showDetailLink(parent2);
+                        }
+                        else {
+                            $("#parent_" + parent2).attr('class', 'active');
+                            $("#" + parent2).attr('class', 'tab-pane active');
+                        }
+                        $("#activeLink_" + parent3).attr('class', 'activeMenu');
+                    }
+                }
+            } catch (e) {
+
+            }
+        }
+    </script>
+   
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("#switchApp").click(GetOfficeListTree);
+        });
+
+        function GetOfficeListTree() {
+            $.ajax({
+                url: '/Home/GetOfficeListTree',
+                type: "GET",
+                dataType: "json",
+                success: function (resp) {
+                    var msg = resp.msg;
+                    if (msg && msg.length > 0) {
+                        alert(msg);
+                    }
+                    else {
+                        var officeList = resp.officeList;
+                        if (officeList && officeList.length > 0) {
+                            generateTreeView(officeList);
+                            $('#officeSelectDialog').modal('show');
+                        }
+                        else
+                            alert('No office assigned. Please ask your support engineer to help.');
+                    }
+                },
+                error: function (err) {
+                    loader.hide();
+                    toastr.error(err.responseText, 'Error');
+                }
+            });
+        }
+
+
+        var selectedNode = null;
+
+        function generateTreeView(officeList) {
+            var allOffliceList = officeList;
+            var $searchableTree = getTreeView(officeList);
+            var search = function (e) {
+                //debugger;
+                var pattern = $('#input-search').val();
+                var tvData = $.grep(allOffliceList, function (element, index) {
+                    return element.Text.toLowerCase().indexOf(pattern) >= 0;
+                });
+                $searchableTree = getTreeView(tvData);
+                var options = {
+                    ignoreCase: true,
+                    exactMatch: false,
+                    revealResults: true
+                };
+                var results = $searchableTree.treeview('search', [pattern, options]);
+                var output = '<p>' + results.length + ' matches found</p>';
+                $.each(results, function (index, result) {
+                    output += '<p>- ' + result.text + '</p>';
+                });
+                $('#search-output').html(output);
+            }
+
+            $('#btn-search').on('click', search);
+            $('#input-search').on('keyup', search);
+
+            $('#btn-clear-search').on('click', function (e) {
+                $searchableTree.treeview('clearSearch');
+                $('#input-search').val('');
+                $('#search-output').html('');
+            });
+        }
+
+        function getTreeView(data) {
+            var defaultData = generateTreeviewData(data);
+            var $searchableTree = $('#treeview-searchable').treeview({
+                data: defaultData,
+                onNodeSelected: function (event, data) {
+                    if (data.selectable)
+                        console.log(data);
+                    else
+                        console.log("Not selectable");
+                    selectedNode = data;
+                    var output = '<p>- ' + data.text + '</p>';
+                    $('#search-output').html(output);
+                    $("#btnSelectOffice").show();
+                },
+                onNodeUnselected: function (event, data) {
+                    selectedNode = null;
+                    $("#btnSelectOffice").hide();
+                    $('#search-output').html('');
+                },
+            });
+            return $searchableTree;
+        }
+        function generateTreeviewData(officeList) {
+            var treeViewData = [];
+            if (officeList) {
+                var autoSelect = (officeList.length === 1);
+                $.each(officeList, function (index, value) {
+                    var currentHo = value.HoName;
+                    var currentZo = value.ZoneName;
+                    var currentAo = value.AreaName;
+                    var currentOffice = value.Text;
+                    var currentOfficeId = value.Value;
+                    var ho = searchOffice(1, currentHo, treeViewData);
+                    //var ho = $.grep(treeViewData, function (val) {
+                    //    var level = val.level;
+                    //    return val.text === currentHo && level === 1;
+                    //});
+                    if (ho.length === 0) {
+                        var hoObj = { text: currentHo, level: 1, selectable: false, nodes: [] };
+                        if (autoSelect)
+                            hoObj.state = { expanded: true };
+                        var zoObj = { text: currentZo, level: 2, selectable: false, nodes: [] };
+                        if (autoSelect)
+                            zoObj.state = { expanded: true };
+                        var aoObj = { text: currentAo, level: 3, selectable: false, nodes: [] };
+                        if (autoSelect)
+                            aoObj.state = { expanded: true };
+                        var offObj = {
+                            text: currentOffice, id: currentOfficeId, level: 4, selectable: true
+                        };
+                        if (autoSelect) {
+                            selectedNode = offObj;
+                            offObj.state = { selected: true, expanded: true };
+                        }
+                        zoObj.nodes.push(aoObj);
+                        aoObj.nodes.push(offObj);
+                        hoObj.nodes.push(zoObj);
+                        treeViewData.push(hoObj);
+                    }
+                    else {
+                        var hoObj = ho[0];
+                        var zoObj = { text: currentZo, level: 2, selectable: false, nodes: [] };
+                        var zoOffice = searchOffice(2, currentZo, hoObj.nodes);
+                        if (zoOffice.length > 0)
+                            zoObj = zoOffice[0];
+                        else
+                            hoObj.nodes.push(zoObj);
+                        var aoObj = { text: currentAo, level: 3, selectable: false, nodes: [] };
+                        var aoOffice = searchOffice(3, currentAo, zoObj.nodes);
+                        if (aoOffice.length > 0)
+                            aoObj = aoOffice[0];
+                        else
+                            zoObj.nodes.push(aoObj);
+                        var offObj = { text: currentOffice, id: currentOfficeId, level: 4, selectable: true };
+                        if (autoSelect) {
+                            offObj.state = { selected: true, expanded: true };
+                            selectedNode = offObj;
+                        }
+                        aoObj.nodes.push(offObj);
+                        // treeViewData.push(hoObj);
+                    }
+                });
+            }
+            return treeViewData;
+        }
+        function searchOffice(level, text, treeViewData) {
+            var obj = $.grep(treeViewData, function (val) {
+                return val.text === text && val.level === level;
+            });
+            return obj;
+        }
+
+    </script>
+
+
+
+    @*<script src="~/Assets/plugins/duplicate/duplicate.js"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.IsDuplicate()) {
+                window.close();
+            }
+        });
+    </script>*@
+    @*<script type="text/javascript" src="http://gc.plandoer.com/api/bug_suggestions/form?project_id=gbanker_mfi&name=@gBanker.Web.Helpers.SessionHelper.LoginUserEmployeeID&email=gt@test.com">
+        </script>*@
+    <script src="~/Assets/plugins/loadash/lodash.min.js"></script>
+    <script src="~/Assets/plugins/axios/axios.min.js"></script>
+    <script src="~/Assets/js/app.js"></script>
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>

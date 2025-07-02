@@ -1,0 +1,55 @@
+﻿
+@model gBanker.Core.Filters.PRA_MN_RPT_TAB_XL_FD_ReportSearchFilter
+
+@{
+    ViewBag.Title = "Financial Data List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<a target="_blank" class="btn btn-info btn-sm pull-right" href="/FinancialData/Add"><i class="fa fa-plus"></i> Add New [Manual Input]</a>
+<h2 class="page-title">@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control", @autocomplete = "off", @placeholder = "mm/yyyy" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.IND_CODE, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.IND_CODE, new { @class = "form-control", @autocomplete = "off" })
+        @Html.ValidationMessageFor(model => model.IND_CODE)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.M_F_flag, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control" id="M_F_flag" name="M_F_flag">
+            <option value="">Any</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="N">Neutral</option>
+        </select>
+        @Html.ValidationMessageFor(model => model.M_F_flag)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.SYNCED_STATUS, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control" id="SYNCED_STATUS" name="M_F_flag">
+            <option value="">Any</option>
+            <option value="1">NOT SYNCED</option>
+            <option value="2">SYNCED</option>
+        </select>
+    </div>
+    <div class="col-md-5">
+        <button type="button" id="btnSearchFd" class="btn btn-primary"><i class="fa fa-search"></i> Search</button>
+        <button type="button" id="btnRefreshFd" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+
+<div class="raw">
+    <div id="gridFd"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/olrsReportManager.js"></script>
+}

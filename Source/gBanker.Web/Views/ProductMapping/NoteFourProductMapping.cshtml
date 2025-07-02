@@ -1,0 +1,351 @@
+﻿@model gBanker.Web.ViewModels.ProdAccMappingViewModel
+@{
+    ViewBag.Title = "SET Product Mapping For Note 4";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var products = Model == null ? null : Model.ProductList;
+    var productscomponent = Model == null ? null : Model.ProductListComponent;
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .ui-autocomplete {
+        z-index: 999999 !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+
+    function Edit(id) // Edit ConfigAge Table
+    {
+        clear();
+        GetData(id);
+
+    }
+
+
+    function GetData(id) {
+        //alert(AreaID);
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMappingList", "ProductMapping", "http")',  //GetWorkAreaList(string WorkAreaId, int jtStartIndex, int jtPageSize, string jtSorting, string filterColumn, string filterValue)
+            data: { MappingId: id, jtStartIndex: 1, jtPageSize: 5, jtSorting: true, filterColumn: null, filterValue: null },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+
+                $.each(data, function (id, option) {
+
+                    //promotionConfigAge.append($('<option></option>').val(option.Value).html(option.Text));
+                    $('#ProductCode option[value=' + "'" + option.ProductCode + "'" + ']').prop('selected', true);
+                    $('#ProductCodeComponent option[value=' + "'" + option.ProductCodeComponent + "'" + ']').prop('selected', true);
+                    $('#hdnMappingId').val(option.MappingId);
+
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                clear();
+            }
+        });
+    }
+
+
+    function Delete(id) {
+
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                Delete2(id);
+                clear();
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+                return true;
+            }
+            else {
+
+                return false;
+            }
+        });
+
+        $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+
+    }
+
+
+    //Update
+    function Delete2(id) {
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DeleteMap", "ProductMapping", "http")', //Delete(string PRSalaryConfigurationID)
+            data: { MapId: id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Delete Successfully");
+
+               /* $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });*/
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Deleted.");
+
+              /*  $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });*/
+            }
+
+        });
+
+    }// End of Function
+
+    function clear() {
+        $("#ProductCode").prop('selectedIndex', 0);
+        $("#ProductCodeComponent").prop('selectedIndex', 0);
+        $("#hdnMappingId").val('');
+    }
+
+     //Update
+    function Update() {
+
+        var ProductCode = $("#ProductCode").val();
+        var ProductCodeComponent = $("#ProductCodeComponent").val();
+        var hdnMappingId = $("#hdnMappingId").val();
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateMapping", "ProductMapping", "http")',
+            data: { productcode: ProductCode, ProductCodeComponent: ProductCodeComponent, hdnMappingId: hdnMappingId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Update Successfully");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Update");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }// End of Function
+
+
+    //Save
+    function Save() {
+        var ProductCode = $("#ProductCode").val();
+        var ProductCodeComponent = $("#ProductCodeComponent").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateMapping", "ProductMapping", "http")',
+            data: { productcode: ProductCode, ProductCodeComponent: ProductCodeComponent },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Saved Successfully");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Saved");
+
+                $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }// End of Function
+
+
+
+    $(document).ready(function () {
+
+
+        $("#btnReset").click(function () { // Reset form
+            clear()
+        });
+
+        $("#btnSave").click(function () {
+
+
+            var ProductCode = $('#ProductCode :selected').val();
+            var ProductCodeComponent = $('#ProductCodeComponent :selected').val();
+
+            if (ProductCode == '0' || ProductCode == 0) {
+                $.alert.open("Please SELECT Product.");
+                return false;
+            }
+            if (ProductCodeComponent == '0' || ProductCodeComponent == 0) {
+                $.alert.open("Please SELECT Note4 Component.");
+                return false;
+            }
+
+            var MappingId = $('#hdnMappingId').val();
+
+            if (MappingId != 0) {
+                // Update
+                Update();
+                clear();
+            }
+            else {
+
+                // Save
+                Save();
+                clear();
+            }
+
+        });
+
+
+
+
+
+        $('#grid2').jtable({
+            // title: 'Investor List',
+            paging: true,
+            pageSize: 50,
+            sorting: false,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: '/ProductMapping/GetMappingList'
+            },
+            fields: {
+                rowSl: {
+                    title: 'SI No',
+                    width: '10%'
+                },
+                MappingId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'ProductCode',
+                    width: '20%'
+                },
+                ProductName: {
+                    title: 'Product Name',
+                    width: '30%'
+                },
+                ProductCodeComponent: {
+                    title: 'Product Component',
+                    width: '20%'
+                },
+                LoanComponent: {
+                    title: 'Loan Component',
+                    width: '30%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Edit(' + data.record.MappingId + ')"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Delete(' + data.record.MappingId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid2();
+        //$('#grid').jtable('load');
+        $("#filterColumn").change(function () {
+            if ($(this).val() === "ViewAll") {
+                $("#filterValue").val('');
+            }
+        });
+
+        function reloadGrid2() {
+            //$("#loading").show();
+            $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            //$("#loading").hide();
+        }
+
+
+    });
+
+</script>
+
+<style>
+    .table .thead-dark th {
+        color: #fff;
+        background-color: #620000;
+        border-color: #FF8888;
+    }
+</style>
+
+
+<h2 class="page-title"> Manage Product Mapping</h2>
+<input type="hidden" id="hdnMappingId" value="" />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-md-4"> Product </label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.ProductCode, products, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-md-4"> Note 4 </label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.ProductCodeComponent, productscomponent, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="form-group">
+            <div class="form-group form-action" style="padding:10px;margin:5px;">
+                &nbsp;
+                <input type="button" value="Save" id="btnSave" class="btn btn-success" />
+                &nbsp;
+                <input type="button" value="Reset" id="btnReset" class="btn btn-facebook" />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        &nbsp;
+    </div>
+    &nbsp;
+    <div id="grid2">
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

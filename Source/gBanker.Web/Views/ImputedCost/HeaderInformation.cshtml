@@ -1,0 +1,39 @@
+﻿
+@model gBanker.Core.Filters.BaseSearchFilter
+
+@{
+    ViewBag.Title = "Header Info List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+@Html.ActionLink("Add New", "AddHeaderInfo", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">@ViewBag.Title</h2>
+
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label required" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.FY_Month, htmlAttributes: new { @class = "control-label required" })
+        @Html.DropDownListFor(model => model.FY_Month, DropdownListHelper.GetDropdownList(DropdownListTypes.MonthList, Model.FY_Month),"Any", new { @class = "form-control chosen" })
+        @Html.ValidationMessageFor(model => model.FY_Month)
+    </div>
+    <div class="col-md-5" style="padding-top: 20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" />
+        @*<button type="button" id="btnRefresh" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>*@
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-sm btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+<hr style="margin-top: 0px; margin-bottom: 14px;" />
+<div class="raw">
+    <div id="grid"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/headerInformationManager.js"></script>
+}

@@ -1,0 +1,37 @@
+﻿ 
+@{
+    ViewBag.Title = "Check Auto Voucher Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+ 
+@using (Html.BeginForm())
+{
+
+    <div class="container-fluid">
+        <br />
+        <fieldset>
+            <legend>Check Voucher Process Status</legend>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="dvcompleted" class="form-group" style=" display:none; background-color:green;">
+                        &nbsp;
+                    </div>
+                    <div id="dvrunning" class="form-group" style=" display:none; background-color:red;">
+                        &nbsp;
+                    </div>
+                    <label id="txtMessage" value="" class="form-control">  </label>
+
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+}
+
+<script src="~/Scripts/CheckAutoVoucherProcess.js"></script>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

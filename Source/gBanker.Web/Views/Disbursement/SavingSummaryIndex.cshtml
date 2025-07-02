@@ -1,0 +1,192 @@
+﻿@model gBanker.Web.ViewModels.SavingInstallmentCorrectionViewModel
+@{
+    ViewBag.Title = "SavingSummaryIndex";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    function deleteConfirm(status) {
+        if (status == "true") {
+            return confirm('Are you sure you want to delete this record');
+        }
+        else {
+            alert("You cannot delete this record because it is already disabled.");
+            return false;
+        }
+    }
+</script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+            //  title: 'Purpose List',
+            paging: true,
+            pageSize: 5,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Disbursement/GetSavingSummaryCorrectionData?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+
+            },
+            fields: {
+                SavingSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                //OpeningDate: {
+                //    title: 'Opening Date',
+                //    width: '15%',
+                //    display: function (data) {
+                //        var planDate = data.record.OpeningDate;
+                //        var dateString = planDate.substr(6);
+                //        var currentTime = new Date(parseInt(dateString));
+                //        var month = currentTime.getMonth() + 1;
+                //        var day = currentTime.getDate();
+                //        var year = currentTime.getFullYear();
+                //        Pdate = day + '-' + month + "-" + year; var date = '';//new Date(v.PlanMonth),
+                //        return Pdate;
+                //    }
+
+                //},
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '10%'
+
+                },
+                MemberCodeTo: {
+                    title: 'Member Code(Tr)',
+                    width: '10%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    width: '10%'
+
+                },
+                ProductCodeTo: {
+                    title: 'Product Code(Tr)',
+                    width: '10%'
+
+                },
+                NoOfAccount: {
+                    title: 'NoOfAccount',
+                    width: '10%'
+                },
+
+                Deposit: {
+                    title: 'Deposit',
+                    width: '20%'
+
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    width: '25%'
+
+                },
+                //EditLink: {
+                //    title: "Edit",
+                //    display: function (data) {
+                //        return "<div class='text-center'><a href='/LoanInstallmentCorrection/Edit/" + data.record.DailyLoanTrxID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                //        //return '<a href="/Purpose/Edit/' + data.record.PurposeID + '">Edit</a>';
+                //        // return "<a href='/Purpose/Edit/" + data.record.PurposeID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                //    }
+                //},
+
+
+
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<div class="text-center delete-link"><a href="/Disbursement/Delete/' + data.record.DailyLoanTrxID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                //        //return '<a href="/Purpose/Delete/' + data.record.PurposeID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //    }
+                //}
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+@Html.ActionLink("Add New", "SavingSummaryCorrection", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">SavingSummary Correction List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="MemberCode">Member Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+@*<div>
+        Filter By:&nbsp; <select id="filterColumn">
+            <option value="">View All</option>
+            <option value="PurposeCode">Purpose Code</option>
+        </select>
+        <input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />
+    </div>*@
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

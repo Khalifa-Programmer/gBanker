@@ -1,0 +1,736 @@
+﻿@model gBanker.Web.ViewModels.SpecialLoanCollectionViewModel
+@*NOT Necessary But For MemberSelection it Needs*@
+@{
+    ViewBag.Title = "Saving Register Collection";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<script type="text/javascript">
+    function reloadGrid()
+    {
+        var center      = $("#ddlCenter option:selected").val();
+        var member      = $("#MemberID").val();  //$("#ddlMember option:selected").val();
+        var product     = $("#ddlProd option:selected").val();
+        var NoOfAccount    = $("#ddlNoOfAccount option:selected").val();
+
+        $('#grid').jtable('load', { CenterID: center, MemberID: member, ProductID: product, NoOfAccount: NoOfAccount });
+
+    }
+
+    function TextChange(recordId)
+    {
+        //alert(recordId);
+
+        var id = 'CreateUser,'+recordId; //   CreateUser,55355
+        //alert(id);
+        //var s = document.getElementById("CreateUser,55355");
+        //s.value = "update";
+
+        // $("#CreateUser,55355").val("update");
+        //document.getElementById("CreateUser,55355").innerHTML = "New text!";
+        //document.getElementById("CreateUser,55355").innerText = "New text!";
+        //document.getElementById("CreateUser,55355").value = "My value";
+
+        //$("#CreateUser,55355").val("MY VAL");
+
+         document.getElementById(''+ id +'').value = "update";
+
+       //  document.getElementById('CreateUser,55355').value = "update";
+       // $(id).val("update")
+
+    }
+
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "Disbursement", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    @*function GetMember() {
+        var ddlMember = $("#ddlMember");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberList", "SavingRegisterCollection", "http")',
+            data: { centerId: $("#ddlCenter option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.MemberID).html(option.MemberName));
+
+                  });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }*@
+
+
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductListByMemberFromSavingTrx", "SavingInstallmentCorrection", "http")',
+            data: { Qtype: 1, MemberID: $("#MemberID").val(), ProductID: 0 },
+            dataType: 'json',
+            async: true,
+            success: function (List_MemberwiseProduct) {
+                console.log(List_MemberwiseProduct);
+                ddlProd.html('');
+                $.each(List_MemberwiseProduct, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.ProductID).html(option.ProductName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetNoOfAccount() {
+        var ddlNoOfAccount = $("#ddlNoOfAccount");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetNoOfAccountListByProductandMemberFromSavingTrx", "SavingInstallmentCorrection", "http")',
+            //data: { Member_id: Member_id, center_id: center_id },
+            data: { Qtype: 2, MemberID: $("#MemberID").val(), ProductID: $("#ddlProd").val() },
+            dataType: 'json',
+            async: true,
+            success: function (List_AccountNoMemberandProductwise) {
+                console.log(List_AccountNoMemberandProductwise);
+                ddlNoOfAccount.html('');
+                $.each(List_AccountNoMemberandProductwise, function (id, option) {
+                    ddlNoOfAccount.append($('<option></option>').val(option.ProductID).html(option.NoOfAccount));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+
+    }
+
+    function checkNumberic(e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }
+    function goNextRow(e, rowSl, id) {
+        //up arrow 38
+        if (e.keyCode == 38) {
+            var newId = '#' + 'PrimaryKeyId' + (rowSl - 1).toString();
+            var newIdVal = $(newId).val();
+            var newFocusId = id + newIdVal.toString();
+            $('#' + newFocusId).focus();
+            $('#' + newFocusId).select();
+        }
+        else if (e.keyCode == 40) {
+            var newId = '#' + 'PrimaryKeyId' + (rowSl + 1).toString();
+            var newIdVal = $(newId).val();
+            var newFocusId = id + newIdVal.toString();
+            $('#' + newFocusId).focus();
+            $('#' + newFocusId).select();
+        }
+
+
+
+    }
+
+    /// Save And Reload Grid
+
+    function SaveAndReload() {
+
+        var allCollection = new Array();
+        var $allInputs = $('input[type="text"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+
+            allCollection[allCollection.length] = obj;
+        });
+
+        debugger;
+        var $allId = $('input[type="hidden"]');
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        var allTrx = new Object();
+        allTrx.allTrx = allCollection;
+        allTrx.allLoanTrxId = allIds;
+        /*
+        Additional info while Insert Data
+        */
+        allTrx.center           = $("#ddlCenter option:selected").val();
+        allTrx.member           = $("#MemberID").val();  //$("#ddlMember option:selected").val();
+        allTrx.product          = $("#ddlProd option:selected").val();
+        allTrx.noOfAccount      = $("#ddlNoOfAccount option:selected").val();
+        /*END */
+
+        var json = JSON.stringify(allTrx);
+
+        $("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveSavingTrx", "SavingRegisterCollection", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+                $("#loading").hide();
+                reloadGrid();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                    $("#dvMessageDown").toggle('fade', 1500);
+                    setTimeout("hideMsg()", 1500);
+                }
+
+            },
+            error: function (err) {
+                $("#loading").hide();
+                var msg = err.responseText;
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+
+                $("#dvMessageDown").attr('class', css);
+                $("#dvMessageDown").html(msg);
+                $("#dvMessageDown").show();
+            }
+        });
+    }// ENd Save Grid Function
+
+
+    function findTotalDeposit(){
+        var arr = document.getElementsByName('qtyDeposit');
+        var tot=0;
+        for(var i=0;i<arr.length;i++){
+            if(parseInt(arr[i].value))
+                tot += parseInt(arr[i].value);
+        }
+        document.getElementById('totalDeposit').value = tot;
+    }
+
+    function findTotalWithdrawal(){
+        var arr = document.getElementsByName('qtyWithdrawal');
+        var tot=0;
+        for(var i=0;i<arr.length;i++){
+            if(parseInt(arr[i].value))
+                tot += parseInt(arr[i].value);
+        }
+        document.getElementById('totalWithdrawal').value = tot;
+    }
+
+    function findTotalPenalty(){
+        var arr = document.getElementsByName('qtyPenalty');
+        var tot=0;
+        for(var i=0;i<arr.length;i++){
+            if(parseInt(arr[i].value))
+                tot += parseInt(arr[i].value);
+        }
+        document.getElementById('totalPenalty').value = tot;
+    }
+
+    function findMonthlyInterest(){
+        var arr = document.getElementsByName('qtyMonthlyInterest');
+        var tot=0;
+        for(var i=0;i<arr.length;i++){
+            if(parseInt(arr[i].value))
+                tot += parseInt(arr[i].value);
+        }
+        document.getElementById('totalMonthlyInterest').value = tot;
+    }
+
+
+
+
+    function CalculateGridFields(){
+
+        findTotalDeposit();
+        findTotalWithdrawal();
+        findTotalPenalty();
+        findMonthlyInterest();
+
+    }
+
+
+
+    $(document).ready(function () {
+
+        var LoggedInUser =  @Html.Raw(Json.Encode(ViewData["LoggedInUser"]));
+        $("#LoggedInUser").val(LoggedInUser);
+
+        $("#InstallmentDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1920:2025"
+        });
+        $(".InstallmentDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: "1920:2025"
+         });
+
+        $("#TransactionDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1920:2055"
+        });
+
+       $("#TransactionDate").datepicker(
+        'setDate', new Date());
+
+       $("#btnView").click(function (e) {
+
+           e.preventDefault();
+           reloadGrid();
+
+       });
+
+
+
+        var rowsl = 0;
+        $("#btnAddNew").click(function (e) {
+
+            if($("#ddlCenter option:selected").val() == 0 )
+            {
+                return ;
+            }
+
+            if($("#totalDeposit").val() == '' )
+            {
+                return;
+            }
+
+            var table = $('.jtable > tbody');
+            var tblRowsl = $('.jtable tr').length-1; // Remove Header tr -1
+
+            table.append(
+
+               '<tr>' +
+               '<td>'+$("#TransactionDate").val()+'</td>'+
+               '<td><input type="text" onblur="findTotalDeposit()" name="qtyDeposit" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event, '+tblRowsl+', Deposit);" style="width:100px" id="Deposit" savingpaidproduct="Deposit'+rowsl+'" value="0"> </td>'+
+               '<td><input type="text" onblur="findTotalWithdrawal()" name="qtyWithdrawal" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event, '+tblRowsl+' ,Withdrawal);" style="width:100px" id="Withdrawal" savingpaidproduct="Withdrawal'+rowsl+'" value="0"></td>'+
+               '<td><input type="text" onblur="findTotalPenalty()" name="qtyPenalty" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event, '+tblRowsl+' ,Penalty);" style="width:100px" id="Penalty" savingpaidproduct="Penalty'+rowsl+'" value="0"></td>'+
+               '<td><input type="text"   onblur="findMonthlyInterest()" name="qtyMonthlyInterest" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event, '+tblRowsl+' ,MonthlyInterest);" style="width:100px" id="MonthlyInterest" savingpaidproduct="MonthlyInterest'+rowsl+'" value="0"></td>'+
+               '<td><input type="text"    onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event, '+tblRowsl+' ,TransType);" style="width:100px" id="TransType" savingpaidproduct="SavingTrxID'+rowsl+'" value="0"></td>'+
+               '<td><input type="text" style="width:5px;" id="CreateUser" savingpaidproduct="CreateUser'+rowsl+'" value="'+ LoggedInUser  + '"></td>'+
+               '</tr>'
+
+                );
+
+            rowsl += 1
+
+
+        });
+
+        GetCenter();
+
+
+        $("#ddlCenter").change(function () {
+
+            $("#memberAutoComplete").val('');
+            $("#MemberID").val('');
+
+            var ddlCenter = $("#ddlCenter option:selected").val();
+            if (ddlCenter > 0) {
+                //  GetMember();
+
+
+
+            }
+            else {
+               // $("#ddlMember").empty();
+                $("#MemberID").val("");
+            }
+        });
+
+        //$("#ddlMember").change(function () {
+        //    // var ddlMember = $("#ddlMember option:selected").val();
+        //    var ddlMember = $("#ddlMember option:selected").val();
+        //    // var ddlMember = $("#ddlMember").val();
+
+        //    if (ddlMember > 0) {
+        //        GetProduct();
+        //    }
+        //    else {
+        //        $("#ddlProd").empty();
+        //    }
+        //});
+
+        $("#ddlProd").change(function () {
+            var ddlProd = $("#ddlProd option:selected").val();
+            if (ddlProd > 0) {
+                GetNoOfAccount();
+            }
+            else {
+                $("#ddlLoanTerm").empty();
+            }
+        });
+
+        $('#grid').jtable({
+            // title: 'Category Transfer List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/SavingRegisterCollection/GETSavingRegisterList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                                CalculateGridFields();
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                SavingTrxID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionDate: {
+                    title: 'Transaction Date',
+                    width: '6%',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy'
+
+                },
+                MemberID: {
+                    title: 'Member ID',
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onchange="TextChange('+ "'" + data.record.SavingTrxID + "'" +')"  onblur="findTotalDeposit()" name="qtyDeposit" onkeypress="return checkNumberic(event);"  onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'Deposit' + "'" + ');"  style="width:100px" ' + 'id="Deposit,' + data.record.SavingTrxID + '" SavingPaidProduct="Deposit' + data.record.SavingTrxID + '" value="' + data.record.Deposit + '" />'
+                         //+ '<input type="text" value="' + data.record.SavingTrxID + '" style="display:none;" name="PrimaryKeyId" id="PrimaryKeyId' + data.record.rowSl + '" />';
+                    }
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onchange="TextChange('+ "'" + data.record.SavingTrxID + "'" +')" onblur="findTotalWithdrawal()" name="qtyWithdrawal" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'Withdrawal' + "'" + ');"  style="width:100px" ' + 'id="Withdrawal,' + data.record.SavingTrxID + '" SavingPaidProduct="Withdrawal' + data.record.SavingTrxID + '" value="' + data.record.Withdrawal + '" />';
+                    }
+                },
+
+                Penalty: {
+                    title: 'Penalty',
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onchange="TextChange('+ "'" + data.record.SavingTrxID + "'" +')" onblur="findTotalPenalty()" name="qtyPenalty" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'Penalty' + "'" + ');" style="width:100px" ' + 'id="Penalty,' + data.record.SavingTrxID + '" SavingPaidProduct="Penalty' + data.record.SavingTrxID + '" value="' + data.record.Penalty + '" />';
+
+                    }
+                },
+                MonthlyInterest: {
+                    title: 'Int Charge',
+                    show:false,
+                    hide:true,
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text" onblur="findMonthlyInterest()" name="qtyMonthlyInterest" onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'MonthlyInterest' + "'" + ');" style="width:100px" ' + 'id="MonthlyInterest,' + data.record.SavingTrxID + '" SavingPaidProduct="MonthlyInterest' + data.record.SavingTrxID + '" value="' + data.record.MonthlyInterest + '" />';
+                    }
+                },
+
+                TransType: {
+                    title: 'Trans Type',
+                    hide:true,
+                    width: '5%',
+                    display: function (data) {
+                        return '<input type="text"  onkeypress="return checkNumberic(event);" onkeydown="return goNextRow(event,' + data.record.rowSl + ',' + "'" + 'TransType' + "'" + ');" style="width:100px" ' + 'id="TransType,' + data.record.SavingTrxID + '" SavingPaidProduct="TransType' + data.record.SavingTrxID + '" value="' + data.record.TransType + '" />';
+
+                    }
+                },
+                CreateUser: {
+                    title: '',
+                    hide: true,
+                    width: '2%',
+                    display: function (data) {
+                        //return '<input type="text" style="" ' + 'id="CreateUser,' + data.record.SavingTrxID + '" SavingPaidProduct="CreateUser' + data.record.SavingTrxID + '" value="' + data.record.CreateUser + '" />';
+                        return '<input type="text" style="color:white;width:5px;" ' + 'id="CreateUser,' + data.record.SavingTrxID + '" SavingPaidProduct="CreateUser' + data.record.SavingTrxID + '" value="" />';
+
+                    }
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+
+
+
+        // AUTO Complete for Member SELECTION
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            var CenterId =  $("#ddlCenter option:selected").val();
+            if(CenterId == "0" || CenterId == "")
+            {
+                return;
+            }
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberListAuto", "SavingRegisterCollection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: CenterId },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+
+                            // alert(data[0].MemberID);
+                            if ($("#CenterID option:selected").val() > 0 && data[0].MemberID > 0) {
+                                GetProduct();
+                                //GetProductList(data[0].MemberID, $("#CenterID").val());
+                                //$('#PrincipalLoan').val(parseFloat(0));
+                            }
+                            else{
+                                //$("#ddlProd").empty();
+                            }
+
+                        }
+                        else if (data.length == 0) {
+                            // alert("No member found.");
+                            $("#MemberID").val("");
+
+
+                        }
+                        else {
+                            // alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberListAuto", "SavingRegisterCollection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#ddlCenter option:selected").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+
+                GetProduct();
+
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+        // END Auto Complete
+
+
+
+
+
+
+
+    });// End Document Ready
+</script>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="LoggedInUser" value="" />
+    <input type="hidden" id="TransactionDate" />
+    <input type="hidden" id="MemberCategoryID" value="" />
+
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+
+
+                    @*@Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                        @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control" })*@
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Select Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductListByMember", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Select No Of Account", new { @class = "control-label" })
+                    @Html.DropDownList("LoanTermList", null, new { @ID = "ddlNoOfAccount", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+    </fieldset>
+
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        Total Deposit : <input type="number" name="total" id="totalDeposit" />
+        &nbsp;
+        Total Withdrawal : <input type="number" name="total" id="totalWithdrawal" />
+        &nbsp;
+        Total Penalty : <input type="number" name="total" id="totalPenalty" />
+        &nbsp;
+        Total Int Charge : <input type="number" name="total" id="totalMonthlyInterest" />
+
+
+
+    </div>
+
+    <div class="row">
+        <div id="grid"></div>
+    </div>
+
+    <div class="row" id="dvgridButton">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+
+                <input type="button" value="Save" class="btn btn-primary" onclick="SaveAndReload();" />
+
+                &nbsp;&nbsp; <input type="button" value="Add New" class="btn btn-primary" id="btnAddNew" />
+            </div>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

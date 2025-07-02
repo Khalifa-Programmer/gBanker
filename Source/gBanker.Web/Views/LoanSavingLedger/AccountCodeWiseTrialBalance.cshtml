@@ -1,0 +1,246 @@
+﻿@{
+    ViewBag.Title = "AccountCode Wise Trail Balance";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+
+    function CategoryDropdown() {
+        var data = {
+
+            '1': '1',
+            '2': '2',
+            '3': '3',
+            '4': '4',
+            '5': '5',
+        }
+
+
+        var s = $('<select class="form-control" id="ddMemberStatus" />');
+        var id = 0;
+        for (var val in data) {
+            id = id + 1;
+            $('<option></option>', { value: val, text: data[val] }).appendTo(s);
+        }
+
+        s.appendTo('#ddMemberStatusList');
+        $("#ddMemberStatus").val("3");
+    }
+    function GetAccountCode(ddlCenter) {
+        var ddlAccCode = $("#ddlAccCode");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAccountCodeList", "LoanSavingLedger", "http")',
+            data: { AccoCode: ddlCenter },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlAccCode.html('');
+               // alert(option.Value);
+                $.each(data, function (id, option) {
+                    ddlAccCode.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+
+
+        CategoryDropdown();
+        GetAccountCode(3)
+        $("#ddMemberStatus").change(function () {
+            var ddlCenter = $("#ddMemberStatus option:selected").val();
+            if (ddlCenter > 0) {
+                GetAccountCode(ddlCenter);
+            }
+            else {
+                GetAccountCode(3);
+            }
+        });
+        /////////
+        $("#txtFromDt").val("");
+        $("#txtToDt").val("");
+
+
+
+
+
+        ///////
+
+        /////////
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        $("#txtToDt").datepicker(
+                {
+                    dateFormat: "dd-M-yy",
+                    showAnim: "scale"
+                });
+
+        //////////
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+
+            ////
+            var url;
+            var checkUpToDate = $("#chUpdatetoDate").is(":checked");
+            var FromDate = $("#txtFromDt").val();
+            var ToDate = $("#txtToDt").val();
+
+
+                var memberSt = $("#ddMemberStatus").find(":selected").val();
+                var AccCode = $("#ddlAccCode").find(":selected").val();
+                //if ( memberSt == 1)//5
+                //{
+                //    url = '/LoanSavingLedger/GenerateProductivityRatioReport?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt;
+                //}
+                //if (memberSt == 2)//5
+                //{
+                //    url = '/LoanSavingLedger/GenerateQualityRatioReport?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt;
+                //}
+                //if (memberSt == 3)//5
+                //{
+                //    url = '/LoanSavingLedger/GenerateSustainabilityAndProfitabilityRatioReport?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt;
+
+
+                //}
+
+                url = '/LoanSavingLedger/GenerateAccountCodeWiseTrialBalance?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&AccCode=' + AccCode;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+
+
+
+
+
+        });
+
+        $("#btnViewAccountCode").click(function (e) {
+            e.preventDefault();
+
+
+            ////
+            var url;
+            var checkUpToDate = $("#chUpdatetoDate").is(":checked");
+            var FromDate = $("#txtFromDt").val();
+            var ToDate = $("#txtToDt").val();
+
+
+            var memberSt = $("#ddMemberStatus").find(":selected").val();
+            var AccCode = $("#ddlAccCode").find(":selected").val();
+            //if ( memberSt == 1)//5
+            //{
+            //    url = '/LoanSavingLedger/GenerateProductivityRatioReport?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt;
+            //}
+            //if (memberSt == 2)//5
+            //{
+            //    url = '/LoanSavingLedger/GenerateQualityRatioReport?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt;
+            //}
+            //if (memberSt == 3)//5
+            //{
+            //    url = '/LoanSavingLedger/GenerateSustainabilityAndProfitabilityRatioReport?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt;
+
+
+            //}
+
+            url = '/LoanSavingLedger/GenerateAccountCodeWiseTrialBalanceOfficeWise?DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&AccCode=' + AccCode;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+
+
+
+
+
+        });
+    });
+</script>
+<h2 class="page-title">AccountCode wise Trial Balance</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+
+        <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Account Level", htmlAttributes: new { @class = "control-label" })
+                        <div id="ddMemberStatusList">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("AccountCode", htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownList("AccountCodeList", null, new { @ID = "ddlAccCode", @class = "form-control" })
+
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDateFrom"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDateTo"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group from-action">
+                    <input type="submit" value="ViewOfficeWise" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group from-action">
+                    <input type="submit" value="ViewAccountCodeWise" class="btn btn-primary" id="btnViewAccountCode" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

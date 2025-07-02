@@ -1,0 +1,392 @@
+﻿@model gBanker.Web.ViewModels.UnionViewModel
+
+@{
+    ViewBag.Title = "Union";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+
+    .required:after {
+        content: " *";
+        color: red;
+    }
+</style>
+
+
+
+
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#UpozillaID").change(function () {
+            var UpozillaID = $('#UpozillaID option:selected').val();
+
+            $('#hdnUpozillaID').val(UpozillaID);
+
+            loadUnion();
+
+        });
+
+        
+        $("#btnSave").click(function () {
+            SaveUnion();
+        });
+        $("#btnUpdate").click(function () {
+            UpdateUnion();
+        });
+        $("#btnReset").click(function () {
+            ResetUnion();
+        });
+    });
+
+
+    var rowNumber = 0;
+
+
+    function loadUnion() {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        var UpozillaID = $('#hdnUpozillaID').val();
+
+        var UnionID = $("#UnionID").val();
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            pageSize: 25,
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("ListUnion", "Village", "http")',
+                    dataType: 'json',
+                    data: { UnionID: UnionID, UpozillaID: UpozillaID }
+                }
+            }
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+            pageable: {
+               // refresh: true,
+               // pageSizes: true,
+                buttonCount: 5
+            },
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            },
+            columns: [
+                 //{ title: "SL No", width: 50, template: "#= renderNumber(data) #" },
+                 {
+                     title: "SL",
+                     template: "#= ++record #",
+                     width: 40
+                 },
+                 {
+                     field: "UnionID",
+                     hidden: true,
+                     filterable: false
+                 },
+                 {
+                     width: "150px",
+                     field: "UnionCode",
+                     filterable: true,
+                     title: "Union Code"
+                 },
+                 {
+                     width: "150px",
+                     field: "UnionName",
+                     filterable: true,
+                     title: "Union Name"
+                 },
+                 {
+                     width: "150px",
+                     field: "UpozillaCode",
+                     filterable: true,
+                     title: "Upozilla Code"
+                 },
+                 {
+                     width: "150px",
+                     field: "UpozillaName",
+                     filterable: true,
+                     title: "Upozilla Name"
+                 },
+                 {
+                     width: "50px",
+                     title: 'Edit',
+                     template: function (dataItem) {
+                         return "<a href='#' OnClick='EditUnion(" + dataItem.UnionID + ",\""
+                             + dataItem.UnionCode + "\",\""
+                             + dataItem.UnionName + "\",\""
+                             + dataItem.UpozillaID + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                     }
+                 },
+                 //{
+                 //    width: "50px",
+                 //    title: 'Delete (বাদ)',
+                 //    template: function (dataItem) {
+                 //        return "<a href='#' OnClick='InformationDelete(" + dataItem.UnionID + ");'><i class='fa fa-trash-o'></i></a>";
+                 //    }
+                 //}
+            ]
+        });
+
+
+
+    }
+
+
+    //create
+    function GenerateUnion() {
+        var item = {};
+        item.UnionCode = $("#UnionCode").val();
+        item.UnionName = $("#UnionName").val();
+        item.UpozillaID = $("#UpozillaID").val();
+        return item;
+    }
+
+    function GenerateUpdateUnion() {
+        var item = {};
+        item.UnionID = $("#UnionID").val();
+        item.UnionCode = $("#UnionCode").val();
+        item.UnionName = $("#UnionName").val();
+        item.UpozillaID = $("#UpozillaID").val();
+        return item;
+    }
+
+    //edit using jtable
+    function ResetUnion() {
+        $("#btnUpdate").hide();
+        $("#btnSave").show();
+        $("#btnReset").hide();
+        ClearControl();
+    }
+    function EditUnion
+        (UnionID,
+            UnionCode,
+            UnionName,
+            UpozillaID
+        ) {
+        $("#UnionID").val(UnionID);
+        $("#UnionCode").val(UnionCode);
+        $("#UnionName").val(UnionName);
+        $("#UpozillaID").val(UpozillaID);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+
+    function ClearControl() {
+        $("#UnionID").val('');
+        $("#UnionCode").val('');
+        $("#UnionName").val('');
+    }
+
+
+    function SaveUnion() {
+        var Union = GenerateUnion();
+        var UpozillaID = $("#UpozillaID").val();
+        var UnionCode = $("#UnionCode").val();
+        var UnionName = $("#UnionName").val();
+        if (UpozillaID != 0 && UnionCode != "" && UnionName != "") {
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: true,
+                cache: false,
+                url: '@Url.Action("SaveUnion", "Village")',
+                data: JSON.stringify({ Union: Union }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $.alert.open('Success', data);
+                    if (data == "Save Successfull") {
+                        ClearControl();
+                        //$('#grid').jtable('load');
+                        loadUnion();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        } else {
+            $.alert.open('Alert', 'Please Select Required Field');
+        }
+    }
+
+    function UpdateUnion() {
+        var Union = GenerateUpdateUnion();
+        var UpozillaID = $("#UpozillaID").val();
+        var UnionCode = $("#UnionCode").val();
+        var UnionName = $("#UnionName").val();
+        if (UpozillaID != 0 && UnionCode != "" && UnionName != "") {
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: true,
+                cache: false,
+                url: '@Url.Action("UpdateUnion", "Village")',
+                data: JSON.stringify({ Union: Union }),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $.alert.open('Success', data);
+                    if (data == "Update Successfull") {
+                        ClearControl();
+                        loadUnion();
+                        $("#btnSave").show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        } else {
+            $.alert.open('Alert', 'Please Select Required Field');
+        }
+    }
+
+    function InformationDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("InformationDeleteUnion", "Village", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            //$('#grid').jtable('load');
+                            loadUnion();
+                            $.alert.open("Error", data.message);
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+
+
+
+</script>
+
+<input type="hidden" id="hdnUpozillaID" />
+
+<h2 class="page-title">Union</h2>
+@using (Html.BeginForm("SaveUnion", "Union", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <br /><br />
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Upozilla Name</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.UpozillaID, Model.UpozillaList, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Union Code</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.UnionCode, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4 required">Union Name</label>
+            <div class="col-sm-8">
+                @Html.TextBoxFor(model => model.UnionName, new { @class = "form-control required" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6">
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <input type="button" value="Save" id="btnSave" class="btn btn-primary" />
+                    <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" />
+                    <input type="button" value="Reset" id="btnReset" style="margin-left: 20px" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            @Html.HiddenFor(model => model.UnionID)
+        </div>
+    </div>
+}
+
+<br />
+<h2 class="page-title">Union List</h2>
+<div id="grid"></div>
+
+
+
+
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+
+
+
+
+
+
+
+
+

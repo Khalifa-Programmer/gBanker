@@ -1,0 +1,173 @@
+﻿@{
+    ViewBag.Title = "OverdueMemberListAllReport(DisburseDateWise)";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+
+    function GetEmployee() {
+
+                var ddlEmployee = $("#ddlEmployee");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetEmployeeList_Overdue", "OverdueMemberList", "http")',
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlEmployee.html('');
+                        $.each(data, function (id, option) {
+                            ddlEmployee.append($('<option></option>').val(option.Value).html(option.Text));
+                        });                        
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+           
+    }
+
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "OverdueMemberList", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        GetProduct();
+        GetEmployee();
+
+        $("#txtFromDt").datepicker(
+               {
+                   dateFormat: "dd-M-yy",
+                   showAnim: "scale"
+               });
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var prod = $("#ddlProd").val();
+            var emp = $("#ddlEmployee").val();
+
+            var url = '/OverdueMemberList/GenerateOverdueMemberListAllReportDisburseDateWise_Product_Employee?DateFrom=' + DateFrom + '&DateTo=' + DateTo + '&prod=' + prod + '&emp=' + emp
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+        $('#btnExport').click(function () {
+            var url;
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var prod = $("#ddlProd").val();
+            var emp = $("#ddlEmployee").val();
+        
+            window.location = '/OverdueMemberList/GenerateOverdueMemberListAllReportExport_Product_Employee?DateFrom=' + DateFrom + '&DateTo=' + DateTo + '&prod=' + prod + '&emp=' + emp
+    
+
+        });
+    });
+</script>
+<h2 class="page-title">Overdue Borrower List_DisburseDatewise(All)</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+
+
+
+    <div class="row">
+
+        <div class="col-md-7">
+            <div class="form-group">
+                @Html.Label("Product", new { @class = "control-label" })
+                @Html.DropDownList("ProductList", null, new { @ID = "ddlProd", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-4">&nbsp;</div>
+    </div>
+
+
+
+    <div class="row">
+
+        <div class="col-md-7">
+            <div class="form-group">
+                @Html.Label("Employee", new { @class = "control-label" })
+                @Html.DropDownList("EmployeeList", null, new { @ID = "ddlEmployee", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-4">&nbsp;</div>
+    </div>
+
+
+    <div class="row">
+
+        <div class="col-md-7">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-4">&nbsp;</div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-7">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-4">&nbsp;</div>
+    </div>
+
+
+
+
+
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group from-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+        <div class="col-md-10">
+            <div class="form-group from-action">
+                <input type="button" id="btnExport" value="Export" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

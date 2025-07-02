@@ -1,0 +1,143 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.HolidayViewModel>
+
+@{
+    ViewBag.Title = "Holiday List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#filterValue").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale"
+           });
+        $('#grid').jtable({            
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'BusinessDate ASC',
+            actions: {
+                listAction: '/Holiday/GetHolidayInfo',
+                updateAction: '/Holiday/Edit'
+                //,
+                //deleteAction: '/Holiday/delete'
+            },
+            fields: {
+                HolidayID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Center',
+                    create: false,
+                    edit: true,
+                    type: 'label'
+                },
+                BusinessDate: {
+                    title: 'Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                    create: false,
+                    edit: true
+                },
+                Description: {
+                    title: 'Description',
+                    create: false,
+                    edit: true
+                },
+                HolidayType: {
+                    title: 'Type',
+                    create: false,
+                    edit: true,
+                    options: { 'Govt': 'Govt. Holiday', 'Office': 'Official', 'Weekly': 'Weekly' },
+                    list: true
+                },
+                IsActive: {
+                    title: 'IsActive',
+                    list: false,
+                    create: false,
+                    edit: true,
+                    type: 'checkbox',
+                    values: { 'false': 'In Active', 'true': 'Active' }
+                },
+                DayName: {
+                    title: 'DayName',
+                    list: false,
+                    create: false,
+                    edit: true,
+                }
+
+
+                ,
+                DeleteLink: {
+                    title: "Delete",
+                    width:'3%',
+                    display: function (data) {
+                        if (data.record.HolidayType != 'Weekly')
+                        return '<div class="text-center delete-link"><a href="/Holiday/Delete/' + data.record.HolidayID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                        //return '<a href="/Investor/Delete/' + data.record.InvestorID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+        //$('#grid').jtable('load');
+    });
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterValue: $('#filterValue').val() });
+    }
+
+</script>
+@*<table style="width:100%;">
+    <tr>
+        <td style="width:75%"><h2>Holiday List</h2></td>
+        <td>
+            @Html.ActionLink("Yearly Holiday", "YearlyCreate")
+            &nbsp;
+            @Html.ActionLink("Specific Holiday", "Create")
+        </td>
+    </tr>
+</table>
+<hr />*@
+@Html.ActionLink("Yearly Holiday", "YearlyCreate", null, new { @class = "btn btn-info btn-sm pull-right" })
+@Html.ActionLink("Specific Holiday", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Holiday List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Select Date:</label>
+    </div>
+   
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Select Date" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

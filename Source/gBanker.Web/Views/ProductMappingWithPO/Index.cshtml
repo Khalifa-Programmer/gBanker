@@ -1,0 +1,55 @@
+﻿
+@model gBanker.Web.ViewModels.AddOrEditLoanCodeXProductMappingViewModel
+
+@{
+    ViewBag.Title = "MappingWithProductAndLoanCode";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style>
+    .table .thead-dark th {
+        color: #495057;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+</style>
+
+<h2 class="page-title">Mapping with Product and Loan Code</h2>
+@using (Html.BeginForm("Manage", "ProductMappingWithPO", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <table class="table table-hover" id="tblAvailableProduct">
+            <thead class="thead-dark">
+                <tr>
+                    <th class="column-title">SL</th>
+                    <th class="column-title">Product Code</th>
+                    <th class="column-title">Product Name</th>
+                    <th class="column-title">Product Loan Code</th>
+                    <th class="column-title">PKSF Loan Code</th>
+                    <th class="column-title">SC Rate (Decline)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center">
+                    <td colspan="6" class="text-center">
+                        <img style="width: 5%;" src="~/Content/charisma-master/bower_components/colorbox/example4/images/loading.gif" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="form-group">
+            <div class="form-group form-action">
+                <button type="submit" class="btn btn-primary" id="btnSave"> Submit </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+
+    <script src="~/Assets/js/olrs/poLoanProductMapping.js"></script>
+}

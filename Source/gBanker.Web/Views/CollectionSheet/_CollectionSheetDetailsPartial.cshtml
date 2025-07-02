@@ -1,0 +1,140 @@
+﻿@model gBanker.Web.ViewModels.CollectionSheetListViewModel
+
+@{
+    var collectionSheet = Model.CollectionSheets.FirstOrDefault();
+    int tabindex = 1;
+    int maxTabIndex = Model.CollectionSheets.Count();
+}
+
+@using (Html.BeginForm("ApproveBatchCollectSheet", "CollectionSheet", FormMethod.Post, new { @id = "formApproveBatchCollectSheet" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Collection Sheet Details</h4>
+    </div>
+    <div class="modal-body">
+        @if (Model.CollectionSheets.Any())
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    Member Code : <span class="badge">@collectionSheet.MemberCode</span>
+                    Member Name : <span class="badge">@collectionSheet.MemberName</span>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-bordered table-hover table-responsive">
+                        <thead>
+                            <tr>
+                                <th>Account No</th>
+                                <th>Product</th>
+                                <th>Total Paid</th>
+                                <th>Principal Paid</th>
+                                <th>Sc.Paid</th>
+                                <th>G.Savings</th>
+                                <th>SSP</th>
+                                <th>VS</th>
+
+                                <th>Inst. No</th>
+                                <th>Reco. verable</th>
+                                <th>Balance</th>
+                                <th>Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.CollectionSheets)
+                            {
+                                var idTotalLPaid = string.Format("CSTrxIdXTransTypes_{0}{1}_TotalLPaid", item.TrxID, item.TransType);
+                                var clsTotalLPaid = string.Format("totallpaid_{0}", tabindex);
+                                var idGSavings = string.Format("CSTrxIdXTransTypes_{0}{1}_GSavings", item.TrxID, item.TransType);
+                                var idSSP = string.Format("CSTrxIdXTransTypes_{0}{1}_SSP", item.TrxID, item.TransType);
+                                var idVS = string.Format("CSTrxIdXTransTypes_{0}{1}_VS", item.TrxID, item.TransType);
+
+                                var idLPaid = string.Format("CSTrxIdXTransTypes_{0}{1}_LoanPaid", item.TrxID, item.TransType);
+                                var idIntPaid = string.Format("CSTrxIdXTransTypes_{0}{1}_IntPaid", item.TrxID, item.TransType);
+
+                                var paidStatus = item.CollectionStatus == "YES" ? "<span class='label label-success'>YES</span>" : "<span class='label label-warning'>NO</span>";
+                                var productInfo = string.Format("{0} - {1}", item.ProductCode, item.ProductName);
+                                var totalLoanPaid = item.DefaultLoanPaid.ToString("#0");
+
+                                <tr>
+                                    <td>
+                                        @item.AccountNo
+                                        <input id="CSTrxIdXTransTypes_Index" name="CSTrxIdXTransTypes.Index" type="hidden" value="@item.TrxID@item.TransType" />
+                                        <input class='trxid' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_TrxID" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].TrxID" type="hidden" value="@item.TrxID" />
+                                        <input class='memberid' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_MemberID" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].MemberID" type="hidden" value="@item.MemberID" />
+                                        <input class='trans-type' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_TransType" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].TransType" type="hidden" value="@item.TransType" />
+                                        <input class='ntype' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_nType" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].nType" type="hidden" value="@item.nType" />
+
+                                        <input class='principalloan' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_PrincipalLoan" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].PrincipalLoan" type="hidden" value="@item.PrincipalLoan" />
+                                        <input class='loanrepaid' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_LoanRepaid" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].LoanRepaid" type="hidden" value="@item.LoanRepaid" />
+                                        <input class='cumintcharge' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_CumIntCharge" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].CumIntCharge" type="hidden" value="@item.CumIntCharge" />
+                                        <input class='cumintpaid' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_CumIntPaid" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].CumIntPaid" type="hidden" value="@item.CumIntPaid" />
+
+                                        <input class='loandue' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_LoanDue" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].LoanDue" type="hidden" value="@item.LoanDue" />
+                                        <input class='intdue' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_IntDue" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].IntDue" type="hidden" value="@item.IntDue" />
+                                        <input class='durationoverloandue' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_DurationOverLoanDue" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].DurationOverLoanDue" type="hidden" value="@item.DurationOverLoanDue" />
+                                        <input class='durationoverintdue' id="CSTrxIdXTransTypes[@item.TrxID@item.TransType]_DurationOverIntDue" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].DurationOverIntDue" type="hidden" value="@item.DurationOverIntDue" />
+                                    </td>
+                                    <td>@productInfo</td>
+                                    <td class="total-lPaid">
+                                        <input type="text" 
+                                               tabindex="@tabindex"
+                                               onkeydown="return CollectionSheetManager.goNextRow(event,@tabindex)"
+                                               autocomplete="off" min="0"
+                                               oninput="this.value = !!this.value && Math.abs(this.value) >= 0 ? Math.abs(this.value) : null"
+                                               class="form-control input-sm input-total-lPaid @clsTotalLPaid"
+                                               id="@idTotalLPaid"
+                                               name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].TotalLPaid"
+                                               value="@totalLoanPaid" />
+                                    </td>
+                                    <td class="loan-paid"><input type="number" autocomplete="off" readonly='readonly' class="form-control input-sm input-loan-paid" id="@idLPaid" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].LoanPaid" value="@item.LoanPaid.ToString("#0")" /></td>
+                                    <td class="int-paid"><input type="number" autocomplete="off" readonly='readonly' class="form-control input-sm input-int-paid" id="@idIntPaid" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].IntPaid" value="@item.IntPaid.ToString("#0")" /></td>
+                                    <td class="gsavings"><input type="number" autocomplete="off" readonly='readonly' class="form-control input-sm input-gsavings" id="@idGSavings" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].GSavings" value="@item.GSavings.ToString("#0")" /></td>
+                                    <td class="ssp"><input type="number" autocomplete="off" readonly='readonly' class="form-control input-sm input-ssp" id="@idSSP" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].SSP" value="@item.SSP.ToString("#0")" /></td>
+                                    <td class="vs"><input type="number" autocomplete="off" readonly='readonly' class="form-control input-sm input-vs" id="@idVS" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].VS" value="@item.VS.ToString("#0")" /></td>
+
+                                    <td><input type="text" autocomplete="off" readonly='readonly' class="form-control input-sm input-installmentNo" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].installmentNo" value="@item.installmentNo" /></td>
+                                    <td><input type="text" autocomplete="off" readonly='readonly' class="form-control input-sm input-recoverable" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].Recoverable" value="@item.Recoverable.ToString("#0")" /></td>
+                                    <td><input type="text" autocomplete="off" readonly='readonly' class="form-control input-sm input-balance" name="CSTrxIdXTransTypes[@item.TrxID@item.TransType].Balance" value="@item.Balance.ToString("#0")" /></td>
+
+                                    <td style="padding-top: 14px;"> @Html.Raw(paidStatus)</td>
+                                </tr>
+
+                                tabindex = tabindex + 1;
+                            }
+                            <tr>
+                                <td colspan="2" class="text-right">
+                                    Total
+                                </td>
+                                <td id="GTotalLPaid">@Model.CollectionSheets.Sum(f => f.DefaultLoanPaid).ToString("#0")</td>
+                                <td id="GTotalPrincipalPaid">@Model.CollectionSheets.Sum(f => f.LoanPaid).ToString("#0")</td>
+                                <td id="GTotalIntPaid">@Model.CollectionSheets.Sum(f => f.IntPaid).ToString("#0")</td>
+                                <td id="GTotalGSavings">@Model.CollectionSheets.Sum(f => f.GSavings).ToString("#0")</td>
+                                <td id="GTotalSSP">@Model.CollectionSheets.Sum(f => f.SSP).ToString("#0")</td>
+                                <td id="GTotalVS">@Model.CollectionSheets.Sum(f => f.VS).ToString("#0")</td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <strong>Warning!</strong> There are no items found to show.
+            </div>
+        }
+    </div>
+    {
+        maxTabIndex = maxTabIndex + 1;
+    }
+    <div class="modal-footer">
+        <button type="submit" tabindex="@maxTabIndex" class="btn btn-primary btn-approve-batch-vs"><i class="fa fa-check"></i> Collect</button>
+        <button type="button" tabindex="@maxTabIndex" id="btnCloseModal" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+    </div>
+}

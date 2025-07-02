@@ -1,0 +1,94 @@
+﻿
+@{
+    ViewBag.Title = "Centerwise_loan_SC";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#txtFromDt").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale"
+           });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            //var Qtype = $("#ddlQtype").val();
+
+            var url = '/WeeklySamityWiseReport/GenerateCenterwise_loan_SCReport?DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+<h2 class="page-title">Centerwise Loan And service Charge</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtFromDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        @*<div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Report", new { @class = "control-label" })
+                    @Html.DropDownList("QtypeList", new[] {
+                       new SelectListItem() {Text="Part 01", Value="02",Selected = true},
+                       new SelectListItem() {Text="Part 02", Value="04"},
+                       new SelectListItem() {Text="Part 03",Value="06"}},
+                       new { @ID = "ddlQtype", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>*@
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

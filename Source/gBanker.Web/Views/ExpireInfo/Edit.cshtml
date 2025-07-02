@@ -1,0 +1,292 @@
+﻿@model gBanker.Web.ViewModels.ExpireInfoViewModel
+
+@{
+    ViewBag.Title = "ExpireInfo Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    // var member = Model == null ? null : Model.memberListItems;
+    var investor = Model == null ? null : Model.investorListItems;
+    var centerName = center.Where(o => o.Value == Model.CenterID.ToString()).FirstOrDefault().Text;
+    var member = ViewBag.MemberName as string;
+    var gen = Model == null ? null : Model.ExpireList;
+}
+<style type="text/css">
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+<script type="text/javascript">
+    $body = $("body");
+
+
+    $(document).ready(function () {
+
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "ExpireInfo", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+
+                        }
+                        else if (data.length == 0) {
+                            alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "ExpireInfo", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //  $("#ApproveDate").datepicker();
+        gBankerDatePicker("ExpireDate");
+
+        var validPrefixes = ["013", "014", "015", "016", "017", "018", "019"];
+
+        // Allow only numeric input
+        $("#MobileNumber").on("keypress", function (e) {
+            var charCode = e.which ? e.which : e.keyCode;
+            if (charCode < 48 || charCode > 57) {
+                return false;
+            }
+            return true;
+        });
+
+        // Enable/Disable save button based on input length and prefix validation
+        $("#MobileNumber").on("keyup", function () {
+            var mobileNumber = $(this).val();
+            var inputCount = mobileNumber.length;
+
+            if (inputCount >= 3) {
+                var prefix = mobileNumber.substring(0, 3);
+                if (!validPrefixes.includes(prefix)) {
+                    $("#MobileNumberError").text("Invalid phone number.");
+                    $("#btnSAVE").prop('disabled', true);
+                    return;
+                } else {
+                    $("#MobileNumberError").text("");
+                }
+            }
+
+            if (inputCount === 11) {
+                $("#MobileNumberError").text("");
+                $("#btnSAVE").prop('disabled', false);
+            } else if (inputCount === 0) {
+                $("#MobileNumberError").text("");
+                $("#btnSAVE").prop('disabled', false);
+            } else {
+                $("#MobileNumberError").text("You entered " + inputCount + " digits. Mobile number must be exactly 11 digits.");
+                $("#btnSAVE").prop('disabled', true);
+            }
+        });
+
+        // Show alert on blur if input is not 11 digits or invalid prefix
+        $("#MobileNumber").on("blur", function () {
+            var mobileNumber = $(this).val();
+            var inputCount = mobileNumber.length;
+
+            if (inputCount !== 11 && inputCount !== 0) {
+                alert("Mobile number must be 11 digits.");
+            } else if (inputCount >= 3) {
+                var prefix = mobileNumber.substring(0, 3);
+                if (!validPrefixes.includes(prefix)) {
+                    alert("Invalid phone number.");
+                }
+            }
+        });
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Edit Expire Info</h2>
+
+@using (Html.BeginForm("Edit", "ExpireInfo", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+       
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBox("txtCenterName", centerName, new { @class = "form-control", @readonly = true })
+                    @Html.HiddenFor(model => model.CenterID)
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", member, new { @class = "form-control", @readonly = true })
+                    @Html.HiddenFor(model => model.MemberID)
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ApplicantName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ApplicantName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ApplicantName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MobileNumber, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MobileNumber, new { htmlAttributes = new { @class = "form-control" } })
+                    <span id="MobileNumberError" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Relation, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Relation, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.Relation, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ExpiryName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ExpiryName, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.ExpiryName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ExpireStatus, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.ExpireStatus, gen, new { @class = "form-control", @readonly = true })
+                    @Html.ValidationMessageFor(model => model.ExpireStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ExpireDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.ExpireDate, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.ExpireDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Remarks, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" id="btnSAVE" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

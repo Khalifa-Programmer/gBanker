@@ -1,0 +1,865 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberViewModel>
+
+@{
+    ViewBag.Title = "Account Code List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .ui-autocomplete {
+        z-index:999999 !important;
+    }
+
+
+
+
+
+
+</style>
+<link href="~/Content/jtable-custom.css" rel="stylesheet" />
+<script type="text/javascript">
+    //Update
+
+    function updatePopup() {
+
+        var hdnTrxMasterID = $('#hdnTrxMasterID').val();
+        var hdnTrxDetailsID = $('#hdnTrxDetailsID').val();
+        var txtAccCode = $('#txtAccCodePopup').val();
+        var txtCredit = $('#txtCreditChanged').val();
+        var txtDebit = $('#txtDebitChanged').val();
+        var txtTrxDate = $('#txtTrxDate').val();
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdatePOPUPDataChanged", "AccountCode", "http")',
+            //UpdatePOPUPData(string masterId, string PunishmentDespatchNo, string CaseDateFrom, string CaseDateTo, string PunishmentDate,
+            //string FirstIncSuspendDt, string SecondIncSuspendDt, string ThirdIncSuspendDt, string FourthIncSuspendDt)
+            //
+            data: {
+                hdnTrxMasterID      : hdnTrxMasterID,
+                hdnTrxDetailsID     : hdnTrxDetailsID,
+                txtAccCode          :  txtAccCode,
+                txtCredit           : txtCredit,
+                txtDebit            : txtDebit,
+                txtTrxDate          : txtTrxDate
+
+            },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#ProgramDiv").dialog('close');
+                reloadGridSubmit();
+                // alert( "Data Update Successfully");
+
+            },
+            error: function (request, status, error) {
+                alert( "Data Not Update");
+            }
+
+        });
+
+    }
+
+
+
+    //Popup Start
+    function PopupDiv(TrxMasterID, TrxDetailsID, AccountCode, Credit, Debit, TrxDay, TrxMonth, TrxYear) {
+        $('#tblAddList >tbody >tr').remove();
+        $('#tblAddList >tbody >tr').empty();
+        clearFields();
+
+        var trxDate = ("0" + TrxDay).slice(-2) + '/' + ("0" + TrxMonth).slice(-2) + '/' + ("0" + TrxYear).slice(-2);
+        // alert(trxDate);
+         
+        $('#hdnTrxMasterID').val(TrxMasterID);
+        $('#hdnTrxDetailsID').val(TrxDetailsID);
+
+        $('#txtAccCodePopup').val(AccountCode);
+        $('#txtCredit').val(Credit);
+        $('#txtDebit').val(Debit);
+        $('#txtTrxDate').val(trxDate);
+
+        //SET in Change:
+        $('#txtCreditChanged').val(Credit);
+        $('#txtDebitChanged').val(Debit);
+        //END SET in Change
+
+
+        $('html, body').animate({ scrollTop: $('#ProgramDiv').offset().top }, 'slow');
+        // $("#ProgramDiv").attr("tabindex", -1).focus();
+
+
+        $("#ProgramDiv").dialog({
+            autoOpen: false,
+            height: 450,
+            width: 850,
+            modal: true,
+            buttons: {
+                //"Save": function () {
+                //    SaveUpdateProgram();
+                //},
+                "Close": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    // window.location.href = "Member/Create";
+                    $(this).dialog("close");
+                }
+            }
+        });
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#ProgramDiv").dialog('open');
+        }
+    }//End of Show Popup
+
+
+
+
+    ///// TABLE ADD /////
+
+    function deleteDeOfficerRow(sl) {
+        $("#table_Row" + sl).remove();
+        AfterDeleteEffect();
+    }
+
+    function AfterDeleteEffect()
+    {
+        debugger;
+        var rowCount = 0;
+        var dtTable = $('#tblAddList');
+        //rowCount = $('#tblAddList >tbody >tr').length;
+        rowCount = parseInt($("#tblrow").val());
+
+        var sumDebit = 0.00;
+        var sumCredit = 0.00;
+       // var rowCount2 = 11;
+        for (i = 1; i <= rowCount; i++) { //Check If Employee Already Added
+
+            // Sum cant be greater than 
+            var undefined = $("#KING" + i).val();
+            var k = $("#txtDebit2" + i).val();
+            if (k == undefined)
+            { }
+            else
+            {
+                var filterValue21 = $("#filterValue2" + i).val();
+
+                // Sum cant be greater than 
+
+                var d = $("#txtDebit2" + i).val();
+                sumDebit = parseFloat(sumDebit) + parseFloat(d);
+
+                var c = $("#txtCredit2" + i).val();
+                sumCredit = parseFloat(sumCredit) + parseFloat(c);
+            }
+            
+
+        }// End For Loop
+
+        
+        // SET The change
+        var MyDebit = parseFloat($("#txtDebit").val()) - parseFloat(sumDebit);
+        //alert(MyDebit);
+        $("#txtDebitChanged").val(MyDebit);
+
+        var MyCredit = parseFloat($("#txtCredit").val()) - parseFloat(sumCredit);
+        //alert(MyCredit);
+        $("#txtCreditChanged").val(MyCredit)
+        // End Set The Change
+
+
+    }
+
+    function addNew()
+    {
+        var txtAccCodePopup2 = $("#txtAccCodePopup2").val();
+        var txtCredit2 = parseFloat( $("#txtCredit2").val() );
+        var txtDebit2 = parseFloat( $("#txtDebit2").val() );
+        var txtTrxDate2 = $("#txtTrxDate2").val();
+        var filterValue2 = $("#filterValue2").val();
+
+        if (filterValue2 == 0 || filterValue2 == "0")
+        {
+            alert(" Please verify accountcode");
+            return false;
+        }
+
+        if ( $("#txtAccCodePopup2").val() == "" ) {
+            alert(" Please Give Account Code.");
+            return false;
+        }
+
+        debugger;
+        var rowCount = 0;
+        var dtTable = $('#tblAddList');
+        rowCount = parseInt( $("#tblrow").val());
+        $("#tblrow").val(rowCount + 1);
+       // rowCount = $('#tblAddList >tbody >tr').length;
+
+        var sumDebit = 0.00;
+        var sumCredit = 0.00;
+        //var rowCount2 = 11;
+        for (i = 1; i <= rowCount; i++) { //Check If Employee Already Added
+            var filterValue21 = $("#filterValue2" + i).val();
+            if (filterValue21 == filterValue2) {
+                alert("This Account Code already added.");
+                return false; 
+            }
+
+            // Sum cant be greater than 
+
+            
+            // Sum cant be greater than 
+            var undefined = $("#KING" + i).val();
+            var k = $("#txtDebit2" + i).val();
+            if (k == undefined)
+            {   }
+            else
+            {
+             //   var filterValue21 = $("#filterValue2" + i).val();
+
+                // Sum cant be greater than 
+
+                var d = $("#txtDebit2" + i).val();
+                sumDebit = parseFloat(sumDebit) + parseFloat(d);
+
+                var c = $("#txtCredit2" + i).val();
+                sumCredit = parseFloat(sumCredit) + parseFloat(c);
+            }
+ 
+ 
+        }// End For Loop
+
+        
+        if (parseFloat(sumDebit + txtDebit2) > parseFloat($("#txtDebit").val())) {
+            alert(" Debit amount cant be greater than initial amount.");
+            return false;
+        }
+
+        if (parseFloat(sumCredit + txtCredit2) > parseFloat($("#txtCredit").val())) {
+            alert(" Credit amount cant be greater than initial amount.");
+            return false;
+        }
+        debugger;
+        // SET The change
+        //alert($("input[name~='txtCredit2']").val());
+        //var creditValue = $("input[name=txtCredit2]").val();
+        //alert(creditValue);
+
+        //var debitValue = $("input[name=txtDebit2]").val();
+        //alert(debitValue);
+        //alert($("input[name=first_name]").val());
+        
+
+        var MyDebit = parseFloat($("#txtDebit").val()) - parseFloat(sumDebit + txtDebit2);
+         
+        $("#txtDebitChanged").val(MyDebit);
+
+        var MyCredit = parseFloat($("#txtCredit").val()) - parseFloat(sumCredit + txtCredit2);
+        
+        $("#txtCreditChanged").val(MyCredit)
+        // End Set The Change
+
+        var sl = rowCount + 1;
+        var tableBody = dtTable.find('tbody');
+        tableBody.append('<tr  id="table_Row' + sl + '">' +
+                            '<td></td>' +
+                            '<td>' + txtAccCodePopup2 + ' <input type="text" value="' + txtAccCodePopup2 + '" style="display:none;" name="txtAccCodePopup2" id="txtAccCodePopup2' + sl + '" /></td>' +
+                            ' <input type="hidden" value="' + filterValue2 + '" style="display:none;" name="filterValue2" id="filterValue2' + sl + '" />' +
+                            '<td>' + txtCredit2 + ' <input type="text" value="' + txtCredit2 + '" style="display:none;" name="txtCredit2" id="txtCredit2' + sl + '" /></td>' +
+                            '<td>' + txtDebit2 + ' <input type="text" value="' + txtDebit2 + '" style="display:none;" name="txtDebit2" id="txtDebit2' + sl + '" /></td>' +
+                             
+                            '<td style="text-align:center;"><a href="javascript:;" onclick="deleteDeOfficerRow(' + sl + ')"><i class="fa fa-trash-o fa-2x"></i></a>' +
+                            '</tr>'
+
+            );
+
+        clearFields();// Clear All Fields Except TableList
+
+
+    }// End Function
+
+
+
+    function clearFields()
+    {
+       $("#txtAccCodePopup2").val("");
+       $("#txtCredit2").val("0");
+       $("#txtDebit2").val("0");
+       $("#txtTrxDate2").val("");
+       $("#filterValue2").val("");
+       //$("#txtCreditChanged").val("");
+       //$("#txtDebitChanged").val("");
+
+
+
+    }
+     
+    function SaveData() {
+
+        var rowCount = 0;
+         
+        rowCount = $('#tblAddList >tbody >tr').length;
+        var tada = true;
+         
+        for (i = 1; i <= rowCount; i++) {  
+            
+            var undefined = $("#KING" + i).val();
+            var k = $("#txtDebit2" + i).val();
+            if (k == undefined)
+            { }
+            else {
+
+
+
+                var txtAccCodePopup2 = $("#txtAccCodePopup2" + i).val();
+                var txtCredit2 = parseFloat($("#txtCredit2" + i).val());
+                var txtDebit2 = parseFloat($("#txtDebit2" + i).val());
+                var txtTrxDate2 = $("#txtTrxDate2" + i).val();
+                var filterValue2 = $("#filterValue2" + i).val();
+                if (filterValue2 == 0 || filterValue2 == "0")
+                {
+                    alert(" Please verify accountcode");
+                    return false;
+                }
+
+                insertData(filterValue2, txtCredit2, txtDebit2, txtTrxDate2)
+            }
+        }
+
+        //Update Selected Existing Code::
+        updatePopup();
+        // END 
+
+        //Finally Show Message
+        alert("Data Saved Successfully");
+        $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+
+    }
+
+    function insertData(filterValue2, txtCredit2, txtDebit2, txtTrxDate2) {
+
+        var txtTrxDate = $("#txtTrxDate").val();
+        var hdnTrxMasterID = $('#hdnTrxMasterID').val();
+        var hdnTrxDetailsID = $('#hdnTrxDetailsID').val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateNewAccCode", "AccountCode", "http")', //CreateWorkArea(string WorkAreaName)
+            data: {  //EmployeeId, oldDesigId, NewDesigId, NoteNo, Reason, zonalOfficeId
+                hdnTrxMasterID  : hdnTrxMasterID,
+                hdnTrxDetailsID :hdnTrxDetailsID,
+                filterValue2    : filterValue2  ,
+                txtCredit2      : txtCredit2    ,  
+                txtDebit2       : txtDebit2     ,
+                txtTrxDate2     : txtTrxDate2   ,
+                txtTrxDate      : txtTrxDate
+
+            },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //$.alert.open("Message", "Data Saved Successfully");
+
+                //$('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                //$.alert.open("Message", "Data Not Saved");
+
+                //$('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+    }
+
+
+
+
+    //// END Table Add /////
+
+
+
+
+$(document).ready(function () {  // Document Ready
+
+
+    $("#txtAccCode").autocomplete({
+
+                source: function (request, response) {
+
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("GetAccCode", "AccountCode", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { acc_code: request.term },
+                        minLength: 1,
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return {
+                                    value: item.AccCodes, //AccID,
+                                    label: item.AccFullName
+                                };
+                                //response(data);
+                            }))
+                        }
+                    })
+                },
+                messages: {
+                    noResults: "", results: ""
+                },
+                focus: function (event, ui) {
+                    $("#txtAccCode").val(ui.item.label);
+                    return false;
+                },
+                select: function (event, ui) {
+                    $("#txtAccCode").val(ui.item.label);
+                   // $("#AccID").val(ui.item.value);
+                    $("#filterValue").val(ui.item.value);
+
+                    return false;
+                },
+                change: function (event, ui) {
+                    $("#txtAccCode").val(ui.item.label);
+                   // $("#AccID").val(ui.item.value);
+                    $("#filterValue").val(ui.item.value);
+
+                    return false;
+                }
+    });
+
+
+
+
+    $("#txtAccCodePopup2").autocomplete({
+
+        source: function (request, response) {
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetAllAccCode", "AccountCode", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { acc_code: request.term },
+                minLength: 1,
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return {
+                            value: item.AccCodes, //AccID,
+                            label: item.AccFullName
+                        };
+                        //response(data);
+                    }))
+                }
+            })
+        },
+        messages: {
+            noResults: "", results: ""
+        },
+        focus: function (event, ui) {
+            $("#txtAccCodePopup2").val(ui.item.label);
+            return false;
+        },
+        select: function (event, ui) {
+            $("#txtAccCodePopup2").val(ui.item.label);
+            // $("#AccID").val(ui.item.value);
+            $("#filterValue2").val(ui.item.value);
+
+            return false;
+        },
+        change: function (event, ui) {
+            $("#txtAccCodePopup2").val(ui.item.label);
+            // $("#AccID").val(ui.item.value);
+            $("#filterValue2").val(ui.item.value);
+
+            return false;
+        }
+    });
+    
+ 
+        $("#btnPopUpAddNew").click(function () {
+            addNew();
+        });
+
+
+        $("#btnPopUpUpdate").click(function () {
+            SaveData();
+            $("#tblrow").val('0');
+        });
+        //?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+
+        var SrNo = 1;
+        $('#grid').jtable({
+            //title: 'Member List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                //deleteAction: '/Member/Delete',
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/AccountCode/GetCodeInfoJCF?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+
+                TrxDate: {
+                    title: 'Transaction Date',
+                    create: false,
+                    edit: false
+                },
+                TrxDetailsID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                VoucherNo: {
+                    title: 'Voucher No',
+                    create: false,
+                    edit: false
+                },
+                VoucherType: {
+                    title: 'Voucher Type',
+                    create: false,
+                    edit: false
+                },
+
+                AccCodes: {
+                    title: 'Account Code',
+                    create: false,
+                    edit: false
+                },
+
+                AccName: {
+                    title: 'Account Name',
+                    create: false,
+                    edit: false
+                },
+                Credit: {
+                    title: 'Credit',
+                    create: false,
+                    edit: true
+                },
+                Debit: {
+                    title: 'Debit',
+                    create: false,
+                    edit: false
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    sort: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="PopupDiv(' + data.record.TrxMasterID + ',' + data.record.TrxDetailsID + ',' + data.record.AccCodes + ',' + data.record.Credit + ',' + data.record.Debit + ',' + data.record.trxDay + ',' + data.record.trxMonth + ',' + data.record.trxYear + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                }
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        if (data.record.MemberStatus != '5')
+                //            return '<div class="text-center delete-link"><a href="/Member/DeleteMember?MemId=' + data.record.MemberID + '" ' + ' OnClick="return confirm(' + "'" + 'Are you sure you want to delete this item?' + "'" + ');"' + '><i class="fa fa-trash-o"></i></a></div>';
+                //        else
+                //            return null;
+                //    }
+                //}
+            },
+            recordsLoaded: function (event, data) {
+                var pagenumber = $('.jtable-goto-page select option:selected').val();
+                var pagesize = $('.jtable-page-size-change select option:selected').val();
+                var SrNo = pagesize * pagenumber - pagesize;
+                if (data.records) {
+                    $.each(data.records, function (index, record) {
+                        var row = $('#grid').jtable('getRowByKey', record.MemberID);
+                        SrNo++;
+                        row.find('td:eq(0)').text(SrNo);
+                    });
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        reloadGrid();
+
+        //$("#txtTrxDate").datepicker(
+        //    {
+        //        dateFormat: "dd/mm/yy",
+        //        showAnim: "scale",
+        //        changeMonth: true,
+        //        changeYear: true,
+        //        yearRange: "1920:2050"
+
+    //    });
+
+
+        //inside Document Ready
+        $("#accountDate").datepicker(
+            {
+                dateFormat: "dd/mm/yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1920:2050"
+
+            });
+
+
+        $("#txtTrxDate2").datepicker(
+              {
+                  dateFormat: "dd-M-yy",
+                  showAnim: "scale",
+                  changeMonth: true,
+                  changeYear: true,
+                  yearRange: "1920:2100"
+
+              });
+        $("#txtTrxDate2").datepicker(
+        'setDate', new Date());
+
+
+
+     //   gBankerDatePicker("accountDate");
+
+    });
+
+    function reloadGrid() {
+
+        $("#loading").show();
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+        $("#loading").hide();
+    }
+
+    function reloadGridSubmit() {
+
+        if ($("#accountDate").val() == "") {
+            alert("Please Give Date.");
+            return false;
+        }
+        else if ($("#txtAccCode").val() == "") {
+            alert("Please Give Account Code.");
+            return false;
+        }
+        else {
+
+            $("#loading").show();
+            $('#grid').jtable('load', { TrxDate: $("#accountDate").val(), AccCode: $("#txtAccCode").val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+            $("#loading").hide();
+        }
+
+
+    }
+
+
+
+
+
+</script>
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+
+<input type="hidden" id="tblrow" value="0" />
+<h2 class="page-title">Account Code Correction List</h2>
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Date:</label>
+    </div>
+    <div class="col-md-2">
+        <input type="text" placeholder="Transaction Date" id="accountDate" autocomplete="off" class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+        <input type="text" id="txtAccCode" placeholder="Account Code/Voucher No" class="form-control" />
+ 
+        <input type="hidden" id="filterValue" class="form-control" />
+        @*@Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOfficeLevel", style = "display:none;" })*@
+ 
+    </div>
+    <div class="col-md-3">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGridSubmit();" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        &nbsp;
+    </div>
+</div>
+
+<!-- Popup Program Entry -->
+<div id="ProgramDiv" title="Edit" style="display:none">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Account Code</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtAccCodePopup" class="form-control" readonly="readonly" placeholder="Account Code" />
+                    <input type="hidden" id="hdnTrxMasterID" />
+                    <input type="hidden" id="hdnTrxDetailsID" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4 required">Credit</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtCreditChanged" class="form-control" readonly="readonly" placeholder="Credit" value="0" /> <!--After Change-->
+                    <input type="hidden" id="txtCredit" />  <!--Initial Credit -->
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Debit </label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtDebitChanged" class="form-control" readonly="readonly" placeholder="Debit" value="0" /> <!--After Change-->
+                    <input type="hidden" id="txtDebit" /> <!--Initial Debit -->
+
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Transaction Date</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtTrxDate" class="form-control" readonly="readonly" placeholder="Transaction Date" />
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+  <hr />
+
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Account Code</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtAccCodePopup2" class="form-control" placeholder="Account Code" />
+                    <input type="hidden" id="filterValue2" class="form-control" />
+                     
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4 required">Credit</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtCredit2" class="form-control" value="0" placeholder="Credit" />
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Debit </label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtDebit2" class="form-control" value="0" placeholder="Debit" />
+
+                </div>
+            </div>
+        </div>
+        @*<div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Transaction Date</label>
+                <div class="col-sm-8">
+                    <input type="text" id="txtTrxDate2" class="form-control" placeholder="Transaction Date" />
+
+                </div>
+            </div>
+        </div>*@
+
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Add New" id="btnPopUpAddNew" class="btn btn-success" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" >
+
+        <table class="table" id="tblAddList" style="width:66%">
+            <thead>
+                <tr class="headings">
+                    <th class="column-title"> </th>
+                    <th class="column-title">Account Correction</th>
+                    <th class="column-title">Credit</th>
+                    <th class="column-title">Debit</th>
+                    
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Save" id="btnPopUpUpdate" class="btn btn-success" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+</div>
+
+<!-- End Of Program Entry Div -->
+
+
+
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,436 @@
+﻿@model gBanker.Web.ViewModels.LoanCorrectionViewModel
+
+@{
+    ViewBag.Title = "LoanCorrection Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var cashItem = Model == null ? null : Model.cashListItems;
+    // var vmaxLoanterm == null ? null : Model.vMaxLoanTerm.ToString();
+
+}
+<style type="text/css">
+     .modal {
+         display: none;
+         position: fixed;
+         z-index: 1000;
+         top: 0;
+         left: 0;
+         height: 100%;
+         width: 100%;
+         background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+     }
+
+     /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+     body.loading {
+         overflow: hidden;
+     }
+
+         /* Anytime the body has the loading class, our
+    modal element will be visible */
+         body.loading .modal {
+             display: block;
+         }
+</style>
+
+
+
+
+<script type="text/javascript">
+    $body = $("body");
+
+    function SetProductid(value) {
+
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+
+    }
+
+
+    function CalcLoanTerm() {
+        //alert('fn');
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+
+        if (prodId > 0 && memId > 0 && officeId > 0 && centerId > 0) {
+
+            $body.addClass("loading");
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMaxLoanTerm", "LoanCorrection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, ProdId: prodId },
+
+                success: function (result) {
+                    $("#LoanTerm").val(result.LoanTerm);
+                    $body.removeClass("loading");
+
+
+                },
+                error: function (err) {
+                    $body.removeClass("loading");
+                }
+            });
+        }
+    }
+    @*function getLoanInstallment() {
+        //alert('fn');
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+        var LoanTerm = $("#LoanTerm").val();
+        if (prodId > 0 && memId > 0 && officeId > 0 && centerId > 0 && LoanTerm>0) {
+
+            $body.addClass("loading");
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMaxLoanTerm", "SpecialLoanCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, productid: prodId, loanTerm: LoanTerm },
+
+                success: function (result) {
+                    $("#TotalPaid").val(result.total);
+                    $("#LoanPaid").val(result.loan);
+                    
+                    $("#IntPaid").val(result.interest);
+                    $body.removeClass("loading");
+
+
+                },
+                error: function (err) {
+                    $body.removeClass("loading");
+                }
+            });
+        }
+    }*@
+    function getBalance() {
+       
+        var loanRepaid = $("#LoanPaid").val();
+        var intPaid = $("#IntPaid").val();
+        if (loanRepaid.length == 0)
+        {
+            loanRepaid = "0";
+            $("#LoanPaid").val("0");
+
+        }
+        if (intPaid.length == 0) {
+            intPaid = "0";
+            $("#IntPaid").val("0");
+
+        }
+        if (loanRepaid == "-" || intPaid == "-") {
+            return;
+        }
+        else {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetBalance", "LoanCorrection")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { loanRepaid: loanRepaid, intPaid: intPaid },
+
+                success: function (result) {
+                    $("#TotalPaid").val(result.balance);
+
+                },
+                error: function (error) {
+                    alert('error');
+                }
+            });
+        }
+    }
+    $(document).ready(function () {
+        //$("#TrxDate").datepicker({            
+        //        buttonImage: "/images/datepicker.gif",
+        //        altFormat: "dd/mm/yy",
+        //        dateFormat: "dd/mm/yy"
+        //});
+
+        $("#ProductID").change(function () {
+            CalcLoanTerm();
+            //getLoanInstallment();
+        });
+        $("#CenterID").change(function () {
+            CalcLoanTerm();
+           // getLoanInstallment();
+        });
+        $("#MemberID").change(function () {
+            CalcLoanTerm();
+          //  getLoanInstallment();
+        });
+        $("#OfficeID").change(function () {
+            CalcLoanTerm();
+           // getLoanInstallment();
+        });
+        $("#IntPaid").keyup(function () {
+            getBalance();
+        });
+        $("#LoanPaid").keyup(function () {
+            getBalance();
+        });
+       
+        ////////////////////////////////////
+        $("#LoanTerm").blur(function () {
+            var LoanTerm = $("#LoanTerm").val();
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var centerId = $("#CenterID").val();
+          //  var transtype = $("#TrxType").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetInstallment", "LoanCorrection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, productid: prodId, loanTerm: LoanTerm},
+
+                success: function (result) {
+
+                    $("#TotalPaid").val(result.total);
+                    $("#LoanPaid").val(result.loan);
+                    $("#IntPaid").val(result.interest);
+
+                }
+            });
+        });
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "LoanCorrection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            CalcLoanTerm();
+                        }
+                        else if (data.length == 0) {
+                           // alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                           // alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "LoanCorrection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+       // $("#TrxDate").datepicker();
+        gBankerDatePicker("TrxDate");
+    });
+
+
+</script>
+
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Add LoanCorrection</h2>
+
+@using (Html.BeginForm("Create", "LoanCorrection", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+                    @*@Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                    @Html.DropDownListFor(model => model.ProductID, product, new {  @class = "form-control" ,onchange = "SetProductid(this.value);" })
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.TrxType, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.TrxType, cashItem, new { @class = "form-control" })
+                    @Html.Hidden("hftranId")
+                    @Html.ValidationMessageFor(model => model.TrxType, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+
+
+
+            <div class="col-md-6">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.LoanTerm, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanTerm, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.LoanTerm, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+            @*<div class="form-group">
+                @Html.LabelFor(model => model.TrxDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.TrxDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.TrxDate, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TotalPaid, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.TotalPaid, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.TotalPaid, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanPaid, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LoanPaid, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LoanPaid, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IntPaid, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.IntPaid, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.IntPaid, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+            <div class="form-group">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+}
+
+@*<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+<div class="modal">
+</div>*@
+@section Scripts {
+@Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/gbUtility")
+    
+}

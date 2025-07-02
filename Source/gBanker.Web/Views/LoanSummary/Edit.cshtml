@@ -1,0 +1,546 @@
+﻿@model gBanker.Web.ViewModels.LoanSummaryViewModel
+
+@{
+    ViewBag.Title = "Opening Loan Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var branch = Model == null ? null : Model.branchListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = ViewBag.MemberName as string;
+    var investor = Model == null ? null : Model.investorListItems;
+    var   pMode = Model == null ? null : Model.paymentMode;
+}
+
+
+
+<script type="text/javascript">
+    function getBalance() {
+        var principal = $("#PrincipalLoan").val();
+        var intCharge = $("#IntCharge").val();
+        var loanRepaid = $("#LoanRepaid").val();
+        var intPaid = $("#IntPaid").val();
+        if (principal.length == 0) {
+            $("#PrincipalLoan").val("0");
+            principal = "0";
+        }
+        if (intCharge.length == 0) {
+            $("#IntCharge").val("0");
+            intCharge = "0";
+        }
+        if (loanRepaid.length == 0) {
+            $("#LoanRepaid").val("0");
+            loanRepaid = "0";
+        }
+        if (intPaid.length == 0) {
+            $("#IntPaid").val("0");
+            intPaid = "0";
+        }
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBalance", "LoanSummary")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { principal: principal, intCharge: intCharge, loanRepaid: loanRepaid, intPaid: intPaid },
+
+            success: function (result) {
+                $("#Balance").val(result.balance);
+
+            },
+            error: function (error) {
+                alert('error');
+            }
+        });
+    }
+    $(document).ready(function () {
+        ////////////////////////////////////
+        $("#CenterID").change(function () {
+            $("#memberAutoComplete").val('');
+            $("#MemberID").val('');
+
+        });
+        $("#IntPaid").keyup(function () {
+            getBalance();
+        });
+        $("#PrincipalLoan").keyup(function () {
+            getBalance();
+        });
+        $("#IntCharge").keyup(function () {
+            getBalance();
+        });
+        $("#IntPaid").keyup(function () {
+            getBalance();
+        });
+        $("#LoanRepaid").keyup(function () {
+            getBalance();
+        });
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMemberList", "LoanSummary", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { memberid: member, centerId: $("#CenterID").val() },
+                minLength: 1,
+                success: function (data) {
+                    // alert(data.length);
+                    if(data.length==1)
+                    {
+                        $("#memberAutoComplete").val(data[0].MemberName);
+                        $("#MemberID").val(data[0].MemberID);
+                    }
+                    else if (data.length==0)
+                    {
+                      //  alert("No member found.");
+                        $("#MemberID").val("");
+                    }
+                    else
+                    {
+                       // alert("More than one member found with the given Member code.");
+                        $("#MemberID").val("");
+                    }
+
+                }
+            });
+        });
+        ////////////////////////////////////
+        $("#PrincipalLoan").blur(function () {
+            var principal = $("#PrincipalLoan").val();
+            var prodId = $("#ProductID").val();
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetListOfInstallment", "LoanSummary")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { productid: prodId, principal: principal },
+
+                success: function (result) {
+                    $("#LoanInstallment").val(result.loan);
+                    $("#IntInstallment").val(result.interest);
+                    $("#Duration").val(result.duration);
+                    $("#InterestRate").val(result.intrestRate);
+                },
+                error: function (error) {
+                    alert('Test');
+                }
+            });
+        });
+
+        @*// $("#memberAutoComplete").autocomplete(source: '@Url.Action("GetMemberList")' );
+
+        $('#memberAutoComplete').autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: '@Url.Action("GetMemberList")',
+                    data: { memberid: request.term },
+                    dataType: 'json',
+                    type: 'GET',
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.MemberName,
+                                value: item.MemberID
+                            }
+                        }));
+                    }
+                })
+            },
+            select: function (event, ui) {
+                $('#memberAutoComplete').val(ui.item.MemberName);
+               // $('#Id').val(ui.item.value);
+                return false;
+            },
+            minLength: 1
+        });*@
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "LoanSummary", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 3,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        gBankerDatePicker("ApproveDate");
+        gBankerDatePicker("DisburseDate");
+        gBankerDatePicker("InstallmentStartDate");
+        gBankerDatePicker("InstallmentDate");
+        gBankerDatePicker("OverdueDate");
+        gBankerDatePicker("LoanCloseDate");
+       
+    });
+
+
+
+
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Edit LoanSummary</h2>
+
+@using (Html.BeginForm("Edit", "LoanSummary", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+        <div class="form-group" style="display :none">
+            @Html.LabelFor(model => model.LoanSummaryID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.LoanSummaryID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.LoanSummaryID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.OfficeID, branch, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.MemberID, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.MemberID, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.TextBox("memberAutoComplete", member, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })
+                @Html.Hidden("hfProdId")
+                @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.InvestorID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.DropDownListFor(model => model.InvestorID, investor, new { @class = "form-control" })
+                @Html.Hidden("hfInvesId")
+                @Html.ValidationMessageFor(model => model.InvestorID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.MemberCategoryID, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.MemberCategoryID, membercategory)
+                    @Html.ValidationMessageFor(model => model.MemberCategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.LoanTerm, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.EditorFor(model => model.LoanTerm, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.LoanTerm, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.PurposeID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.DropDownListFor(model => model.PurposeID, purpose, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.PurposeID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.PrincipalLoan, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.EditorFor(model => model.PrincipalLoan, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.PrincipalLoan, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ApproveDate, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+
+                @*@Html.EditorFor(model => model.ApproveDate,string.Empty)*@
+                @Html.EditorFor(model => model.ApproveDate, new { htmlAttributes = new { @class = "form-control date-picker", placeholder = "Date of call from client" } })
+                @Html.ValidationMessageFor(model => model.ApproveDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.DisburseDate, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.EditorFor(model => model.DisburseDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.DisburseDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Duration, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.EditorFor(model => model.Duration, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.Duration, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.LoanRepaid, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.LoanRepaid, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.LoanRepaid, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.IntCharge, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.IntCharge, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.IntCharge, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.IntPaid, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.IntPaid, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.IntPaid, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.LoanInstallment, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.LoanInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.LoanInstallment, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.IntInstallment, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.IntInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.IntInstallment, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.InterestRate, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.InterestRate, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.InterestRate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.InstallmentStartDate, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                @Html.EditorFor(model => model.InstallmentStartDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.InstallmentStartDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.InstallmentNo, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.InstallmentNo, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.InstallmentNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.DropInstallment, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.DropInstallment, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.DropInstallment, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Holidays, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.Holidays, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.Holidays, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.InstallmentDate, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.InstallmentDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.InstallmentDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.TransType, htmlAttributes: new { @class = "control-label" })
+
+                @Html.DropDownListFor(model => model.TransType, pMode, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.TransType, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ContinuousDrop, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.ContinuousDrop, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.ContinuousDrop, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+            <div class="form-group" style="display:none">
+                @Html.LabelFor(model => model.LoanStatus, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.LoanStatus, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LoanStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+          
+
+            @*<div class="form-group">
+                @Html.LabelFor(model => model.LoanCloseDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.LoanCloseDate, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LoanCloseDate, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Balance, htmlAttributes: new { @class = "control-label col-md-2" })
+
+                @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.OverdueDate, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.OverdueDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.OverdueDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AddPay, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.AddPay, new { htmlAttributes = new { @class = "form-control", defaultValue = "0" } })
+                @Html.ValidationMessageFor(model => model.AddPay, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+            <div class="form-group">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+      
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+@Scripts.Render("~/bundles/gbUtility")
+
+}

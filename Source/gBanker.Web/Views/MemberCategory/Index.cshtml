@@ -1,0 +1,129 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberCategoryViewModel>
+
+@{
+    ViewBag.Title = "Member Category List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        //////////////////////////
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberCategory/GetMemberCategoryList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+               // listAction: '/MemberCategory/GetMemberCategoryList'
+
+            },
+            fields: {
+                MemberCategoryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCategoryCode: {
+                    title: 'MemberCategory Code',
+                    width: '20%'
+
+                },
+                CategoryName: {
+                    title: 'Category Name',
+                    width: '40%'
+                },
+                AdmissionFee: {
+                    title: 'Admission Fee',
+                    width: '40%'
+                },
+                PassBookFee: {
+                    title: 'PassBook Fee',
+                    width: '40%'
+                },
+                LoanFormFee: {
+                    title: 'LoanForm Fee',
+                    width: '40%'
+                },
+                IsActive: {
+                    title: 'IsActive',
+                    width: '40%',
+                    list: false
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        // return '<a href="/MemberCategory/Edit/' + data.record.MemberCategoryID + '">Edit</a>';
+                        return "<div class='text-center'><a href='/MemberCategory/Edit/" + data.record.MemberCategoryID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                        //return "<a href='/MemberCategory/Edit/" + data.record.MemberCategoryID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                    }
+                }
+                ,
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="/MemberCategory/Delete/' + data.record.MemberCategoryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                       // return '<a href="/MemberCategory/Delete/' + data.record.MemberCategoryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+        //////////////////////////
+    });
+
+
+</script>
+
+@*<table style="width:100%;">
+    <tr>
+        <td style="width:90%"><h2>Membercategory List</h2></td>
+        <td>@Html.ActionLink("Add New", "Create")</td>
+    </tr>
+</table>
+
+<hr />*@
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Member Category List</h2>
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

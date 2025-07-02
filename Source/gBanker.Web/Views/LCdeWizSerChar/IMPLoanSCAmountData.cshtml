@@ -1,0 +1,40 @@
+﻿
+@model gBanker.Core.Filters.PRA_MN_IMP_COST_LN_SC_ReportSearchFilter
+
+@{
+    ViewBag.Title = "Imputed Loan Service Charge Amount List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<a target="_blank" class="btn btn-info btn-sm pull-right" href="/LCdeWizSerChar/LCSerCharge"><i class="fa fa-plus"></i> Add New</a>
+<h2 class="page-title">@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control", @autocomplete = "off", @placeholder = "mm/yyyy" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.SYNCED_STATUS, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control" id="SYNCED_STATUS" name="M_F_flag">
+            <option value="">Any</option>
+            <option value="1">NOT SYNCED</option>
+            <option value="2">SYNCED</option>
+        </select>
+    </div>
+    <div class="col-md-5" style="padding-top:20px">
+        <button type="button" id="btnSearchIMPLNSERAMT" class="btn btn-primary"><i class="fa fa-search"></i> Search</button>
+        <button type="button" id="btnRefreshIMPLNSERAMT" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+
+<div class="raw">
+    <div id="gridIMPLNSERAMT"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/lcdeWizSerCharManager.js"></script>
+}

@@ -1,0 +1,300 @@
+﻿
+@{
+    ViewBag.Title = "StaffwiseStatementReport";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        //$("#txtFromDt").datepicker(
+        //{
+        //    dateFormat: "dd-M-yy",
+        //    showAnim: "scale"
+        //});
+        //$("#txtToDt").datepicker(
+        //{
+        //    dateFormat: "dd-M-yy",
+        //    showAnim: "scale"
+        //});
+
+
+    });
+</script>
+<h2 class="page-title"> Daily Recoverable Receipt </h2>
+
+<div id="app" class="row">
+    <!--<div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })-->
+                @*@Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })*@
+                <!--<input id="txtFromDt" name=" " type="date" value=@ViewData["TrxDate"] v-model="txtFromDt" class="form-control hasDatepicker">
+            </div>
+        </div>
+    </div>-->
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @*@Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })*@
+                <input id="txtToDt" name=" " type="date" value=@ViewData["TrxDate"] v-model="txtToDt" class="form-control hasDatepicker">
+            </div>
+        </div>
+    </div>
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="button" v-on:click.prevent="handleSearch" :disable="btn=='Loading'" v-model="btn" class="btn btn-primary" id="btnView" />
+                <span>({{sec}} s)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container_ border" v-if="results.length>0">
+
+        <div class="flex container_ center col m-b-10">
+            <h2>Dustha Shasthya Kendra (DSK)</h2>
+            <span class="fw-600 m-b-10"> Branch Code : 0006 Name: Chandgaon Branch</span>
+            <strong class="m-b-10 report-name"> Staff Wise Statement</strong>
+            <div class="flex between container_ row">
+                <span class="cell">Month Name: November 2021</span>
+                <span class="cell">Area Name: Chittagong-3 Area</span>
+                <span class="cell">Date Range: 1-Nov-2021 to 8-Nov-2021</span>
+            </div>
+        </div>
+
+
+        <div class="flex h-50 border-t container_">
+            <div class="cell flex h-50 center w-120">
+                Product Type
+            </div>
+            <div class="cell flex h-50 center w-120">
+                Product Code
+            </div>
+            <div class="cell border-l flex center h-50 w-20">No Of</div>
+            <div class="cell border-l flex center h-50 w-20">Total </br>Mem</div>
+            <div class="cell border-l flex center h-50 w-20">Active</div>
+            <div class="cell border-l flex center h-50 w-20">Total </br>Loane</div>
+
+
+
+
+        </div>
+
+        <div class="flex h-35 border-t container_" v-for="r in results">
+            <div class="cell flex h-35 center w-120">
+                {{ r.ProductType == 0 ? "Savings" : "Loan"  }}    
+            </div>
+            <div class="cell flex h-35 center w-120">
+                {{r.ProductCode}}
+            </div>
+            <div class="cell border-l flex center h-35 w-20">{{r.ProductCode}}</div>
+            <div class="cell border-l flex center h-35 w-20">{{r.ProductCode}}</div>
+            <div class="cell border-l flex center h-35 w-20">{{r.ProductCode}}</div>
+            <div class="cell border-l flex center h-35 w-20">{{r.ProductCode}}</div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+
+    var ui = new Vue({
+
+        el: "#app",
+        data: {
+            title: "Daily Recoverable Receipt",
+            txtToDt: null,
+            results: [],
+            btn: 'View',
+            sec: 0,
+            sCtl: null,
+        },
+        mounted() { this.btn = 'View';  },
+        methods: {
+            handleSearch: function () {
+                //var url = '/GroupwiseReport/GetDailyRecoverableReceiptData?Qtype=' + 1 + '&DateTo=' + this.getDate(this.txtToDt);
+                var url = '/GroupwiseReport/GetProductListData';
+                this.btn = 'Loading';
+                this.results = [];
+                this.startWatch();
+                    $.getJSON(url,
+                        (json)=> {
+                            console.log(this)
+                            this.results = JSON.parse(json);
+                            console.log(this.results);
+                            this.btn = 'View';
+                            this.stopWatch();
+                        });
+            },
+
+            getDate: function (_dateObj) {
+                const monthNames = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"];
+                const dateObj = new Date(_dateObj);
+                const month = monthNames[dateObj.getMonth()];
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const year = dateObj.getFullYear();
+
+                const output = day + '-' + month + '-' + year;
+                return output;
+            },
+
+            startWatch: function() {
+                this.sec = 0;
+                console.log(this.sec);
+                this.sCtl = setInterval(()=> {
+                    this.sec++;
+                }, 1000);
+            },
+            stopWatch: function () {
+                clearInterval(this.sCtl);
+                this.sCtl = null;
+            }
+
+        }
+
+    })
+     
+
+</script>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+<style>
+    .report-name {
+        font-size: 15px;
+        text-decoration: underline;
+    }
+
+    .container_ {
+        width: 1150px;
+    }
+
+    .m-b-10 {
+        margin-bottom: 10px;
+    }
+
+    .fw-600 {
+        font-weight: 600;
+    }
+
+    .flex {
+        display: flex !important;
+    }
+
+    .col {
+        flex-direction: column;
+    }
+
+    .row {
+        flex-direction: row;
+    }
+
+    body {
+        padding: 0px;
+        margin: 0px;
+        font-size: 12px;
+    }
+
+    .cell {
+        min-width: 50px;
+        display: block;
+    }
+
+    .border {
+        border: 1px solid #000;
+    }
+
+    .border-0 {
+        border: none;
+    }
+
+    .border-l {
+        border-left: 1px solid #000;
+    }
+
+    .border-r {
+        border-right: 1px solid #000;
+    }
+
+    .border-t {
+        border-top: 1px solid #000;
+    }
+
+    .border-b {
+        border-bottom: 1px solid #000;
+    }
+
+    .w-175 {
+        width: 175px;
+    }
+
+    .w-50p {
+        width: 50%;
+    }
+
+    .w-120 {
+        width: 120px;
+    }
+
+    .w-20 {
+        width: 20px;
+    }
+
+    .w-30 {
+        width: 30px;
+    }
+
+    .w-70 {
+        width: 70px;
+    }
+
+    .w-50 {
+        width: 50px;
+    }
+
+    .h-35 {
+        height: 35px;
+    }
+
+    .h-50 {
+        height: 50px;
+    }
+
+    .h-0 {
+        height: 0px;
+    }
+
+    .even {
+        justify-content: space-evenly;
+    }
+
+    .between {
+        justify-content: space-between;
+    }
+
+    .center {
+        text-align: center;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+    }
+</style>
+
+
+
+

@@ -1,0 +1,135 @@
+﻿@model gBanker.Data.CodeFirstMigration.ApplicationLog
+
+@{
+    ViewBag.Title = "Detail";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Log Detail</h2>
+
+<div>    
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ActionURL)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ActionURL)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LogDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LogDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClientIP)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClientIP)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.RequestUser)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RequestUser)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.RequestDetail)                    
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RequestDetail)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ErrorDetail)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ErrorDetail)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UserAgent)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserAgent)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.QueryStringParams)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QueryStringParams)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ControllerName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ControllerName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ActionName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ActionName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.HttpMethod)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.HttpMethod)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SessionId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SessionId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OrganizationId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OrganizationId)
+        </dd>
+
+    </dl>
+</div>

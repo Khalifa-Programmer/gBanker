@@ -1,0 +1,1046 @@
+﻿@model gBanker.Web.ViewModels.AccVoucherEntryViewModel_dsk
+
+@{
+    ViewBag.Title = "Fund Transfer";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var Vtype = Model == null ? null : Model.VoucherTypeList;
+    var TrxType = Model == null ? null : Model.TransactionTypeList;
+    var ReffNoList = Model == null ? null : Model.ReffNoList;
+    var OfficeList = Model == null ? null : Model.OfficeList;
+    var ReconPurposeList = Model == null ? null : Model.ReconPurposeList;
+    var SenderBankList = Model == null ? null : Model.SenderBankList;
+}
+
+<style type="text/css">
+
+    #ShowReconcile {
+        display: none;
+    }
+
+    .tHead {
+        /*background-color: #D8D8D8;*/
+        font-family: Calibri;
+        color: Black;
+        font-weight: bold;
+        font-size: 15px;
+        border-bottom: 1px solid black;
+        background: -webkit-linear-gradient(top, #FFFFFF, #ACACAC);
+        margin: 50px;
+    }
+
+    .tFoot {
+        background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+        border-color: #2b5177;
+        font-family: Arial;
+        color: #fff;
+        font-weight: bold;
+        font-size: 12px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+    }
+
+    table {
+        font-family: Arial;
+        color: Black;
+        font-size: 12px;
+    }
+
+    tbody:nth-child(even) tr:nth-child(odd) {
+        background-color: #E2E4FF;
+    }
+
+    tbody:nth-child(even) tr:nth-child(even) {
+        background-color: white;
+    }
+</style>
+
+<script type="text/javascript">
+    function CheckVoucherType() {
+        var vType = $("#VoucherType").val();
+        if (vType == "Dr") {
+            $("#Debit").prop("readonly", false);
+            $("#Credit").prop("readonly", true);
+            $("#Credit").val(0);
+        }
+        else if (vType == "Cr") {
+            $("#Debit").prop("readonly", true);
+            $("#Credit").prop("readonly", false);
+            $("#Debit").val(0);
+        }
+    }
+
+    //Reconcile
+    function ShowReconcile() {
+        //var IsReconcile = $("#IsReconcile").is(":checked") ? true : false;
+        var IsReconcile = true;
+        if (IsReconcile == true) {
+            $("#ShowReconcile").show();
+        } else {
+            $("#ShowReconcile").hide();
+        }
+
+    }
+    function GetVoucher() {
+        var ReffNo = $("#ReffNo").val();
+        var ddlHOOffice = $("#TransactionType");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetVoucherType", "AccVoucherEntry", "http")',
+            data: { ReffNo: ReffNo },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHOOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlHOOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                    CheckVoucherTypeBank();
+                    // $("#BAccID").prop("readonly", false);
+
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function ReffNoWiseOffice() {
+
+        var ReffNo = $("#ReffNo").val();
+        var url = ""; var Data = {};
+
+        if (ReffNo == "") {
+            url = '/AccVoucherEntry/Js_OfficeList';
+            Data = {};
+        } else {
+            url = '/AccVoucherEntry/ReffNoWiseOffice';
+            Data = JSON.stringify({ 'ReffNo': ReffNo });
+        }
+        var item = "";
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: url,
+            data: Data,
+            dataType: "json",
+            async: false,
+            cache: false,
+            success: function (data) {
+
+                if (data.viewOffice.length > 0) {
+                    $.each(data.viewOffice, function (i, v) {
+                        item = item + '<option value="' + v.Value + '">' + v.Text + '</option>'
+                    });
+                }
+                $("#SenderOfficeId").html(item);
+                $("#ReDebit").val(data.ReDebit);
+                $("#ReCredit").val(data.ReCredit);
+            },
+            error: function (request, status, error) {
+
+            }
+        });
+    }
+    function SenderOrReceiveReconcile() {
+
+        $("#lblOfficeSenderType").html('Receiver Office');
+        var hasReffNo = $("#ReffNo").val();
+        if (hasReffNo != "") {
+            $("#lblOfficeSenderType").html('Sender Office');
+        } else {
+            $("#lblOfficeSenderType").html('Receive Office');
+        }
+    }
+    function ValidReconcile() {
+        var IsValid = false;
+        var ReffNo = $("#ReffNo").val();
+
+        var ReDebit = $('label[for=TotDebit]').html();
+        var ReCredit = $('label[for=TotCredit]').html();
+        var VoucherType = $("#TransactionType").val();
+        var totDebit = Math.round(ReDebit);
+        var totCredit = Math.round(ReCredit);
+        var sl = 1;
+        var tbl = $("#tblTrxDetails tbody tr");
+        if (VoucherType != 'Ca')
+        {
+            if (ReffNo && (ReDebit == totCredit && ReCredit == totDebit)) {
+                IsValid = true;
+            } else if (ReffNo == '') {
+                IsValid = true;
+            } else {
+                IsValid = false;
+            }
+        }
+        else
+            IsValid = true;
+
+        var rData = {};
+        rData.IsValid = IsValid;
+        rData.totDebit = totDebit;
+        rData.totCredit = totCredit;
+        return rData;
+    }
+    //Reconcile
+
+    function CheckVoucherTypeBank() {
+        var vType = $("#TransactionType").val();
+        if (vType == "Ba") {
+            $("#txtBAccCode").prop("disabled", false)
+
+        }
+        else  {
+            $("#txtBAccCode").prop("disabled", true)
+            $("#BAccID").val('');
+            $("#txtBAccCode").val('');
+        }
+    }
+    function SaveVoucherDetail(Trx_Master_ID) {
+
+        var allDetails = new Array();
+        var $allInputs = $('input[type="text"]');
+
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allDetails[allDetails.length] = obj;
+        });
+
+        var $allId = $('input[type="hidden"]');
+
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+
+        var allTrx = new Object();
+        allTrx.allTrx = allDetails;
+        allTrx.allVoucherId = allIds;
+        allTrx.MasterId = Trx_Master_ID;
+
+        var json = JSON.stringify(allTrx);
+
+        //$body.addClass("loading");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveVoucherDetailsReconcile", "AccVoucherEntry", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (Result) {
+                $("#loading").hide();
+                //field clear
+
+                var msg;
+                if (Result != '') {
+                    msg = Result;
+                    $("#Reference").val('');
+                    $("#VoucherDesc").val('');
+                    $("#ReffNo").val('');
+                    $("#SenderOfficeId").val('');
+                    $("#TransactionType").val('');
+                    $('#tblTrxDetails').find('tbody').empty();
+                    $("#DivTableView").hide();
+                    $('#btnCreate').prop('disabled', true)
+                }
+                else {
+                    msg = 'Fail to save';
+                }
+
+                $("#dialog-message").html('<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>' + msg + '</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+
+            },
+            error: function (err) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $.alert.open('Error', request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    function SaveCashVoucher() {
+
+        var trx_dt = $("#TrxDate").val();
+        var offc_id = $("#OfficeID").val();
+        var voucher_type = $("#VoucherType").val();
+        var transaction_type = $("#TransactionType").val();
+        var reference = $("#Reference").val();
+        var voucher_desc = $("#VoucherDesc").val();
+        var rectify = $("#IsRectify").is(":checked") ? "true" : "false";
+
+
+        var allDetails = new Array();
+        var $allInputs = $('input[type="text"]');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allDetails[allDetails.length] = obj;
+        });
+
+        var $allId = $('input[type="hidden"]');
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        var allTrx = new Object();
+        allTrx.allTrx = allDetails;
+        allTrx.allVoucherId = allIds;
+
+        allTrx.trx_dt = trx_dt;
+        allTrx.offc_id = offc_id;
+        allTrx.transaction_type = transaction_type;
+        allTrx.reference = reference;
+        allTrx.voucher_desc = voucher_desc;
+        allTrx.rectify = rectify;
+
+        var json = JSON.stringify(allTrx);
+
+        //$body.addClass("loading");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveCashVoucherReconcile", "AccVoucherEntry", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (Result) {
+                $("#loading").hide();
+
+                var msg;
+                if (Result != '') {
+                    msg = Result;
+                    //field clear
+                    $("#Reference").val('');
+                    $("#VoucherDesc").val('');
+                    $('#tblTrxDetails').find('tbody').empty();
+                    $("#DivTableView").hide();
+                    $('#btnCreate').prop('disabled', true)
+                }
+                else {
+                    msg = 'Fail to save';
+                }
+
+                $("#dialog-message").html('<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>' + msg + '</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            },
+            error: function (err) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $.alert.open('Error', request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    function delete_row(row_index) {
+        //e.preventDefault();
+        var x = confirm("Are you sure you want to delete?");
+        if (x == true) {
+            var dtTable = $('#tblTrxDetails');
+            var allDetails = new Array();
+            var $allInputs = $('input[type="text"]');
+            $allInputs.each(function () {
+                var value = $(this).val();
+                var id = $(this).attr('id');
+                var obj = new Object();
+                obj.Key = id;
+                obj.Value = value;
+                allDetails[allDetails.length] = obj;
+            });
+            var $allId = $('input[type="hidden"]');
+            var allIds = new Array();
+            $allId.each(function () {
+                var value = $(this).val();
+                allIds[allIds.length] = value;
+            });
+
+            var allTrx = new Object();
+            allTrx.allTrx = allDetails;
+            allTrx.allVoucherId = allIds;
+            allTrx.row_index = row_index;
+
+            var json = JSON.stringify(allTrx);
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteTrxDetailReconcile", "AccVoucherEntry", "http")',
+                data: json,
+                dataType: 'json',
+                async: true,
+                success: function (List_AccVoucherEntryViewModel) {
+                    var tableBody = dtTable.find('tbody');
+                    var TotDebit = 0;
+                    var TotCredit = 0;
+                    tableBody.empty();
+                    $.each(List_AccVoucherEntryViewModel, function (index, acc) {
+                        var sl = index + 1;
+                        tableBody.append('<tr id="tableRow">' +
+                                             '<td style="text-align:center; padding-top: 5px; padding-bottom: 5px;">' + sl + '</td>' +
+                                             '<td>' + acc.AccFullName + '<input type="text" value="' + acc.AccFullName + '" style="display:none;" name="AccFullName" id="txtAccFullNameId' + sl + '" /></td>' +
+                                             '<td>' + acc.Narration + ' <input type="text" value="' + acc.Narration + '" style="display:none;" name="Narration" id="txtNarrationId' + sl + '" /></td>' +
+                                             '<td style="text-align:right;">' + acc.Debit + '<input type="text" value="' + acc.Debit + '" style="display:none;" name="Debit" id="txtDebitId' + sl + '" /></td>' +
+                                             '<td style="text-align:right;">' + acc.Credit + '<input type="text" value="' + acc.Credit + '" style="display:none;" name="Credit" id="txtCreditId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.AccID + '" style="display:none;" name="AccID" id="txtAccId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.AccMode + '" style="display:none;" name="AccMode" id="txtAccModeId' + sl + '" />' +
+                                                                '<input type="text" value="' + acc.TrxDetailsID + '" style="display:none;" name="TrxDetailsID" id="txtTrxDetailsID' + sl + '" />' +
+                                                                '<input type="hidden" value="' + sl + '" /></td>' +
+                                             '<td style="text-align:center;"><a href="javascript:;" onclick="delete_row(' + sl + ')"><img alt="Delete" src="../../Scripts/jtable/themes/basic/delete.png")"/></a></td>' +
+                                             '</tr>')
+                        TotDebit = TotDebit + acc.Debit;
+                        TotCredit = TotCredit + acc.Credit;
+                    })
+                    $('label[for=TotDebit]').html(TotDebit);
+                    $('label[for=TotCredit]').html(TotCredit);
+                    $("#DivTableView").show();
+                },
+                error: function (request, status, error) {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html(request.statusText);
+                    $.alert.open('Error', request.statusText);
+                    $("#dvMessage").show();
+                }
+            });
+        }
+        else {
+            return false;
+        }
+
+    }
+
+    function LoadBank(tranType, officeId, Office_Bank_Id) {
+        var ddl = $(`#${Office_Bank_Id}`);
+        ddl.html(`<option value="0">Please Select</option>`);
+        if (tranType == "Ca" || tranType == "Ba") {
+            var data = GenerateAjaxRequist("/FundTransfer/LoadOfficeBank", { tranType: tranType, officeid: officeId }, "GET");
+            $.each(data, function (id, option) {
+                ddl.append($('<option></option>').val(option.Value).html(option.Text));
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        var jsonObj = {}//, json_Sender = {}, json_Receiver = {}, json_HO = {};
+        var officecode = '@gBanker.Web.Helpers.SessionHelper.LoggedInOfficeDetail.OfficeCode'
+        var officeName = '@gBanker.Web.Helpers.SessionHelper.LoggedInOfficeDetail.OfficeName'
+
+        // Jornal
+        var _br_accID = 0, _ho_accID = 0, _br_acc_code = "", _ho_acc_code = "", _br_acc_name = "", _ho_acc_name = "";
+        var jr_sender_json = [],  jr_receiver_json = [];
+        // Jornal end
+
+        if (officecode == '99999')
+            $("#dvHOFund").show()
+        $('#TransactionType').change(function (e) {
+            var tranType = e.target.value;
+            var officeid = @gBanker.Web.Helpers.SessionHelper.LoginUserOfficeID;
+            if (tranType == "Jr") {
+                var data = GenerateAjaxRequist("/FundTransfer/LoadOffice", { v_type: tranType }, "GET");
+
+                var htm = "";
+                $.each(data, function (index, value) {
+                    htm += `<option value="${value.Value}">${value.Text}</option>`
+                });
+                $("#ddlReceiverOfficeId").html(htm)
+                $("#dvJr").show();
+                $("#dvSendBank,#dvReceiveBank,#dvNotJr").hide();
+            } else {
+                LoadBank(tranType, officeid, 'SenderBankAccId');
+                $("#ReceiverOfficeId").trigger("change");
+                $("#dvSendBank,#dvReceiveBank,#dvNotJr").show();
+                $("#dvJr").hide();
+
+            }
+
+        });
+
+        $("#ReceiverOfficeId").change(function (e) {
+
+            if (e.target.value) {
+                LoadBank($('#TransactionType').val(), e.target.value, 'ReceiverBankAccId');
+            }
+            else $(`#ReceiverBankAccId`).html(`<option value="0">Please Select</option>`);
+        });
+        $('#btnCreate').prop('disabled', true);
+
+        var MyReffNo = $("#ReffNo option:selected").val();
+        if (MyReffNo == "") {
+            $("#VoucherType option[value='Dr']").prop('selected', 'selected');
+        }
+        else {
+            $("#VoucherType option[value='Cr']").prop('selected', 'selected');
+        }
+        $("#VoucherType").prop("disabled", true);
+
+        $("#loading").hide();
+        $("#DivTableView").hide();
+        CheckVoucherType();
+        $("#VoucherNo").prop("readonly", true);
+        $("#VoucherType").change(function () {
+            CheckVoucherType();
+        });
+
+
+        $('#IsReconcile').change(function () {
+            ShowReconcile();
+        })
+        $("#ReffNo").change(function (e) {
+            e.preventDefault();
+            SenderOrReceiveReconcile();
+            ReffNoWiseOffice();
+            GetVoucher();
+
+            //
+            var KReffNo = $("#ReffNo option:selected").val();
+            if (KReffNo == "") {
+                $("#VoucherType option[value='Dr']").prop('selected', 'selected');
+            }
+            else {
+                $("#VoucherType option[value='Cr']").prop('selected', 'selected');
+            }
+            $("#VoucherType").prop("disabled", true);
+
+
+            var vType = $("#VoucherType").val();
+            if (vType == "Dr") {
+                $("#Debit").prop("readonly", false);
+                $("#Credit").prop("readonly", true);
+                $("#Credit").val(0);
+            }
+            else if (vType == "Cr") {
+                $("#Debit").prop("readonly", true);
+                $("#Credit").prop("readonly", false);
+                $("#Debit").val(0);
+            }
+
+        });
+
+
+
+        $("#txtAccCode").autocomplete({
+
+            source: function (request, response) {
+                if (request.term.length > 2) {
+                    var IsReconcile = $("#IsReconcile").is(":checked") ? true : false;
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("GetHOFundAccCode", "FundTransfer", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { acc_code: request.term, OfficeLevel: $("#OfficeLevel").val(), TransactionType: $("#TransactionType").val(), IsReconcile: true },
+                        minLength: 1,
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return {
+                                    value: item.AccID,
+                                    label: item.AccFullName
+                                };
+                            }))
+                        }
+                    })
+                }
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtAccCode").val(ui.item.label);
+                $("#AccID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item) {
+                    $("#txtAccCode").val(ui.item.label);
+                    $("#AccID").val(ui.item.value);
+                }
+                return false;
+            }
+        });
+
+
+        $('#btnClear').click(function (e) {
+            e.preventDefault();
+            $('#TransactionType,#SenderOfficeId,#Amount,#SenderBankAccId,#ReceiverOfficeId,#ReceiverBankAccId,#btnAdd').prop("disabled", false);
+            $('#btnCreate').prop("disabled", true);
+            $("#Amount,#AccID,#txtAccCode,#Narration,#Reference,select").val("");
+            //$("input,select").not(':input[type=button], :input[type=submit], :input[type=reset]').val("");
+            $("#dvInnerTable").html("");
+            $("#DivTableView").hide();
+        });
+        $('#btnAdd').click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+           
+            if ($('#TransactionType').val() == "Ba") {
+                BankVoucherGenerate();
+            }// Bank voucher End
+            // journal voucher
+            else if ($('#TransactionType').val() == "Jr") {
+                JornalVoucherGenerate();
+            }
+            else {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html('Transaction Type is required.');
+                $.alert.open('Error', 'Transaction Type is required.');
+                $("#dvMessage").show();
+            }
+        });
+
+        function JornalVoucherGenerate() {
+            if (officecode == "99999") {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html('Journal voucher stop when Head office is Sender office.');
+                $.alert.open('Error', 'Journal voucher stop when Head office is Sender office.');
+                $("#dvMessage").show();
+            }
+            else {
+                if ($("#ddlReceiverOfficeId").val() && $("#Amount").val() && $("#Narration").val()) {
+                    var amt = $("#Amount").val();
+                    var htm = "", htm_body = "";
+                    var officeID = $("#OfficeID").val();
+                    var ReceiverOfficeId = $("#ddlReceiverOfficeId").val();
+                    var ReceiverOffice = $("#ddlReceiverOfficeId option:selected").text()
+                    var Narration = $("#Narration").val();
+                    var FundAccID = $("#AccID").val();
+                    var FundAccCode = $("#txtAccCode").val();
+                    if (_br_accID == 0 || _ho_accID == 0) {
+
+                        var data = GenerateAjaxRequist("/FundTransfer/GetFundForJornal", null, "GET");
+
+                        _br_accID = data.br_acc.AccID; _ho_accID = data.ho_acc.AccID;
+                        _br_acc_code = data.br_acc.AccCode; _ho_acc_code = data.ho_acc.AccCode;
+                        _br_acc_name = data.br_acc.AccName; _ho_acc_name = data.ho_acc.AccName;
+                    }
+
+                    if (_br_accID > 0 && _ho_accID > 0) {
+                        var data = GenerateAjaxRequist("/FundTransfer/GetFundXAccHeadForJR", { mappingAccid: FundAccID }, "GET");
+                        if (data.status = 1) {
+                            var htm_header = `<thead class="tHead"><tr><th style="width: 5%; height:35px; vertical-align:middle; text-align:center;">Sl</th><th style="width: 20%; vertical-align:middle;">Account Code</th><th style="width: 40%; vertical-align:middle;">Description</th><th style="width: 15%; vertical-align:middle; text-align:right;">Debit</th><th style="width: 15%; vertical-align:middle; text-align:right;">Credit</th></tr></thead>`;
+                            var jr_sender = jr_sender_json.filter(function (element) { return element.Debit > 0; });
+                            jr_sender_json = [], inner_increment = 0, total_amt = 0;
+                            htm_body = "<tbody>";
+                            $.each(jr_sender, function (index, value) {
+                                inner_increment += 1;
+                                jr_sender_json.push({ "Sl": inner_increment, "OfficeID": officeID, "AccID": value.AccID, "AccName": value.AccName, "Narration": Narration, "Debit": value.Debit, "Credit": value.Credit });
+                                htm_body += `<tr><td style="text-align:center;">${inner_increment}</td><td>${value.AccName}</td><td>${value.Narration}</td><td style="text-align:right;">${value.Debit}</td><td style="text-align:right;">${value.Credit}</td></tr>`;
+                                total_amt +=parseFloat(value.Debit);
+                            });
+                            total_amt += parseFloat(amt);
+                            var s_acc_name = data.acc.AccCode + " " + data.acc.AccName
+                            inner_increment +=  1;
+                            jr_sender_json.push({ "Sl": inner_increment, "OfficeID": officeID, "AccID": FundAccID, "AccName": FundAccCode, "Narration": Narration ,"Debit": amt, "Credit": 0  })
+                            htm_body += `<tr><td style="text-align:center;">${inner_increment}</td><td>${FundAccCode}</td><td>${Narration}</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">0</td></tr>`;
+                            inner_increment += 1;
+                            var rec_off_code = $("#ddlReceiverOfficeId option:selected").text().split(" ")[0];
+                            jr_sender_json.push({ "Sl": inner_increment, "OfficeID": officeID, "AccID": _br_accID, "AccName": (_br_acc_code + " " + _br_acc_name), "Narration": `Fund Send to ${rec_off_code}`, "Debit": 0, "Credit": total_amt })
+                            htm_body += `<tr><td style="text-align:center;">${inner_increment}</td><td>${(_br_acc_code + " " + _br_acc_name)}</td><td>Fund Send to ${rec_off_code}</td><td style="text-align:right;">0</td><td style="text-align:right;">${total_amt}</td></tr>`;
+
+                            var htm_foot = `<tfoot><tr class="tFoot"><td>&nbsp;</td><td>&nbsp;</td><td style="text-align:right;">Total Amount</td><td style="text-align:right;">${total_amt}</td><td style="text-align:right;">${total_amt}</td></tr></tfoot>`;
+                            htm_body += "</tbody>"
+
+                            htm += `<div style="font-weight: bold;font-size: 18px;">Sender Voucher Office:${officecode + " " + officeName}</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+
+                            // HO Voucher
+                            var jr_receiver = jr_receiver_json.filter(function (element) { return element.Credit > 0; });
+                            jr_receiver_json = [], inner_increment = 0, total_amt = 0;;
+                            htm_body = "<tbody>"
+                            $.each(jr_receiver, function (index, value) {
+                                inner_increment += 1;
+                                jr_receiver_json.push({ "Sl": inner_increment, "OfficeID": officeID, "AccID": value.AccID, "AccName": value.AccName, "Narration": Narration, "Debit": 0, "Credit": value.Credit });
+                                htm_body += `<tr><td style="text-align:center;">${inner_increment}</td><td>${value.AccName}</td><td>${value.Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${value.Credit}</td></tr>`;
+                                total_amt += parseFloat(value.Credit);
+                            });
+                            total_amt += parseFloat(amt);
+                            inner_increment += 1;
+                            jr_receiver_json.push({ "Sl": (inner_increment), "OfficeID": $("#ddlReceiverOfficeId").val(), "AccID": data.acc.AccID, "AccName": s_acc_name , "Narration": Narration, "Debit": 0, "Credit": amt })
+                            htm_body += `<tr><td style="text-align:center;">${inner_increment}</td><td>${s_acc_name}</td><td>${Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${amt}</td></tr>`;
+                            inner_increment += 1;
+                            jr_receiver_json.push({ "Sl": (inner_increment), "OfficeID": $("#ddlReceiverOfficeId").val(), "AccID": _ho_accID, "AccName": (_ho_acc_code + " " + _ho_acc_name), "Narration": `Fund Received from ${officecode}`,"Debit": total_amt, "Credit": 0 })
+                            htm_body += `<tr><td style="text-align:center;">${inner_increment}</td><td>${(_ho_acc_code + " " + _ho_acc_name)}</td><td>Fund Received from ${officecode}</td><td style="text-align:right;">${total_amt}</td><td style="text-align:right;">0</td></tr>`;
+
+                            htm_body += "</tbody>"
+
+
+                            htm += `<div style="font-weight: bold;font-size: 18px;">Receiver Voucher Office:${ReceiverOffice}</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+                            $("#txtAccCode,#AccID,#Amount,#Narration").val('')
+                            $("#dvInnerTable").html(htm);
+                            $('#btnCreate').prop("disabled", false)
+                            $("#loading").hide();
+                            $("#DivTableView").show();
+                            $('#TransactionType,#ddlReceiverOfficeId').prop("disabled", true);
+                            
+                        }
+                        else {
+                            $("#loading").hide();
+                            $("#dvMessage").attr('class', 'failed');
+                            $("#dvMessage").html('Fund Accound Mapping not found');
+                            $("#dvMessage").show();
+                        }
+                    }
+                }
+            }
+        }
+
+        function BankVoucherGenerate() {
+            var amt = $("#Amount").val();
+            var htm = "", htm_body = "";
+            if ($("#SenderBankAccId").val() && $("#ReceiverOfficeId").val() && $("#ReceiverBankAccId").val() && $("#Amount").val() && $("#Narration").val()) {
+
+
+                var SenderBankAccId = $("#SenderBankAccId").val();
+                var SenderBankAccName = $("#SenderBankAccId option:selected").text()
+                var SenderBankAccId = $("#SenderBankAccId").val();
+                var ReceiverOfficeId = $("#ReceiverOfficeId").val();
+                var ReceiverOffice = $("#ReceiverOfficeId option:selected").text()
+                var ReceiverBankAccId = $("#ReceiverBankAccId").val();
+                var ReceiverBankAccName = $("#ReceiverBankAccId option:selected").text()
+                var FundAccID = $("#AccID").val();
+                var FundAccCode = $("#txtAccCode").val();
+                var officeID = $("#OfficeID").val();
+                var rec_code = ReceiverOffice.split(" ")[0]
+                htm = "", htm_body = "";
+                var Narration = $("#Narration").val();
+                var Reference = $("#Reference").val();
+
+                var htm_header = `<thead class="tHead"><tr><th style="width: 5%; height:35px; vertical-align:middle; text-align:center;">Sl</th><th style="width: 20%; vertical-align:middle;">Account Code</th><th style="width: 40%; vertical-align:middle;">Description</th><th style="width: 15%; vertical-align:middle; text-align:right;">Debit</th><th style="width: 15%; vertical-align:middle; text-align:right;">Credit</th></tr></thead>`;
+                var htm_foot = `<tfoot><tr class="tFoot"><td>&nbsp;</td><td>&nbsp;</td><td style="text-align:right;">Total Amount</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">${amt}</td></tr></tfoot>`;
+
+                // Sender
+                var sender = [
+                    { "Sl": 1, "OfficeID": officeID, "AccID": FundAccID, "Debit": amt, "Credit": 0 },
+                    { "Sl": 2, "OfficeID": officeID, "AccID": SenderBankAccId, "Debit": 0, "Credit": amt }
+                ];
+                htm_body = `<tbody><tr><td style="text-align:center;">1</td><td>${FundAccCode}</td><td>${Narration}</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">0</td></tr><tr><td style="text-align:center;">2</td><td>${SenderBankAccName}</td><td>${Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${amt}</td></tr></tbody>`
+                htm += `<div style="font-weight: bold;font-size: 18px;">Sender Voucher Office:${officecode} - ${officeName}</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+                // Receiver
+                //---------------------- BR to HO
+
+                if (rec_code == "99999") {
+                    var data = GenerateAjaxRequist("/FundTransfer/GetFundXAccHead", { sendOffID: officeID, senderOffCode: officecode, revOfficeID: ReceiverOfficeId, receiverOfficeCode: rec_code, mappingAccid: FundAccID }, "GET");
+
+                    if (data.status == 0) {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html('Fund Transfer Account Mapping not found.');
+                        $("#dvMessage").show();
+                        jsonObj = {};
+                        $("#dvInnerTable").html("");
+                        return false;
+                    }
+                    else {
+                        var receiver = [
+                            { "Sl": 1, "OfficeID": ReceiverOfficeId, "AccID": ReceiverBankAccId, "Debit": amt, "Credit": 0 },
+                            { "Sl": 2, "OfficeID": ReceiverOfficeId, "AccID": data.obj.AccID, "Debit": 0, "Credit": amt }
+                        ]
+                        var acc_name = data.obj.AccCode + " - " + data.obj.AccName;
+                        htm_body = `<tbody><tr><td style="text-align:center;">1</td><td>${ReceiverBankAccName}</td><td>${Narration}</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">0</td></tr><tr><td style="text-align:center;">2</td><td>${acc_name}</td><td>${Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${amt}</td></tr></tbody>`
+                        htm += `<div style="font-weight: bold;font-size: 18px;">Receiver Voucher Office:${ReceiverOffice}</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+                    }
+                }
+                //---------------------- BR to HO
+                //---------------------- HO to BR
+                else if (officecode == "99999") {
+                    var data = GenerateAjaxRequist("/FundTransfer/GetFundXAccHead", { sendOffID: officeID, senderOffCode: officecode, revOfficeID: ReceiverOfficeId, receiverOfficeCode: rec_code, mappingAccid: FundAccID }, "GET");
+
+                    if (data.status == 0) {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html('Fund Transfer Account Mapping not found.');
+                        $.alert.open('Error', 'Fund Transfer Account Mapping not found.');
+                        $("#dvMessage").show();
+                        jsonObj = {};
+                        $("#dvInnerTable").html("");
+                        return false;
+                    }
+                    else {
+                        var receiver = [
+                            { "Sl": 1, "OfficeID": ReceiverOfficeId, "AccID": ReceiverBankAccId, "Debit": amt, "Credit": 0 },
+                            { "Sl": 2, "OfficeID": ReceiverOfficeId, "AccID": data.obj.AccID , "Debit": 0, "Credit": amt }
+                        ]
+                        var acc_name = data.obj.AccCode + " - " + data.obj.AccName;
+                        htm_body = `<tbody><tr><td style="text-align:center;">1</td><td>${ReceiverBankAccName}</td><td>${Narration}</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">0</td></tr><tr><td style="text-align:center;">2</td><td>${acc_name}</td><td>${Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${amt}</td></tr></tbody>`
+                        htm += `<div style="font-weight: bold;font-size: 18px;">Receiver Voucher Office:${ReceiverOffice}</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+                    }
+                }
+                //---------------------- HO to BR
+                //---------------------- Branch to Branch
+                else {
+                    var receiver = [
+                        { "Sl": 1, "OfficeID": ReceiverOfficeId, "AccID": ReceiverBankAccId, "Debit": amt, "Credit": 0 },
+                        { "Sl": 2, "OfficeID": ReceiverOfficeId, "AccID": FundAccID, "Debit": 0, "Credit": amt }
+                    ]
+
+                    htm_body = `<tbody><tr><td style="text-align:center;">1</td><td>${ReceiverBankAccName}</td><td>${Narration}</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">0</td></tr><tr><td style="text-align:center;">2</td><td>${FundAccCode}</td><td>${Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${amt}</td></tr></tbody>`
+                    htm += `<div style="font-weight: bold;font-size: 18px;">Receiver Voucher Office:${ReceiverOffice}</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+                }
+
+                // HO
+                var ho_voucer = []
+
+
+                if (officecode != "99999" && rec_code != "99999") {
+                    var r_off_code = ReceiverOffice.split(" ")[0];
+
+                    var data = GenerateAjaxRequist("/FundTransfer/GetFundXAccHead", { sendOffID: officeID, senderOffCode: officecode, revOfficeID: ReceiverOfficeId, receiverOfficeCode: r_off_code, mappingAccid: FundAccID }, "GET");
+
+                    if (data.status == 0) {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html('Fund Transfer Account Mapping not found.');
+                        $.alert.open('Error', 'Fund Transfer Account Mapping not found.');
+                        $("#dvMessage").show();
+                        jsonObj = {};
+                        $("#dvInnerTable").html("");
+                        return false;
+                    }
+                    else {
+                        ho_voucer.push({ "Sl": 1, "OfficeID": data.ho_ID, "AccID": data.rev_obj.AccID, "Debit": amt, "Credit": 0 })
+                        ho_voucer.push({ "Sl": 2, "OfficeID": data.ho_ID, "AccID": data.snd_obj.AccID, "Debit": 0, "Credit": amt })
+                        var receiverAcc_name = data.rev_obj.AccCode + " - " + data.rev_obj.AccName;
+                        var senderacc_name = data.snd_obj.AccCode + " - " + data.snd_obj.AccName;
+                        htm_body = `<tbody><tr><td style="text-align:center;">1</td><td>${receiverAcc_name}</td><td>${Narration}</td><td style="text-align:right;">${amt}</td><td style="text-align:right;">0</td></tr><tr><td style="text-align:center;">2</td><td>${senderacc_name}</td><td>${Narration}</td><td style="text-align:right;">0</td><td style="text-align:right;">${amt}</td></tr></tbody>`
+                        htm += `<div style="font-weight: bold;font-size: 18px;">Head Office Voucher</div><table cellpadding="5" cellspacing="0" width="100%">${htm_header}${htm_body}${htm_foot}</table>`;
+                    }
+
+                }
+                jsonObj = { "TransactionType": $('#TransactionType').val(), "Date": $("#TrxDate").val(), "Narration": Narration, "Reference": Reference, "Sender": sender, "Receiver": receiver, "HO_vou": ho_voucer }
+
+                $("#dvInnerTable").html(htm);
+
+                $('#TransactionType,#SenderOfficeId,#Amount,#SenderBankAccId,#ReceiverOfficeId,#ReceiverBankAccId').prop("disabled", true);
+                $('#btnCreate').prop("disabled", false)
+                $('#btnAdd').prop("disabled", true)
+                $("#loading").hide();
+                $("#DivTableView").show();
+            } else {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html('All Fields are required.');
+                $.alert.open('Error', 'All Fields are required.');
+                $("#dvMessage").show();
+            }
+            _br_accID = 0; _ho_accID = 0;
+        }
+        $("#btnCreate").click(function (e) {
+            //Loader on Save
+            $('#btnCreate').prop('disabled', true)
+            $('#btnCreate').html("<i class='fa fa-spinner fa-pulse'></i> Saving...")
+
+            $("#loading").show();
+            e.preventDefault();
+            if ($('#TransactionType').val() == "Jr")
+                jsonObj = { "TransactionType": $('#TransactionType').val(), "Date": $("#TrxDate").val(), "Narration": Narration, "Reference": Reference, "Sender": jr_sender_json, "Receiver": jr_receiver_json};
+
+            var data = GenerateAjaxRequist("/FundTransfer/PostFundTransferVoucher", JSON.stringify({ model: jsonObj }), "POST");
+            if (data.status == 1) {
+                $("#dvInnerTable").html("");
+                $('#btnAdd').prop("disabled", false)
+            }
+            else
+                $('#btnCreate').prop('disabled', false)
+
+            $('#btnCreate').text("Save")
+            $("#loading").hide();
+            $("#dvMessage").attr('class', data.status == 1? 'success':'failed');
+            $("#dvMessage").html(data.message);
+            $.alert.open('Success', data.message);
+            $("#dvMessage").show();
+
+
+                $('#TransactionType,#SenderOfficeId,#Amount,#SenderBankAccId,#ReceiverOfficeId,#ReceiverBankAccId,#btnAdd').prop("disabled", false);
+                $('#btnCreate').prop("disabled", true);
+                $("#Amount,#AccID,#txtAccCode,#Narration,#Reference,select").val("");
+                //$("input,select").not(':input[type=button], :input[type=submit], :input[type=reset]').val("");
+                $("#dvInnerTable").html("");
+                $("#DivTableView").hide();
+
+
+        });
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+<h2 class="page-title">Fund Transfer</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div id="dialog-message" title="Message" style="display:none;">
+        <p>
+            <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+        </p>
+    </div>
+    <div class="">
+        <div class="row">
+            <div class="col-md-12">
+                @*<div class="form-group">*@
+                @Html.LabelFor(model => model.TrxDate, htmlAttributes: new { @class = "control-label" })
+                @Html.Label("" + ViewData["TransactionDate"], new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.TrxDate, "", new { @class = "text-danger" })
+                @Html.TextBoxFor(model => model.OfficeID, new { style = "display:none;" })
+                @Html.TextBoxFor(model => model.StrTrxDate, new { id = "TrxDate", Name = "TrxDate", style = "display:none;" })
+                @Html.TextBoxFor(model => model.OfficeLevel, new { style = "display:none;" })
+                @*</div>*@
+            </div>
+        </div>
+
+        <div class="row">
+            @*<div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ReffNo, htmlAttributes: new { @class = "control-label" })
+                        @Html.DropDownListFor(model => model.ReffNo, ReffNoList, new { @class = "form-control", @Disabled = true })
+                        @Html.ValidationMessageFor(model => model.ReffNo, "", new { @class = "text-danger" })
+                    </div>
+                </div>*@
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TransactionType, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.TransactionType, TrxType, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.TransactionType, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6" id="dvSendBank">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SenderBankAccId, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.SenderBankAccId, SenderBankList, new { @class = "form-control", @Required = "true" })
+                    @Html.ValidationMessageFor(model => model.SenderBankAccId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ReceiverOfficeId, htmlAttributes: new { @class = "control-label", @Id = "lblOfficeSenderType" })
+                    <div id="dvNotJr">
+                        @Html.DropDownListFor(model => model.ReceiverOfficeId, OfficeList, new { @class = "form-control", @Required = "true" })
+                    </div>
+                    <div id="dvJr" style="display:none;">
+                        <select class="form-control" id="ddlReceiverOfficeId"></select>
+                    </div>
+
+                    @Html.ValidationMessageFor(model => model.ReceiverOfficeId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6" id="dvReceiveBank">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.ReceiverBankAccId, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.ReceiverBankAccId, SenderBankList, new { @class = "form-control", @Required = "true" })
+                    @Html.ValidationMessageFor(model => model.ReceiverBankAccId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6" style="" id="dvHOFund">
+                <div class="form-group">
+                    <label class="control-label">Fund/ Acc. Code</label>
+                    @*@Html.LabelFor(model => model.AccID, htmlAttributes: new { @class = "control-label" })*@
+                    @Html.TextBox("txtAccCode", "", new { @class = "form-control", @autocomplete = "off" })
+                    @Html.TextBoxFor(model => model.AccID, new { style = "display:none;" })
+                    @Html.ValidationMessageFor(model => model.AccID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Debit Amount</label>
+                    @*@Html.LabelFor(model => model.Amount, htmlAttributes: new { @class = "control-label" })*@
+                    @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Description</label>
+                    @Html.EditorFor(model => model.Narration, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Narration, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.VoucherDesc)
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Reference, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Reference, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Reference, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="button" value="Add" id="btnAdd" class="btn btn-primary" />
+                    &nbsp;
+                    <input type="button" value="Clear" id="btnClear" class="btn btn-danger" />
+                    &nbsp;
+                    <button type="submit" class="btn btn-primary" id="btnCreate">Save</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div id="DivTableView">
+
+                        <div style="background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+                                            border-color: #2b5177; height:35px;">
+                            <div style="text-shadow: 0 1px 0 #666; color:#fff; font-weight:bold; padding-top:6px; padding-left:5px;">Transaction List</div>
+                        </div>
+                        <div id="dvInnerTable"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+}
+<script type="text/javascript" src="~/Content/js/CommonMethod.js"></script>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,182 @@
+﻿@model gBanker.Web.ViewModels.EmployeeHistoryViewModel
+
+@{
+    ViewBag.Title = "Office Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var OfficeList = Model == null ? null : Model.OfficeList;
+    var EmployeeList = Model == null ? null : Model.EmployeeList;
+    
+}
+<script src="http://code.jquery.com/ui/1.12.0/jquery-ui.js"
+        integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk="
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+
+    function clear()
+    {
+        $("#EmployeeID").prop('selectedIndex', 0);
+        $("#NewOfficeId").prop('selectedIndex', 0);
+        
+        $("#ReleaseDate").datepicker('setDate', new Date());
+        $("#JoiningDate").datepicker('setDate', new Date());
+         
+    }
+
+    //Save
+    function SaveData()
+    {
+        var OldOfficeId = $("#OldOfficeId").val();
+        var EmployeeID =  $("#EmployeeID :selected ").val();
+        var NewOfficeId = $("#NewOfficeId :selected ").val(); 
+        var ReleaseDate = $("#ReleaseDate").val();
+        var JoiningDate = $("#JoiningDate").val();
+
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateNew", "EmployeeHistory", "http")', 
+            data: {
+
+                OldOfficeId             : OldOfficeId   ,              
+                EmployeeID              : EmployeeID    ,   
+                NewOfficeId             : NewOfficeId   ,   
+                ReleaseDate             : ReleaseDate   ,   
+                JoiningDate             : JoiningDate           
+            },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+               // alert("Message", "Data Saved Successfully");
+                $.alert.open("Message", "Data Update Successfully");
+ 
+            },
+            error: function (request, status, error) {
+                //alert("Message", "Data Not Saved");
+                $.alert.open("Message", "Employee exists in Previous Office!!");
+ 
+            }
+
+        });
+    }
+
+
+
+
+
+
+    $(document).ready(function () {
+
+        $("#btnSave").click(function () {
+
+            SaveData();
+
+
+
+        });
+
+
+
+        $("#ReleaseDate").datepicker(
+            {
+                dateFormat: "dd-M-yy", 
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1920:2100"
+            });
+        $("#ReleaseDate").datepicker('setDate', new Date());
+
+        $("#JoiningDate").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+               changeMonth: true,
+               changeYear: true,
+               yearRange: "1920:2100"
+           });
+        $("#JoiningDate").datepicker('setDate', new Date());
+
+
+    });//End of Document Ready
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+<h2 class="page-title">Employee History Create</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+       
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OldOfficeCode, new { @class = "control-label col-md-4"})
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.OldOfficeCode, new { htmlAttributes = new { @class = "form-control", @readonly="readonly" } })
+                        
+                        @Html.HiddenFor(model => model.OldOfficeId)
+                    </div>
+                </div>
+            </div>
+           </div>
+        <br />
+        <div class="row"> 
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.EmployeeID, new { @class = "control-label col-md-4 required" })
+                    <div class="col-md-8">
+                        @Html.DropDownListFor(model => model.EmployeeID, EmployeeList, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NewOfficeId, new { @class = "control-label col-md-4 required" })
+                    <div class="col-md-8">
+                        @Html.DropDownListFor(model => model.NewOfficeId, OfficeList,  new { @class = "form-control" } )
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ReleaseDate, new { @class = "control-label col-md-4 required" })
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.ReleaseDate ,new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.JoiningDate, new { @class = "control-label col-md-4 required" })
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.JoiningDate, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="button" value="Save" id="btnSave"  class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+      
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

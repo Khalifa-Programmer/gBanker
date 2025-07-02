@@ -1,0 +1,113 @@
+﻿
+@{
+    ViewBag.Title = "Year End Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+
+    function OfficeSelection() {
+        if ($("#ddlHO").val() > 0) {
+            var office_id;
+            if ($("#ddlZone").val() > 0) {
+                if ($("#ddlArea").val() > 0) {
+                    if ($("#ddlOffice").val() > 0) {
+                        office_id = $("#ddlOffice").val();
+                    }
+                    else {
+                        office_id = $("#ddlArea").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlZone").val();
+                }
+            }
+            else {
+                office_id = $("#ddlHO").val();
+            }
+            return office_id;
+        }
+    }
+    function RunYearEndProcess() {
+        debugger;
+        var office_id = OfficeSelection();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("RunYearEndProcess", "FixedAsset", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data != "" || data != null) {
+                    $.alert.open("Success", data);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function DeleteYearEndProcess() {
+        debugger;
+        var office_id = OfficeSelection();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DeleteYearEndProcess", "FixedAsset", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data != "" || data != null) {
+                    $.alert.open("Success", data);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $("#btnRun").click(function () {
+            RunYearEndProcess();
+        });
+        $("#btnDelete").click(function () {
+            DeleteYearEndProcess();
+        });        
+        
+    });
+
+
+</script>
+
+<h2 class="page-title">Year End Process</h2>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            @Html.Partial("~/Views/Shared/_OfficeNavigationPane.cshtml")
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="button" value="Run Process" class="btn btn-primary" id="btnRun" />
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="button" value="Delete Process" class="btn btn-primary" id="btnDelete" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,114 @@
+﻿@model gBanker.Web.ViewModels.LoanLedgerViewModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+
+}
+
+<h2>Index</h2>
+
+<script type="text/javascript">
+
+    function displayLoanSummaryReport() {
+
+        var startDate = $("#startDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=LoanSummary&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+    function displayProductReport() {
+
+        var processtDate = $("#processtDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=Product&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+    $(document).ready(function () {
+
+        $("#OfficeId").change(function () {
+            var officeId = $("#OfficeId").val();
+        });
+        $("#CenterID").change(function () {
+            var centerId = $("#CenterID").val();
+        });
+      
+        $('#btnPreview').click(function (e) {
+            e.preventDefault();
+            var startDate = "24/11/2012";
+            var endDate = "30/11/2012";
+            var url = '/LoanLedger/GenerateLoanLedgerReport?officeId=' + $("#OfficeID").val() + '&centerId=' + $("#CenterID").val();
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            //var fromDate = $("#startDate").val();
+            //var toDate = $("#endDate").val();
+
+            //alert("sdsf");
+            $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            @*url: '@Url.Action("GenerateReport", "Product", "http")',
+            data: { fromDate: 'asd', toDate: 'gfh' },
+            dataType: 'json',*@
+            async: true,
+            success: function (data) {
+
+                //alert("success");
+                //window.open('@Url.Action("Index", "ReportViewer", "http")', 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+
+            }
+        });
+        });
+
+    });
+</script>
+
+
+<div>
+    <br />
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        <h2>Loan Ledger Report</h2>
+        <div class="form-group">
+            @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @*@Html.EditorFor(model => model.CenterID, new { htmlAttributes = new { @class = "form-control" } })*@
+                @Html.DropDownListFor(model => model.OfficeID, office)
+                @Html.Hidden("hfOfficeId")
+                @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.CenterID, center)
+                @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+    }
+    @* BusinessDate Date:  <input type="text" id="BusinessDate" /> <br />*@
+    <input id="btnPreview" type="button" value="Process" />
+    @* <input id="btnPreview" type="submit" value="Preview" />*@
+    @* <input type="button" value="Process" onclick="displayProductReport();" />*@
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}

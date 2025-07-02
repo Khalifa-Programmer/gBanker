@@ -1,0 +1,311 @@
+﻿@{
+    ViewBag.Title = "SMS Transaction Wise";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    .summaryTitle {
+        color: yellow !important;
+        padding-left: 5px !important;
+    }
+
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+
+    .findElement {
+        background-color: yellow;
+    }
+
+    .hidemsg {
+        display: none;
+    }
+    /*.input{
+        font-size:40px;
+    }*/
+</style>
+
+<script type="text/javascript">
+
+
+    function SendSMSExecute()
+    {
+
+        var Option = 0; //$("#WorkAreaName").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SMSEventExecute", "BulkSMS", "http")', //CreateWorkArea(string WorkAreaName)
+            data: { SMSType: Option },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Message Sent Successfully");
+                //clear();
+                //$('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "SMS Error");
+                //clear();
+                //$('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+
+    }
+
+
+
+    function GenerateSMSList() {
+
+        var Option = 0; //$("#WorkAreaName").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SMSEventGenerate", "BulkSMS", "http")', //CreateWorkArea(string WorkAreaName)
+            data: { SMSType: Option },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Message Sent Successfully");
+                //clear();
+                //$('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "SMS Error");
+                //clear();
+                //$('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+
+    }
+
+
+
+
+
+    $(document).ready(function () {
+
+        $('input[type=radio][name=Filter]').change(function () {
+
+            if (this.value == 'All') {
+                $('#btnSendSMS').show();
+                $('#grid2').jtable('load', { SearchType: 'All' });
+            }
+            else if (this.value == 'TransactionAlert') {
+                $('#btnSendSMS').show();
+                $('#grid2').jtable('load', { SearchType: 'TransactionAlert' });
+            }
+            else if (this.value == 'Disbursement') {
+                $('#btnSendSMS').show();
+                $('#grid2').jtable('load', { SearchType: 'Disbursement' });
+            }
+            
+        });
+
+     
+        $("#btnGenerateSMS").click(function () { // Reset form
+            $.alert.open('confirm', 'Are you sure Generate SMS?', function (button) {
+                if (button == 'yes') {
+                    GenerateSMSList();
+
+                    return true;
+                }
+                else {
+
+                    return false;
+                }
+            });
+
+        });
+
+
+        $("#btnSendSMS").click(function () { // Reset form
+            $.alert.open('confirm', 'Are you sure Execute SMS?', function (button) {
+                if (button == 'yes') {
+                    SendSMSExecute();
+                    //reloadGrid2();
+                    return true;
+                }
+                else {
+
+                    return false;
+                }
+            });
+
+        });
+
+        $('#grid2').jtable({
+            // title: 'Investor List',
+            paging: true,
+            pageSize: 500,
+            sorting: false,
+            defaultSorting: 'Name ASC',
+            actions: {
+               // listAction: '/BulkSMS/GetSMSList'
+                listAction: '/BulkSMS/TransactionGetSMSList'
+            },
+            fields: {
+                //rowSl: {
+                //    title: 'SI No',
+                //    width: '5%',
+                //    display: false
+                //},
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '5%'
+                },
+                MessageDetails: {
+                    title: 'Message Details',
+                    width: '30%'
+                },
+                PhoneNo: {
+                    title: 'Phone No',
+                    width: '5%'
+                },
+
+                Length: {
+                    title: 'Length',
+                    width: '3%'
+                },
+                SMSCount: {
+                    title: 'SMS Count',
+                    width: '5%'
+                },
+                //MemberCode: {
+                //    title: 'MemberCode',
+                //    width: '5%'
+                //},
+                //DisburseDate: {
+                //    title: 'Sent Date',
+                //    width: '6%'
+                //}
+
+            }
+        });
+        reloadGrid2();
+        //$('#grid').jtable('load');
+        $("#filterColumn").change(function () {
+            if ($(this).val() === "ViewAll") {
+                $("#filterValue").val('');
+            }
+        });
+
+        function reloadGrid2() {
+            //$("#loading").show();
+            $('#grid2').jtable('load', { SearchType: 'ALL', DateFromValue: $('#DateFromValue').val(), DateToValue: $('#DateToValue').val() });
+
+            //$('#grid2').jtable('load', { SearchType: $('option:selected', $('#option')).val(), filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            //$("#loading").hide();
+        }
+
+
+
+
+
+
+    }); // END Document Ready
+
+
+</script>
+
+
+
+<h2 class="page-title">Transaction Wise SMS List</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="container-fluid">
+          
+            <div class="row">
+                <font style="font-size:large; font-family:'Times New Roman', Times, serif;">
+                    <label class="knob-label"> Filter Type</label>
+                </font>
+                <font style="font-size:large; font-family:'Times New Roman', Times, serif;">
+                    @*<label> <input type="radio" name="Filter" value="Pending"> Pending  </label>  &nbsp;*@
+                    <label> <input type="radio" name="Filter" value="All" checked> All  </label>  &nbsp;
+                    <label><input type="radio" name="Filter" value="TransactionAlert" > Transaction Alert  </label>  &nbsp;
+                    <label><input type="radio" name="Filter" value="Disbursement"> Disbursement </label>
+                </font>
+
+
+                <input type="button" value="Filter" id="" class="btn btn-danger" style="display:none" />
+
+            </div>
+
+            <br />
+
+            <div class="row">
+                <input type="button" value="Generate SMS" id="btnGenerateSMS" class="btn btn-danger" style="display:none" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="col-sm-2" style="display:none;">
+                        <select class="form-control col-sm-2" id="option">
+                            <option value="disburse" selected="selected"> Disburse </option>
+                            <option value="loan"> Loan  </option>
+                            <option value="saving"> Savings  </option>
+                        </select>
+                    </div>
+                    <input type="button" value="Send SMS" id="btnSendSMS" class="btn btn-danger" />
+                    &nbsp;
+                </div>
+                &nbsp;
+                <div id="grid2">
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+}

@@ -1,0 +1,70 @@
+﻿@model gBanker.Web.ViewModels.SurveyMemberMasterViewModel
+@{
+    var IsBloodRelatedList = Model == null ? null : Model.IsBloodRelatedList;
+}   
+
+
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-horizontal content-padding">
+        <div>
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2 required">SurveyCode</label>
+                    <div class="col-md-4">
+                        @Html.TextBoxFor(model => model.SurveyCode, new { @class = "form-control required", @readonly = "true" })
+                    </div>
+                    
+                    @Html.LabelFor(model => model.IsBloodRelated, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.IsBloodRelated, IsBloodRelatedList, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="MemberCode">Member Code</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.MemberCode, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.MemberCode, "", new { @class = "text-danger" })
+                    </div>
+                    <input type="button" id="search" value="search" />
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="Name">Name</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+
+                    <label class="control-label col-md-2" for="Address">Address</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="Contact">Contact</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.Contact, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Contact, "", new { @class = "text-danger" })
+                    </div>
+
+                    <label class="control-label col-md-2" for="Remarks">Remarks</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.Remarks, new {htmlAttributes = new {@class = "form-control RemarksSurveyKnownMember" } })
+                        @Html.ValidationMessageFor(model => model.Remarks, "", new {@class = "text-danger"})
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

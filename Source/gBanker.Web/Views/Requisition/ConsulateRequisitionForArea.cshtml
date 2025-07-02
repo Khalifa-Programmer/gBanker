@@ -1,0 +1,365 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style>
+    form {
+        margin: 20px 0;
+    }
+
+    select, input, button {
+        padding: 5px;
+    }
+
+        select, input[type=text], input[type=number], textarea {
+            width: 160px;
+            height: 35px;
+            padding: 5px;
+        }
+
+    div.jtable-main-container table.jtable tbody > tr.jtable-row-selected {
+        text-shadow: 0 !important;
+        color: black;
+    }
+</style>
+<script type="text/javascript">
+    GetRequsitionNo();
+    function GetRequsitionNo() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            //url: '/Requisition/GetRequsitionNo',
+            url: '/Common/NoGenerate?prefix=CR',
+            type: "Get",
+            dataType: 'json',
+            success: function (data) {
+                //debugger
+                if (data.status == 1)
+                    $("#lblRequsition").text(data.Result)
+                else
+                    location.reload(true);
+            },
+            error: function (data) {
+                $.alert.open("Error", data.message);
+            }
+        });
+
+    }
+    $.ajax({
+        contentType: "application/json; charset=utf-8",
+        url: '/Common/GetUpperOffice',
+        type: "Get",
+        dataType: 'json',
+        async: true,
+        success: function (data) {
+            if (data.Result == "OK")
+                for (var i = 0; i < data.Records.length; i++) {
+                    $("#ddlStore").append('<option value=' + data.Records[i].WarehouseID + '>'
+                        + data.Records[i].WarehouseName + '</option>')
+                }
+            else if (data.Result == "Error")
+                $.alert.open("Error", data.Message);
+            else if (data.Result == "Relogin")
+                location.reload();
+        },
+        error: function (data) {
+            $.alert.open("Error", data.message);
+        }
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+
+    }
+    function UpdateSending(dID) {
+        var data = GenerateAjaxRequist('/Requisition/RequisitionDetailSendingQtyUpdate', JSON.stringify({ dID: dID, sendingQty: $('#txt' + dID).val() }), "POST")
+        if (data.Result == 1)
+            reloadGrid();
+    }
+    function GetDetailUpdate(dIDs, itemID) {
+
+        var url = '/Requisition/GetConsulateRequisitionDetail?DetailsIDs=' + dIDs + '&itemID=' + itemID + ''
+        $('#ItemGrid').jtable({
+            // title: 'Product List',
+            paging: false,
+            //pageSize: false,
+            sorting: true,
+            defaultSorting: 'RequsitionDetailsID ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function..." + dIDs);
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            dataType: 'json',
+                            cache: false,
+                            data: postData,
+                            success: function (data) {
+                                //debugger
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                RequsitionDetailsID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                RequsitionNo: {
+                    title: 'Requsition No',
+                    width: '10%'
+                },
+                WarehouseName: {
+                    title: 'Store Name',
+                    width: '20%'
+                },
+                OfficeName: {
+                    title: 'Office',
+                    width: '15%'
+                },
+                RequestQty: {
+                    title: 'Request Qty',
+                    width: '15%'
+                },
+                SendQty: {
+                    title: 'Send Qty.',
+                    width: '15%',
+                    display: function (data) {
+                        return '<input type="number" id="txt' + data.record.RequsitionDetailsID + '" style="width:80px" value="' + data.record.SendingQty + '"/>'
+                    }
+                },
+                CommandLink: {
+                    title: "Command",
+                    display: function (data) {
+                        return '<div class="text-center view-link">' +
+                            '<a href="#" title="Quantity Details" onclick="UpdateSending(' + data.record.RequsitionDetailsID + ')"><i class="fa fa-plus"></i></a>'
+                        '</div>';
+                    }
+                }
+            },
+        });
+
+        $('#ItemGrid').jtable('load');
+        $('#dvMode').modal('show');
+    }
+    $(document).ready(function () {
+        var data = GenerateAjaxRequist('/Store/GetStoreInfoXOffice', null, "Get")
+        var str = "";
+        for (var i = 0; i < data.Records.length; i++) {
+            if ((i + 1) < data.Records.length)
+                str = str + data.Records[i].WarehouseName + ", ";
+            else
+                str = str + data.Records[i].WarehouseName;
+        }
+        $("#lblOffice").text(str);
+        $("#hdnFromStoreID").val(data.Records[0].WarehouseID)
+
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: false,
+            pageSize: false,
+            sorting: false,
+            selecting: true, //Enable selecting
+            multiselect: true, //Allow multiple selecting
+            selectingCheckboxes: true,
+            defaultSorting: 'ItemID ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Requisition/GetRequisitionWiseTotalQtyInItem?storeID=' + $("#hdnFromStoreID").val() + '',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                ItemID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                RDetailsID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ItemCode: {
+                    title: 'Item Code',
+                    width: '10%'
+
+                },
+                ItemName: {
+                    title: 'Item Name',
+                    width: '20%'
+                },
+                StockBalance: {
+                    title: 'Stock Balance',
+                    width: '15%'
+                },
+                RequestQty: {
+                    title: 'Request Qty.',
+                    width: '15%'
+                },
+                SendingQty: {
+                    title: 'Send Qty.',
+                    width: '15%'
+                },
+                CommandLink: {
+                    title: "Command",
+                    display: function (data) {
+                        return '<div class="text-center view-link">' +
+                            '<a href="#" title="Quantity Details" onclick="GetDetailUpdate(\'' + data.record.RDetailsID + '\',' + data.record.ItemID + ')"><i class="fa fa-binoculars"></i></a>'
+                        '</div>';
+                    }
+                }
+            },
+        });
+
+        reloadGrid();
+
+
+        $("#btnSave").click(function () {
+            //debugger
+            jsonObj = [];
+            if ($("#txtRequsitionDate").val()) {
+                $('#grid').jtable('selectedRows').each(function () {
+
+                    item = {}
+                    item["DetailsIDs"] = $(this).context.dataset["recordKey"];
+                    item["ItemID"] = 0;//$(this).context.cells[0].innerText;
+                    item["Qty"] = $(this).context.cells[4].innerText;
+                    item["SendingQty"] = $(this).context.cells[5].innerText;
+                    item["Remarks"] = '';
+                    jsonObj.push(item);
+
+                });
+                dataObject = {
+                    FromStoreID: $("#hdnFromStoreID").val(),
+                    RequisitionNo: $("#lblRequsition").text(),
+                    ReceiverStoreID: $("#ddlStore").val(),
+                    SenderStoreID: $("#hdnFromStoreID").val(),
+                    SenderDate: $("#txtRequsitionDate").val(),
+                    ReceiverStatusChangeDate: $("#txtRequsitionDate").val(),
+                    ReceiverStoreStatus: "Pending"
+                }
+            }
+
+            if (jsonObj.length > 0) {
+                var data = GenerateAjaxRequist('/Requisition/CreateConsulateRequsitionForArea', JSON.stringify({ mObj: dataObject, dObj: jsonObj }), "POST")
+                if (data.Result == "Login Fail") {
+                    $.alert.open(data.Result, data.message);
+                    location.reload(true);
+                }
+                else if (data.Result == "Fail")
+                    $.alert.open(data.Result, data.message);
+                else if (data.Result == "Success") {
+                    $.alert.open(data.Result, data.message);
+                    GetRequsitionNo();
+                    reloadGrid();
+                }
+            }
+            else
+                $.alert.open("Error", "Request not found");
+        });
+        $("#txtRequsitionDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale"
+       });
+        //$("#txtRequsitionDate").val($.datepicker.formatDate('dd-M-yy', new Date()))
+        $("#txtRequsitionDate").val('@ViewBag.TransactionDate')
+    });
+</script>
+@if (ViewBag.OfficeLevel == 3)
+{
+    @Html.ActionLink("Back", "ConsulateRequisitionDetails", "Requisition", null, new { @class = "btn btn-warning btn-sm pull-right" })
+    <h2 class="page-title">Consulate Requisition</h2>
+    <div class="form-horizontal">
+        <table style="font-size:medium">
+            <tr>
+                <td>Requisition No</td>
+                <td>:</td>
+                <td>
+                    <label class="control-label" id="lblRequsition">  </label>
+                    <input type="hidden" id="hdnFromStoreID" />
+                </td>
+            </tr>
+            <tr>
+                <td>Store</td>
+                <td>:</td>
+                <td><label class="control-label" id="lblOffice">  </label></td>
+            </tr>
+            <tr>
+                <td>Request Store</td>
+                <td>:</td>
+                <td><select id="ddlStore"> </select></td>
+            </tr>
+            <tr>
+                <td>Requisition Date</td>
+                <td>:</td>
+                <td><input type="text" id="txtRequsitionDate" class="form-control" /></td>
+            </tr>
+        </table>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+            <br />
+            <div class="col-md-10"></div>
+            <div class="col-md-1"><button id="btnSave" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Send</button></div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+    <br />
+    <br />
+
+    <div class="modal fade" id="dvMode" tabindex="-1" role="dialog" aria-labelledby="dvMode" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h4 id="hItem"></h4>
+                </div>
+                <div class="modal-body">
+                    <div id="dvmessage"></div>
+                    <div id="ItemGrid"></div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <h2>Your Office is not Authorized</h2>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}

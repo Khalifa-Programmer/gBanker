@@ -1,0 +1,47 @@
+﻿@model gBanker.Web.ViewModels.SurveyMemberMasterViewModel
+@{
+    var AssetIdList = Model == null ? null : Model.AssetIdList;
+}
+
+
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-horizontal content-padding">
+        <div>
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2 required">SurveyCode</label>
+                    <div class="col-md-4">
+                        @Html.TextBoxFor(model => model.SurveyCode, new { @class = "form-control required", @readonly = "true" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AssetId, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownListFor(model => model.AssetId, AssetIdList, new { @class = "form-control" })
+                    </div>
+
+                    <label class="control-label col-md-2" for="AssetAmount">Asset Amount</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.AssetAmount, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.AssetAmount, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="Remarks">Remarks</label>
+                    <div class="col-md-4">
+                        @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @class = "form-control RemarksSurveyMemberAsset" } })
+                        @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

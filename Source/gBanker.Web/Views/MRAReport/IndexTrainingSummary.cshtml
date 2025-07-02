@@ -1,0 +1,162 @@
+﻿@model gBanker.Web.ViewModels.TrainingViewModel
+
+@{
+    ViewBag.Title = "Training Activity Details";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        GetTrainingSummery();
+    });
+    function GetTrainingSummery() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MRAReport/GetTrainingSummery?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                TrainingID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                //OrgId: {
+                //    key: true,
+                //    list: false,
+                //    create: false,
+                //    edit: false
+                //},
+                //OfficeID: {
+                //    key: true,
+                //    list: false,
+                //    create: false,
+                //    edit: false
+                //},
+                TrainingType: {
+                    width: '5%',
+                    title: 'TrainingType',
+                },
+                TrainingDate: {
+                    width: '7%',
+                    title: 'TrainingDate',
+                },
+                NoOfParticipants: {
+                    width: '5%',
+                    title: 'NoOfParticipants',
+                },
+                CourseName: {
+                    width: '5%',
+                    title: 'CourseName',
+                },
+                CostGeneralFund: {
+                    width: '5%',
+                    title: 'CostGeneralFund',
+                },
+                CostMicroFinance: {
+                    width: '5%',
+                    title: 'CostMicroFinance',
+                },
+                CostDonation: {
+                    width: '5%',
+                    title: 'CostDonation',
+                },
+                OtherCostSource1: {
+                    width: '5%',
+                    title: 'OtherCostSource1',
+                },
+                CostAmount1: {
+                    width: '5%',
+                    title: 'CostAmount1',
+                },
+                OtherCostSource2: {
+                    width: '5%',
+                    title: 'OtherCostSource2',
+                },
+                CostAmount2: {
+                    width: '5%',
+                    title: 'CostAmount2',
+                },
+                OtherCostSource3: {
+                    width: '5%',
+                    title: 'OtherCostSource3',
+                },
+                CostAmount3: {
+                    width: '5%',
+                    title: 'CostAmount3',
+                },                
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        debugger;
+                        return "<div class='text-center'><a href='/MRAReport/EditTrainingSummery?TrainingID=" + data.record.TrainingID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteTrainingSummery(' + data.record.TrainingID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    }
+    function DeleteTrainingSummery(TrainingID) {
+        if (confirm("Are you sure you want to delete this record?") == true) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DeleteTrainingSummery", "MRAReport", "http")',
+                data: { TrainingID: TrainingID },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    $('#grid').jtable('load');
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+            return true;
+        }
+        else {
+            hiddenField.value = 'false';
+            return false;
+        }
+    }
+</script>
+@Html.ActionLink("Add New", "CreateTrainingSummary", null, new { @class = "pull-right" })
+<h2 class="page-title">Training Summery</h2>
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

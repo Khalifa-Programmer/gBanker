@@ -1,0 +1,104 @@
+﻿@model gBanker.Web.ViewModels.MonthlyBenifitViewModel
+
+@{
+    ViewBag.Title = "Monthly Benifit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.IndividualProductList;
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        // Product Picker Multiple 
+        $('.ddl-select-picker').selectpicker();
+
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true
+            });
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true
+            });
+
+        $('#btnView').click(function (e) {
+            e.preventDefault();
+
+            
+            var dateFrom = $('#txtFromDt').val();
+            var dateTo = $('#txtToDt').val();
+            var product = $('#ProductID').val();
+            //var model = {
+            //    dateFrom : dateFrom,
+            //    dateTo : dateTo,
+            //    productIds : product
+            //};
+
+            console.log(product);
+
+            if (dateFrom != '' && dateTo != '' && product != null) {
+                var url = '/GroupwiseReport/GenerateMonthlybenifitReport?dateFrom=' + dateFrom + '&dateTo=' + dateTo + '&productIds=' + product;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            } else {
+                $.alert.open("Please select Date between & Product.")
+            }
+        });
+    });
+</script>
+
+<h2 class="page-title">Monthly Benifit Report</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @multiple = "multiple", @class = "ddl-select-picker form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+
+    <link href="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.css" rel="stylesheet" />
+    <script src="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.js"></script>
+}

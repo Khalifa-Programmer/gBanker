@@ -1,0 +1,165 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberBlackListViewModel>
+@{
+    ViewBag.Title = "Member Black List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var SrNo = 0;
+        $('#grid').jtable({
+            // title: 'Member Black List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberBlackList/GetMemberBlackList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                MemberBlackListID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                SrNo: {
+                    title: 'Sr No',
+                    width: '5%'
+                },
+                CenterID: {
+                    title: 'Center ID',
+                    width: '10%',
+                    list: false,
+                },
+                Center: {
+                    title: 'Center',
+                    width: '10%'
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '10%'
+                },
+                MemberName: {
+                    title: 'Member Name',
+                    width: '10%'
+                },
+                PhoneNo: {
+                    title: 'Phone No',
+                    width: '10%'
+                },
+                NationalID: {
+                    title: 'National ID',
+                    width: '10%'
+                },
+                SmartCard: {
+                    title: 'SmartCard',
+                    width: '10%'
+                },
+                OtherIdNo: {
+                    title: 'Other-Id No',
+                    width: '10%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/MemberBlackList/Edit/" + data.record.MemberBlackListID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="javascript:void(0)" OnClick="Delete(' + data.record.MemberBlackListID + ')"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            },
+            recordsLoaded: function (event, data) {
+                var pagenumber = $('.jtable-goto-page select option:selected').val();
+                var pagesize = $('.jtable-page-size-change select option:selected').val();
+                var SrNo = pagesize * pagenumber - pagesize;
+                if (data.records) {
+                    $.each(data.records, function (index, record) {
+                        var row = $('#grid').jtable('getRowByKey', record.MemberBlackListID);
+                        SrNo++;
+                        row.find('td:eq(0)').text(SrNo);
+                    });
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    });
+
+    //Delete
+    function Delete(id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                DeleteMemberBlackList(id);
+                $('#grid').jtable('load');
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function DeleteMemberBlackList(id) {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/MemberBlackList/DeleteMemberBlackList',
+            data: { MemberBlackListID: id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Delete Successfully");
+                //$('#grid1').jtable('load', { DateFromValue: $('#DateFromValue').val(), DateToValue: $('#DateToValue').val() });
+                $('#grid').jtable('load');
+            },
+            error: function () {
+                $.alert.open("Message", "Error Occured to Delete!");
+            }
+        });
+    }
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Member Black List</h2>
+
+
+<div class="row">
+    <div id="grid"></div>
+</div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

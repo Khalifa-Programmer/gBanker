@@ -1,0 +1,318 @@
+﻿@{
+    ViewBag.Title = "Dispose";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+@if (ViewBag.OfficeLevel == 3)
+{
+    <h2> Your Office is not Authorized </h2>
+}
+else
+{
+    if (ViewBag.allowMultipleoffice == 1)
+    {
+        <style type="text/css">
+            .lblradio {
+                clear: none;
+                float: left;
+                display: block;
+                padding: 0px 1px 0px 10px;
+            }
+
+            input[type=radio],
+            input.radio {
+                float: left;
+                clear: none;
+                margin: 2px 0 0 2px;
+            }
+
+            .lblpopup {
+                margin-top: 9px;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function () {
+                $(".datepicker").datepicker(
+              {
+                  dateFormat: "dd-M-yy",
+                  showAnim: "scale",
+              });
+                jQuery("#txtOffice").on('input propertychange paste', function () {
+
+                    var availableTags = [];
+                    if ($(this).val() && $(this).val().length > 2) {
+                        var param = JSON.stringify({ officeCode: $(this).val() });
+                        var data = GenerateAjaxRequist('/Common/GetAllBranch', param, "POST")
+                        //debugger
+                        if (data.Message == "LogOut")
+                            location.reload(true);
+                        else {
+                            for (var i = 0; i < data.Records.length; i++) {
+                                availableTags.push(data.Records[i])
+                            }
+                        }
+                    }
+
+                    $("#txtOffice").autocomplete({
+                        source: availableTags,
+                        select: function (event, ui) {
+                            $("#hdnOffice").val(ui.item.label.split('-')[0])
+                        }
+                    });
+                });
+
+                $("#btnSearch").click(function (e) {
+                    e.preventDefault();
+                    var msg = "";
+                    //debugger
+                    if ($("input[type='radio']:checked").val()) {
+                        if ($("#txtOffice").val()) {
+                            if ($("#txtDate").val() || $("#txtStorSlNo").val()) {
+                                $("#dvmessage").html("");
+
+                                var param = JSON.stringify(
+                                    {
+                                        storeType: $("input[type='radio']:checked").val()
+                                        , date: $('#txtDate').val()
+                                        , slno: $('#txtStorSlNo').val()
+                                        , officeCode: $('#hdnOffice').val()
+                                    });
+
+
+
+
+                                $('#dvUpdateDate').hide();
+                                //if (data.TotalRecordCount > 0) {
+                                if ($('#txtStorSlNo').val())
+                                    $('#dvUpdateDate').show();
+
+                                $('#ItemGrid').jtable({
+                                    paging: false,
+                                    sorting: false,
+                                    //cache: false,
+                                    defaultSorting: 'ID ASC',
+                                    actions: {
+                                        listAction: function (postData, jtParams) {
+                                            //console.log(postData)
+                                            console.log(postData)
+                                            //debugger
+                                            data = GenerateAjaxRequist('/Store/StoreTypeXDetails', JSON.stringify(postData), 'POST');
+                                            return $.Deferred(function ($dfd) {
+                                                //debugger
+                                                //console.log(postData)
+
+                                                $dfd.resolve(data);
+                                            });
+                                        },
+                                    },
+                                    fields: {
+                                        ID: {
+                                            key: true,
+                                            list: false,
+                                            create: false,
+                                            edit: false
+                                        },
+                                        StoreNo: {
+                                            title: 'Store Sl No',
+                                            width: '11%'
+                                        },
+                                        ChallanNo: {
+                                            title: 'Challan No',
+                                            width: '11%'
+                                        },
+                                        ItemName: {
+                                            title: 'Item Name',
+                                            width: '18%',
+                                            display:function(data){
+                                                return '(' + data.record.ItemCode + ') ' + data.record.ItemName
+                                            }
+                                        },
+                                        StockInOrOutDate: {
+                                            title: 'Date',
+                                            width: '11%',
+                                            type: 'date',
+                                            displayFormat: 'dd-mm-yy'
+                                        },
+                                        StockType: {
+                                            title: 'Stock Type',
+                                            width: '10%',
+                                            display: function (data) {
+                                                return data.record.StockType == "I" ? "In" : data.record.StockType == "O" ? "Out" : data.record.StockType == "D" ? "Dispose" : "";
+                                            }
+                                        },
+                                        Qty: {
+                                            title: 'Qty',
+                                            width: '9%'
+                                        },
+                                        UnitPrice: {
+                                            title: 'Unit Price',
+                                            width: '10%',
+                                            display: function (data) {
+                                                return (data.record.StockBalance > 0 ? "<input type='number' id='txtUPrice" + data.record.ID + "' min='0'  value='" + data.record.UnitPrice + "' style='padding:4px;width:100%'/>" : "")
+                                            }
+                                        },
+
+                                        StockBalance: {
+                                            title: 'Balance',
+                                            width: '10%'
+                                        },
+
+                                        ApprovedQty: {
+                                            title: 'App. Qty',
+                                            width: '10%',
+                                            display: function (data) {
+                                                return (data.record.StockBalance > 0 ? "<input type='number' id='txtApv" + data.record.ID + "' min='0' max='" + data.record.StockBalance + "' value='" + data.record.StockBalance + "' style='padding:4px;width:100%'/>" : "")
+                                            }
+                                        },
+                                        CommandLink: {
+                                            title: "Command",
+                                            display: function (data) {
+                                                return (data.record.StockBalance > 0 ? '<div class="text-center view-link">' +
+                                                    '<a href="#" title="Update" onclick="UpdateAndDeleteStoreSending(' + data.record.ID + ',' + "'u'" + ')"><i class="fa fa-check"></i></a> | ' +
+                                                '<a href="#" title="Delete" onclick="UpdateAndDeleteStoreSending(' + data.record.ID + ',' + "'d'" + ')"><i class="fa fa-trash"></i></a>' +
+                                                '</div>' : "");
+                                            }
+                                        }
+                                    }
+                                });
+
+                                $('#ItemGrid').jtable('load', {
+                                    storeType: $("input[type='radio']:checked").val()
+                                        , date: $('#txtDate').val()
+                                        , slno: $('#txtStorSlNo').val()
+                                        , officeCode: $('#hdnOffice').val()
+                                });
+                                //}
+
+                                //$('#ItemGrid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+
+                            }
+                            else
+                                msg = "Store Sl no Or Store Date Select";
+                        }
+                        else
+                            msg = "Office Select";
+                    }
+                    else
+                        msg = "Store Type Select";
+                    if (msg)
+                        $.alert.open("Error", msg);
+                });
+
+                $("#btnUpdate").click(function (e) {
+                    e.preventDefault();
+                    if ($("#txtStorSlNo").val() && $("#txtUpdateStoreDate").val()) {
+                        var param = JSON.stringify(
+                            {
+                                officeCode: $('#hdnOffice').val(),
+                                storeType: $("input[type='radio']:checked").val(),
+                                storeSlno: $("#txtStorSlNo").val(),
+                                updateDate: $("#txtUpdateStoreDate").val()
+                            });
+                        var data = GenerateAjaxRequist('/Store/StoreDateUpdate', param, "POST");
+                        if (data == "Success") {
+                            $.alert.open("Success", data);
+                            $('#ItemGrid').jtable('load', {
+                                storeType: $("input[type='radio']:checked").val()
+                                            , date: $('#txtDate').val()
+                                            , slno: $('#txtStorSlNo').val()
+                                            , officeCode: $('#hdnOffice').val()
+                            });
+                        }
+                        else
+                            $.alert.open("Error", data);
+                    }
+                });
+            }
+            function UpdateAndDeleteStoreSending(storeID, status) {
+                var qty = $("#txtApv" + storeID + "").val();
+                var UnitPrice = $("#txtUPrice" + storeID + "").val();
+                var data = GenerateAjaxRequist('/Store/StoreItemBalanceUpdateXID', JSON.stringify({ stockID: storeID, qty: qty, status: status, UnitPrice: UnitPrice }), 'POST');
+                if (data == "Success") {
+                    $('#ItemGrid').jtable('load', {
+                        storeType: $("input[type='radio']:checked").val()
+                                        , date: $('#txtDate').val()
+                                        , slno: $('#txtStorSlNo').val()
+                                        , officeCode: $('#hdnOffice').val()
+                    });
+                    $.alert.open("Success", data);
+                }
+                else
+                    $.alert.open("Error", data);
+            }
+        </script>
+        @Html.ActionLink("Back to List", "StoreList", null, new { @class = "pull-right" })
+        <h2 class="page-title">Store Information Update</h2>
+        <div class="">
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="lblradio" for="rdIn">Store in</label>
+                    <input type="radio" name="StoreType" id="rdIn" value="I" />
+                    <label class="lblradio" for="rdOut">Store Out</label>
+                    <input type="radio" name="StoreType" id="rdOut" value="O" />
+                    <label class="lblradio" for="rdDispose">Store Dispose</label>
+                    <input type="radio" name="StoreType" id="rdDispose" value="D" />
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="control-label col-md-2 lblpopup" for="txtOffice">Office</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="txtOffice" autocomplete="off" />
+                            <input type="hidden" id="hdnOffice" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="control-label col-md-2 lblpopup" for="txtDate" id="lblDate">Date</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control datepicker" id="txtDate" autocomplete="off" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding-top:6px">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="control-label col-md-2" for="txtStorSlNo">Store Sl No</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="txtStorSlNo" autocomplete="off" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="col-md-3"></div>
+                    <button type="button" id="btnSearch" class="btn btn-primary"><i class="fa fa-search"></i>Search</button>
+                </div>
+            </div>
+            <div class="row" style="padding-top:6px;display:none" id="dvUpdateDate">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="control-label col-md-2" for="txtUpdateStoreDate">Update Date</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control datepicker" id="txtUpdateStoreDate" autocomplete="off" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="col-md-3"></div>
+                    <button type="button" id="btnUpdate" class="btn btn-warning"><i class="fa fa-check"></i>Update</button>
+                </div>
+            </div>
+            <div class="row" style="margin-top:6px">
+
+                <div class="col-md-12">
+                    <div id="ItemGrid"></div>
+                </div>
+            </div>
+        </div>
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}

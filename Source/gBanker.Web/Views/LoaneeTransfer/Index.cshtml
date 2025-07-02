@@ -1,0 +1,348 @@
+﻿@model gBanker.Web.ViewModels.LoaneeTransferViewModel
+
+@{
+    ViewBag.Title = "Loanee Transfer List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model == null ? null : Model.CenterList;
+    var group = Model == null ? null : Model.GroupList;
+}
+
+
+<script type="text/javascript">
+    
+    $(document).ready(function () {
+        $("#loading").hide();
+        
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {                
+                listAction: function (postData, jtParams) {                    
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/LoaneeTransfer/GetLoaneeInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                MemberID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office',                    
+                    create: false,
+                    edit: false                    
+                },                
+                CenterName: {
+                    title: 'Samity',                    
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Code',                   
+                    create: false,
+                    edit: false
+                },
+                FullName: {
+                    title: 'Member',                    
+                    create: false,
+                    edit: false
+                },                
+                NewOfficeID: {
+                    title: 'New Office',
+                    list: true,
+                    display: function (data) {
+                        var ddl = '<select  onchange="loadAll(this.value' + "," + data.record.MemberID + ');" style="width:180px" ' + 'id="NewOfficeID' + data.record.MemberID + '"></select>';
+                        loadOfficeDropdown('NewOfficeID' + data.record.MemberID);
+                        return ddl;
+                    }
+                },
+                NewCenterID: {
+                    title: 'New Samity',
+                    list: true,
+                    display: function (data) {
+                        var ddl1 = '<select  style="width:180px" ' + 'id="NewCenterID' + data.record.MemberID + '"></select>';
+                        return ddl1;
+                    }
+                },
+                NewGroupID: {
+                    title: 'New Group',
+                    list: true,
+                    display: function (data) {
+                        var hdn_id = '<input type="hidden"' + ' value="' + data.record.MemberID + '" /> ';
+                        var offc_id = '<input type="text"' + ' value="' + data.record.OfficeID + '" style="width:80px; display:none;" name="CurOfficeID" id="CurOfficeID' + data.record.MemberID + '" /> ';
+                        var center_id = '<input type="text"' + ' value="' + data.record.CenterID + '" style="width:80px; display:none;" name="CurCenterID" id="CurCenterID' + data.record.MemberID + '" /> ';
+                        var mem_id = '<input type="text"' + ' value="' + data.record.MemberID + '" style="width:80px; display:none;" name="CurMemID" id="CurMemID' + data.record.MemberID + '" /> ';                        
+                        var mem_code = '<input type="text"' + ' value="' + data.record.MemberCode + '" style="width:80px; display:none;" name="CurMemCode" id="CurMemCode' + data.record.MemberID + '" /> ';
+                        var ddl2 = '<select  style="width:180px" ' + 'id="NewGroupID' + data.record.MemberID + '"></select>';
+                        return hdn_id + offc_id + center_id + mem_id + mem_code + ddl2;
+                    }
+                }
+            }
+        });
+        //$('#grid').jtable('load');
+        //$('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+    });
+
+
+    function LoadMember()
+    {
+        $("#loading").show();
+        var centerId = $("#CenterID").val();
+        var groupId = $("#GroupID").val();
+        $.ajax({
+            type: "POST",
+            url: "/LoaneeTransfer/GetMemberList?centerId=" + centerId + "&groupId=" + groupId,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //data: { centerId: centerId, groupId: groupId },
+            async: true,
+            success: function (data) {
+
+                $("#ddlMember").empty();
+                $("#ddlMember").append($("<option     />").val('0').text('Select Member'));
+                $.each(data.Options, function () {
+                    //alert(data.FullName);
+
+                  
+                    $("#ddlMember").append($("<option     />").val(this.Value).text(this.Text));
+                });
+                
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+        $('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+        $("#loading").hide();
+    }
+    function MemberChange()
+    {
+        $("#loading").show();
+        $('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+        $("#loading").hide();
+    }
+    function loadOfficeDropdown(dropdownid) {
+        $("#loading").show();
+        $.ajax({
+            type: "POST",
+            url: "/LoaneeTransfer/GetOfficeList",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+                $("#" + dropdownid).append($("<option     />").val('0').text('Select Office'));
+                $.each(data.Options, function () {
+                    $("#" + dropdownid).append($("<option     />").val(this.Value).text(this.DisplayText));
+                });
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+       
+    }
+
+    function loadAll(officeid, LoanSummaryID) {
+        loadCenter(officeid, LoanSummaryID);
+        loadGroup(officeid, LoanSummaryID);
+    }
+    function loadCenter(officeid, LoanSummaryID) {
+        $("#loading").show();
+        var dropdownid = "NewCenterID" + LoanSummaryID;
+        $.ajax({
+            type: "POST",
+            url: "/LoaneeTransfer/GetCenterList?officeid=" + officeid,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //data: { officeid: officeid },
+            async: true,
+            success: function (data) {
+                $("#" + dropdownid).empty();
+                if (officeid > 0) {
+                    $("#" + dropdownid).append($("<option     />").val('0').text('Select Center'));
+                    $.each(data.Options, function () {
+                        $("#" + dropdownid).append($("<option     />").val(this.Value).text(this.DisplayText));
+                    });
+                }
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+    }
+    function loadGroup(officeid, LoanSummaryID) {
+        $("#loading").show();
+        var dropdownid = "NewGroupID" + LoanSummaryID;
+        $.ajax({
+            type: "POST",
+            url: "/LoaneeTransfer/GetGroupList?officeid=" + officeid,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //data: { officeid: officeid },
+            async: true,
+            success: function (data) {
+                $("#" + dropdownid).empty();
+                if (officeid > 0) {
+                    $("#" + dropdownid).append($("<option     />").val('0').text('Select Group'));
+                    $.each(data.Options, function () {
+                        $("#" + dropdownid).append($("<option     />").val(this.Value).text(this.DisplayText));
+                    });
+                }
+                $("#loading").hide();
+            },
+            failure: function () {
+                alert("Failed!");
+            }
+        });
+    }
+    function SaveLoaneeTransfer() {
+        $("#loading").show();
+        var allCollection = new Array();
+        var $allInputs = $('input[type="text"]');
+        var $allSelect = $('select');
+        $allInputs.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allCollection[allCollection.length] = obj;
+        });
+        $allSelect.each(function () {
+            var value = $(this).val();
+            var id = $(this).attr('id');
+            var obj = new Object();
+            obj.Key = id;
+            obj.Value = value;
+            allCollection[allCollection.length] = obj;
+        });
+
+        var $allId = $('input[type="hidden"]');
+       
+        var allIds = new Array();
+
+        $allId.each(function () {
+            var value = $(this).val();
+            allIds[allIds.length] = value;
+        });
+
+        //$allSelect.each(function () {
+        //    var value = $(this).val();
+        //    allIds[allIds.length] = value;
+        //});
+
+        var allTrx = new Object();
+        allTrx.allTrx = allCollection;
+        allTrx.allLoanTrxId = allIds;
+
+        var json = JSON.stringify(allTrx);
+
+        
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveLoaneeTransfer", "LoaneeTransfer", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (resp) {
+                //$("#loading").hide();                
+                //var msg, css;
+                //if (Result.Result == "OK") {
+                //    var msg = "Loanee Transfered Successfully.";
+                //    var css = "success";
+                //}
+                //else {
+                //    var msg = "Failed to transfer";
+                //    var css = "failed";
+                //}
+                //$("#dvMessage").attr('class', css);
+                //$("#dvMessage").html(msg);
+                //$("#dvMessage").show();
+                //if (data.Message == null)
+                //    $("#dvMessage").toggle('fade', 1500);
+                $('#grid').jtable('load', { CenterId: $("#CenterID").val(), GroupId: $("#GroupID").val(), MemberId: $("#ddlMember").val() });
+                $("#loading").hide();
+                var result = resp.Result;
+                var msg = resp.Message;
+                var css = "failed";
+                if (result == "OK")
+                    css = "success";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (result == "OK") {
+                    $("#dvMessage").toggle('fade', 1500);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+</script>
+
+@using (Html.BeginForm())
+{
+<h2 class="page-title">Member Transfer</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.CenterName, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control", @onchange = "LoadMember();" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.GroupName, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.GroupID, group, new { @class = "form-control", @onchange = "LoadMember();" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.MemberName, htmlAttributes: new { @class = "control-label" })
+                @*@Html.DropDownListFor(model => model.MemberID, group, new { @class = "form-control",  })*@
+                @Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control", @onchange = "MemberChange();" })
+            </div>
+        </div>
+    </div>
+<div id="grid"></div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group form-action">
+
+                <input type="button" value="Save" class="btn btn-primary" onclick="SaveLoaneeTransfer();" />
+
+            </div>
+        </div>
+    </div>
+
+
+}
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

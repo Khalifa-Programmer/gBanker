@@ -1,0 +1,383 @@
+﻿@model gBanker.Web.ViewModels.LoanApprovalViewModel
+@{
+    ViewBag.Title = "Loan Proposal List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        confirmDayInitiated();
+        $('#grid').jtable({
+            // title: 'Approved  List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Employment/GetLoanApprovals?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+
+            },
+            fields: {
+                LoanNo: {
+                    title: 'Loan No',
+                    list: true,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '10%'
+
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '10%'
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '10%'
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    width: '10%'
+                },
+                LoanTerm: {
+                    title: 'LoanTerm',
+                    width: '10%'
+                },
+                PurposeID: {
+                    title: 'Purpose ID',
+                    width: '10%'
+                },
+                ApproveDate: {
+                    title: 'Approve Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '12%'
+                },
+                PrincipalLoan: {
+                    title: 'PrincipalLoan',
+                    width: '10%'
+                },
+                InterestRate: {
+                    title: 'SC Rate',
+                    width: '5%'
+                },
+                LoanInstallment: {
+                    title: 'Loan Inst.',
+                    width: '8%'
+                },
+                IntInstallment: {
+                    title: 'SC Inst.',
+                    width: '5%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="javascript:void(0);" class="fa fa-square" id= Selected-' + data.record.LoanSummaryID + ' OnClick="Selected(' + data.record.LoanSummaryID + ');"> </a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });// End Document Ready
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+
+
+
+
+
+
+    function popupEmploymentDiv() {
+        $('html, body').animate({ scrollTop: $('#EmploymentDiv').offset().top }, 'slow');
+        $("#EmploymentDiv").dialog({
+            autoOpen: false,
+            height: 520,
+            width: 750,
+            modal: true,
+            buttons: {
+                "Close": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#EmploymentDiv").dialog('open');
+        }
+
+    }//End of Show Popup
+
+
+    function GetEmploymentData(LoanSummaryID) { //populate Employment Form
+        $('#hdnLoanSummaryID').val(LoanSummaryID);
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProfessionList", "Employment", "http")',
+            data: { LoanSummaryID: LoanSummaryID, jtStartIndex: 1, jtPageSize: 5, jtSorting: true, filterColumn: null, filterValue: null },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.each(data, function (id, option) {
+
+                    $('#txtMaleFullTimeP1').val(option.txtMaleFullTimeP1);
+                    $('#txtFeMaleFullTimeP1').val(option.txtFeMaleFullTimeP1);
+
+                    $('#txtMalePartTimeP1').val(option.txtMalePartTimeP1);
+                    $('#txtFeMalePartTimeP1').val(option.txtFeMalePartTimeP1);
+
+                    $('#txtMaleFullTimeP3').val(option.txtMaleFullTimeP3);
+                    $('#txtFeMaleFullTimeP3').val(option.txtFeMaleFullTimeP3);
+
+                    $('#txtMalePartTimeP3').val(option.txtMalePartTimeP3);
+                    $('#txtFeMalePartTimeP3').val(option.txtFeMalePartTimeP3);
+
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+                 clearEmployment();
+            }
+        });
+    }
+
+
+    function Selected(LoanSummaryID) {
+        GetEmploymentData(LoanSummaryID);
+
+        popupEmploymentDiv();
+    }
+
+    function Update() {
+        //Save  
+        var hdnLoanSummaryID = $('#hdnLoanSummaryID').val();
+        var txtMaleFullTimeP1 = $('#txtMaleFullTimeP1').val();
+        var txtFeMaleFullTimeP1 = $('#txtFeMaleFullTimeP1').val();
+
+        var txtMalePartTimeP1 = $('#txtMalePartTimeP1').val();
+        var txtFeMalePartTimeP1 = $('#txtFeMalePartTimeP1').val();
+
+        var txtMaleFullTimeP3 = $('#txtMaleFullTimeP3').val();
+        var txtFeMaleFullTimeP3 = $('#txtFeMaleFullTimeP3').val();
+
+        var txtMalePartTimeP3 = $('#txtMalePartTimeP3').val();
+        var txtFeMalePartTimeP3 = $('#txtFeMalePartTimeP3').val();
+
+        // alert("Update");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateEmployment", "Employment", "http")',
+            data: { LoanSummaryID: hdnLoanSummaryID, txtMaleFullTimeP1: txtMaleFullTimeP1, txtFeMaleFullTimeP1: txtFeMaleFullTimeP1, txtMalePartTimeP1: txtMalePartTimeP1, txtFeMalePartTimeP1: txtFeMalePartTimeP1, txtMaleFullTimeP3: txtMaleFullTimeP3, txtFeMaleFullTimeP3: txtFeMaleFullTimeP3, txtMalePartTimeP3: txtMalePartTimeP3, txtFeMalePartTimeP3: txtFeMalePartTimeP3  },
+
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", data);
+                clearEmployment();
+                
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Update");
+                 
+            }
+
+        });
+        clearEmployment();
+
+  
+    }// End of Function
+
+    function clearEmployment() {
+        $("#EmploymentDiv").dialog('close');
+
+        $('#hdnLoanSummaryID').val('');
+        $('#txtMaleFullTimeP1').val(0);
+        $('#txtFeMaleFullTimeP1').val(0);
+
+        $('#txtMalePartTimeP1').val(0);
+        $('#txtFeMalePartTimeP1').val(0);
+
+        $('#txtMaleFullTimeP3').val(0);
+        $('#txtFeMaleFullTimeP3').val(0);
+
+        $('#txtMalePartTimeP3').val(0);
+        $('#txtFeMalePartTimeP3').val(0);
+
+    }
+</script>
+
+
+<h2 class="page-title">Loan Proposal List(Employement Edit)</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="MemberCode">Member Code</option>
+            <option value="ProductCode">Product Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+
+
+<div id="grid"></div>
+
+
+
+
+<!-- Popup Employment Edit -->
+<div id="EmploymentDiv" title="EmploymentDiv Edit" style="display:none">
+    @*khalid*@
+
+    <div class="row">
+        <input type="hidden" id="hdnLoanSummaryID" value="" />
+        <div class="col-md-12">
+            <table class="table  caption-top table-bordered border-primary " style="width:80px;">
+                <caption class="bg-primary"><b>Employment Details</b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="4" class="bg-success"><center>Self Employment</center></th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" class="bg-info"><center>Full Time</center></th>
+                        <th scope="col" colspan="2" class="bg-info"><center>Part time</center></th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th scope="col"><center>Male</center></th>
+                        <th scope="col"><center>Female</center></th>
+
+                        <th scope="col"><center>Male</center></th>
+                        <th scope="col"><center>Female</center></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            @Html.EditorFor(model => model.txtMaleFullTimeP1, new { htmlAttributes = new { @class = "", @style = "size:5px;" } })
+                        </td>
+                        <td>
+                            @Html.EditorFor(model => model.txtFeMaleFullTimeP1, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                        <td>
+                            @Html.EditorFor(model => model.txtMalePartTimeP1, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                        <td>
+                            @Html.EditorFor(model => model.txtFeMalePartTimeP1, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                    </tr>
+                </tbody>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="4" class="bg-success"><center>Wage Employment</center></th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" class="bg-info"><center>Full Time</center></th>
+                        <th scope="col" colspan="2" class="bg-info"><center>Part time</center></th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th scope="col"><center>Male</center></th>
+                        <th scope="col"><center>Female</center></th>
+
+                        <th scope="col"><center>Male</center></th>
+                        <th scope="col"><center>Female</center></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            @Html.EditorFor(model => model.txtMaleFullTimeP3, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                        <td>
+                            @Html.EditorFor(model => model.txtFeMaleFullTimeP3, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                        <td>
+                            @Html.EditorFor(model => model.txtMalePartTimeP3, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                        <td>
+                            @Html.EditorFor(model => model.txtFeMalePartTimeP3, new { htmlAttributes = new { @class = "" } })
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+           
+        </div>
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:2px;margin:0px;">
+                    &nbsp;
+                    <input type="button" id="btnPopUpUpdate" value="Save" onclick="Update();" class="btn btn-success" />
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+    <!-- End Of Employment Edit Div -->
+
+
+
+
+
+    @section Scripts {
+
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/jtable")
+    }

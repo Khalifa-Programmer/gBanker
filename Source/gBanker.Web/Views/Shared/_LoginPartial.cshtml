@@ -1,0 +1,70 @@
+﻿@if (Request.IsAuthenticated)
+{
+
+    <table>
+        <tr>
+            <td style="padding-right:20px" id="dayInitialInfo">
+                
+                @*@if (gBanker.Web.Helpers.SessionHelper.IsDayInitiated)
+                {
+
+                    <span id="spTransactionDate">
+                        Transaction Date: @gBanker.Web.Helpers.SessionHelper.TransactionDate.ToString("dd MMM, yyyy")
+                    </span>
+                    <span id="spTransactionDay">
+                        Transaction Day: @gBanker.Web.Helpers.SessionHelper.TransactionDay
+                    </span>
+                    if (gBanker.Web.Helpers.SessionHelper.LastDayEndDate.HasValue)
+                    {
+                        <span id="spLastDayEnd"> Last Day End: @gBanker.Web.Helpers.SessionHelper.LastDayEndDate.Value.ToString("dd MMM, yyyy") </span>   
+                    }
+
+                }
+                else
+                {
+                    <span style="color:red">
+                        No Transaction day initiated
+                        @if (gBanker.Web.Helpers.SessionHelper.LastDayEndDate.HasValue)
+                        {
+                            <span id="spLastDayEnd"> Last Day End:@gBanker.Web.Helpers.SessionHelper.LastDayEndDate.Value.ToString("dd MMM, yyyy") </span>   
+                        }
+                    </span>
+                }*@
+            </td>
+            @*<td style="padding-right:20px">
+                @if (gBanker.Web.Helpers.SessionHelper.LoggedInOfficeDetail != null)
+                {
+                    <span>
+                        Working Office:<span id="officeName"> @string.Format("{0} - {1}", gBanker.Web.Helpers.SessionHelper.LoggedInOfficeDetail.OfficeCode, gBanker.Web.Helpers.SessionHelper.LoggedInOfficeDetail.OfficeName)</span>
+                    </span>
+                }
+            </td>*@
+            <td style="padding-right:20px">
+                Logged In Employee: @gBanker.Web.Helpers.SessionHelper.UserFullName &nbsp;
+                @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <a href="javascript:document.getElementById('logoutForm').submit()">Log off</a>
+                }
+
+            </td>
+
+        </tr>
+    </table>
+
+
+}
+else
+{
+    <ul>
+
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var trString = '@gBanker.Web.Helpers.SessionHelper.TransactionDashBoardString';
+        $("#dayInitialInfo").html(trString);
+    });
+</script>

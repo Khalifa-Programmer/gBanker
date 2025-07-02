@@ -1,0 +1,22 @@
+ @font-face
+{    
+    font-family: fontawesome-webfont;
+    src: url('../../../../../Content/ui-libs/font-awesome-4.3.0/fonts/fontawesome-webfont.ttf');
+}
+ div.jtable-main-container table.jtable tbody>tr>td .jtable-edit-command-button, div.jtable-main-container table.jtable tbody>tr>td .jtable-delete-command-button{
+    background:none;
+    width:21px;
+    height:22px;
+    position:relative;
+ }
+.jtable-edit-command-button:before, .jtable-delete-command-button:before{
+    font-family: fontawesome-webfont;
+    color: #428bca;
+    font-size: 20px;
+}
+.jtable-edit-command-button:before{
+    content: "\f044";
+}
+.jtable-delete-command-button:before{
+    content: "\f014";
+}

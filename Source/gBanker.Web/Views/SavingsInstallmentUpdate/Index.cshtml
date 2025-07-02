@@ -1,0 +1,264 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.SavingSummaryViewModel>
+
+@{
+    ViewBag.Title = "Opening Savings List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function deleteConfirm(status) {
+        if (status == "true") {
+            return confirm('Are you sure you want to delete this record');
+        }
+        else {
+            alert("You cannot delete this record because it is already disabled.");
+            return false;
+        }
+    }
+</script>
+<script type="text/javascript">
+    function ledgerPost() {
+        $("#loading").show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LedgerPost", "SavingsInstallmentUpdate", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            //data: { memberid: member, centerId: $("#CenterID").val() },
+            //minLength: 1,
+            success: function (data) {
+
+                $("#loading").hide();
+                var msg = "Ledger posted successful";
+                var css = "success";
+                if (data.Message != null) {
+                    msg = data.Message;
+                    css = "failed"
+                }
+
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (data.Message == null)
+                    $("#dvMessage").toggle('fade', 1500);
+
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#confirmDlg").dialog({
+            autoOpen: false,
+            height: 150,
+            width: 400,
+            modal: true,
+            title: 'Confirmation',
+            buttons: {
+                "Yes": function () {
+                    ledgerPost();
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    $(this).dialog("close");
+                }
+            }
+        });
+        $('#btnPost').click(function (e) {
+            e.preventDefault();
+            $("#confirmDlg").dialog('open');
+        });
+
+        //////////////////////////
+        $('#grid').jtable({
+           // title: 'SavingSummary List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+
+                listAction: '/SavingsInstallmentUpdate/GetSavingSummary'
+
+            },
+            fields: {
+                SavingSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office',
+                    width: '6%'
+
+                },
+                CenterCode: {
+                    title: 'Samity',
+                    width: '6%'
+                },
+                MemberCode: {
+                    title: 'Member',
+                    width: '6%'
+                },
+                ProductCode: {
+                    title: 'Product',
+                    width: '6%'
+                },
+
+                NoOfAccount: {
+                    title: 'NoOfAccount',
+                    width: '4%'
+                },
+
+                TransactionDate: {
+                    title: 'Tr. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '10%'
+                },
+                OpeningDate: {
+                    title: 'Opening Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '12%'
+                },
+                Deposit: {
+                    title: 'Deposit',
+                    width: '6%'
+                },
+                Withdrawal: {
+                    title: 'Withdrawal',
+                    width: '10%'
+                },
+                InterestRate: {
+                    title: 'Int. Rate',
+                    width: '6%'
+                },
+                SavingInstallment: {
+                    title: 'Sav Inst.',
+                    width: '6%'
+                },
+                CumInterest: {
+                    title: 'Cum. Int.',
+                    width: '6%'
+                },
+                MonthlyInterest: {
+                    title: 'Monthly Int.',
+                    width: '6%'
+                },
+                Penalty: {
+                    title: 'Penalty',
+                    width: '6%'
+                },
+
+                MaturedDate: {
+                    title: 'Mat Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '12%'
+                },
+                ClosingDate: {
+                    title: 'Cl Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '12%'
+                },
+
+
+                //IsActive: {
+                //    title: 'IsActive',
+                //    width: '6%'
+                //},
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/SavingsInstallmentUpdate/Edit/" + data.record.SavingSummaryID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                        //return '<a href="/SavingSummary/Edit/' + data.record.SavingSummaryID + '">Edit</a>';
+                        //return "<a href='/SavingSummary/Edit/" + data.record.SavingSummaryID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                    }
+                }
+                ,
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="/SavingsInstallmentUpdate/Delete/' + data.record.SavingSummaryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                        //return '<a href="/SavingsInstallmentUpdate/Delete/' + data.record.SavingSummaryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+        //////////////////////////
+    });
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title">SavingsInstallment Update List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+        @*Filter By:&nbsp;*@
+    <div class="col-md-3">
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="MemberCode">Member Code</option>
+            <option value="ProductCode">Product Code</option>
+        </select>
+    </div>
+            <div class="col-md-3">
+                <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+            </div>
+
+            @*<input type="text" class="search" id="filterValue" placeholder="Type Search Text" />
+            <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" />*@
+       
+
+   
+    <div id="confirmDlg" style="display:none">
+        <div class="form-group">
+            Do you want Ledgerpost?
+        </div>
+
+    </div>
+</div>
+    <div id="grid"></div>
+    @section Scripts {
+
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/jtable")
+    }
+
+    @*<input id="btnPost" type="submit" value="PostToLedger" />*@

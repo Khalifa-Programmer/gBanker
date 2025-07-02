@@ -1,0 +1,102 @@
+﻿
+@model gBanker.Web.ViewModels.OLRSAccChartMappingViewModel
+
+@{
+    ViewBag.Title = "Mapping Account Chart with OLRS Account Code";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<a class="btn btn-info btn-sm pull-right" href="/OLRSAccChartMapping/List">Back to List</a>
+<h2 class="page-title">Mapping Account Chart with OLRS Account Code</h2>
+
+@using (Html.BeginForm("Map", "OLRSAccChartMapping", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="raw">
+            <div class="col-md-12">
+
+                <div class="raw">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AccCodeOLRS, htmlAttributes: new { @class = "control-label required" })
+                            @Html.DropDownListFor(model => model.AccCodeOLRS, Model.AccCodeOLRSList, "Select One", new { @class = "form-control chosen-olrs-acc" })
+                            @Html.ValidationMessageFor(model => model.AccCodeOLRS)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+
+                <div class="raw">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AccChartLevel, htmlAttributes: new { @class = "control-label required" })
+                            @Html.DropDownListFor(model => model.AccChartLevel, DropdownListHelper.GetDropdownList(DropdownListTypes.AccChartLavel, Model.AccChartLevel), "Select One", new { @class = "form-control chosen" })
+                            @Html.ValidationMessageFor(model => model.AccChartLevel)
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AccChartCode, htmlAttributes: new { @class = "control-label required" })
+                            @Html.DropDownListFor(model => model.AccChartCode, new List<SelectListItem>(), "Select One", new { @class = "form-control chosen-acc-chart-code" })
+                            @Html.ValidationMessageFor(model => model.AccChartCode)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+
+                <div class="raw">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ConfigAccChartCode, htmlAttributes: new { @class = "control-label required" })
+                            @Html.DropDownListFor(model => model.ConfigAccChartCode, new List<SelectListItem>(), "Select One", new { @class = "form-control chosen-config-acc-chart" })
+                            @Html.ValidationMessageFor(model => model.ConfigAccChartCode)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <div class="form-group form-action">
+                                <button type="submit" class="btn btn-sm btn-primary" id="btnSave"> Submit </button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-12">
+                        <div id="grid"></div>
+                    </div>
+                </div>               
+            </div>
+        </div>       
+
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <link href="~/Assets/plugins/choosen/chosen.css" rel="stylesheet" />
+    <script src="~/Assets/plugins/choosen/chosen.jquery.js"></script>
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+
+    <script src="~/Assets/js/olrs/accChartMappingManager.js"></script>
+}
+

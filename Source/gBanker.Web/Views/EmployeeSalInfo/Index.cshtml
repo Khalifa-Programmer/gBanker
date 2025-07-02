@@ -1,0 +1,858 @@
+﻿@model gBanker.Web.ViewModels.InterestRateViewModel
+
+@{
+    ViewBag.Title = "Employee Salary Info";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+
+    function LoadEmpInfoByCode(employee_code) {
+        
+        var EmployeeCode = $("#txtEmployeeCode").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmpInfoByCode", "EmployeeSalInfo", "http")',
+            data: { employee_code: EmployeeCode },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.each(data, function (index, data) {
+                    if (data != "Error") {
+                        $("#txtEmployeeName").val(data.EmployeeName);
+                        $("#hdnEmployeeID").val(data.EmployeeID);
+                        
+                    }
+                    else {
+                        
+                        $("#txtEmployeeCode").val("");
+                        $("#hdnEmployeeID").val("");
+                        $("#txtEmployeeName").val("");
+                        
+                    }
+                });
+            },
+            error: function (request, status, error) {
+
+                $("#txtEmployeeCode").val("");
+                $("#hdnEmployeeID").val("");
+                $("#txtEmployeeName").val("");
+
+                // $.alert.open(request.statusText + "/" + request.statusText + "/" + error);
+                $.alert.open("Employee Not Found");
+            }
+        });
+    }
+
+
+
+    function Edit(EmployeeID, Basic, HRent, MA, TA, PFOwn, PFOrg, FestBonus, SSF, special, distance, dearness, MobileBill, GratuityOrg, HealthFund, SalaryDate, EmployeeCode, EmployeeName)
+    {
+
+      //  alert(EffextYear);
+
+        // Assign Values
+
+        $("#hdnEmployeeID").val(EmployeeID);
+        $("#txtBasic").val(Basic);
+        $("#txtHRent").val(HRent);
+        $("#txtMA").val(MA);
+
+        $("#txtTA").val(TA);
+        $("#txtPFOwn").val(PFOwn);
+        $("#txtPFOrg").val("0"); // AS vaule is PFOwn SAVED in Stored Procedure
+
+        $("#txtFestBonus").val(FestBonus);
+        $("#txtSSF").val(SSF);
+        $("#txtspecial").val(special);
+
+        $("#txtdistance").val(distance);
+        $("#txtdearness").val(dearness);
+        $("#txtMobileBill").val(MobileBill);
+
+        $("#txtGratuityOrg").val(GratuityOrg);
+        $("#txtHealthFund").val(HealthFund);
+
+        $("#txtSalaryDate").val(SalaryDate);
+
+        $("#txtEmployeeCode").val(EmployeeCode);
+        $("#txtEmployeeName").val(EmployeeName);
+
+       // $("#ddlPaymentFrequency option[value='" + PaymentFrequency + "']").prop('selected', 'selected');
+
+        //POPUP Form
+        PopupForm();
+
+
+    }// END Edit
+
+    function PopupForm()
+    {
+
+        $('html, body').animate({ scrollTop: $('#EmployeeSalInfoDiv').offset().top }, 'slow');
+        $("#EmployeeSalInfoDiv").dialog({
+            autoOpen: false,
+            height: 500,
+            width: 700,
+            modal: true,
+            buttons: {
+
+                "Close": function () {
+
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var showPopup = "True";
+        if (showPopup == "True") {
+            $("#EmployeeSalInfoDiv").dialog('open');
+        }
+
+    }
+
+    function Clear()
+    {
+        $("#hdnEmployeeID").val("");
+        $("#txtBasic").val("");
+        $("#txtHRent").val("");
+        $("#txtMA").val("");
+
+        $("#txtTA").val("");
+        $("#txtPFOwn").val("");
+        $("#txtPFOrg").val("");
+
+        $("#txtFestBonus").val("");
+        $("#txtSSF").val("");
+        $("#txtspecial").val("");
+
+        $("#txtdistance").val("");
+        $("#txtdearness").val("");
+        $("#txtMobileBill").val("");
+
+        $("#txtGratuityOrg").val("");
+        $("#txtHealthFund").val("");
+
+        $("#txtSalaryDate").val("");
+
+ 
+        $("#txtEmployeeCode").val("");
+        $("#txtEmployeeName").val("");
+
+
+        //$("#ddlPaymentFrequency").prop('selectedIndex', 0);
+
+    }
+
+    //function GetPaymentFrequency() {
+    //    var ddlHO = $("#ddlPaymentFrequency");
+
+    //    ddlHO.html('');
+    //    ddlHO.append($('<option></option>').val(0).html('Please Select'));
+
+    //    ddlHO.append($('<option></option>').val('W').html("Weekly"));
+    //    ddlHO.append($('<option></option>').val('M').html("Monthly"));
+
+    //}// End Function
+
+    function GetPercentage(Percent,Basic) {
+        var Percentage = (Percent * Basic) / 100;
+        return Percentage;
+
+    }// End Function
+
+
+
+    $(document).ready(function () {
+
+        $("#txtEmployeeCode").blur(function (e) {
+
+           
+            if ($("#txtEmployeeCode").val() != '') {
+                LoadEmpInfoByCode();
+            }
+
+            else {
+                Clear();
+            }
+        });// End of blur
+
+
+        $("#txtSalaryDate").datepicker(
+         {
+             dateFormat: "dd-M-yy",
+             showAnim: "scale",
+             changeMonth: true,
+             changeYear: true,
+             yearRange: "1920:2100"
+
+         });
+        $("#txtSalary").datepicker(
+        'setDate', new Date());
+
+
+        //var x = document.getElementById("txtDuration");
+        //x.setAttribute("type", "number");
+
+        //GetPaymentFrequency(); // Populate EffextYear
+
+        $('#txtBasic').blur(function (event) {
+                // Calculate Percentage
+                //KHALID
+                var Basic = $("#txtBasic").val().trim();
+
+                $("#txtHRent").val(GetPercentage(100, Basic));
+                $("#txtMA").val(GetPercentage(15, Basic));
+                $("#txtTA").val(GetPercentage(15, Basic));
+                $("#txtPFOwn").val(GetPercentage(10, Basic));
+                
+             
+        });
+
+
+        $('#txtBasic').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+           
+        });
+
+        $('#txtHRent').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtMA').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtTA').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtPFOwn').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtPFOrg').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtFestBonus').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtSSF').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtspecial').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtdistance').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtdearness').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtMobileBill').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtGratuityOrg').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+        $('#txtHealthFund').keypress(function (event) {
+            var keycode = event.which;
+            if (!(event.shiftKey == false && (keycode == 46 || keycode == 8 || keycode == 37 || keycode == 39 || (keycode >= 48 && keycode <= 57)))) {
+                event.preventDefault();
+            }
+        });
+
+
+        $("#btnAddNew").click(function () {
+            Clear();
+            PopupForm();
+
+        });
+
+        $("#btnEmployeeSalInfoSave").click(function () {
+
+            var Duration = $("#txtDuration").val();
+            var id = $("#hdnInsuranceSlotID").val();
+            if (Duration == '') {
+                $.alert.open("Please Give Duration.");
+                return false;
+            }
+            SaveUpdate();
+
+        });
+        //Save
+        function SaveUpdate() {
+
+            var hdnEmployeeID = $("#hdnEmployeeID").val();
+            // var txtPaymentFrequency =   $("#ddlPaymentFrequency option:selected").val();
+
+
+            
+            var txtBasic = $("#txtBasic").val().trim();
+            var txtHRent = $("#txtHRent").val().trim();
+            if (txtHRent == "")
+            {
+                txtHRent = 0;
+            }
+            var txtMA = $("#txtMA").val().trim();
+            if (txtMA == "") {
+                txtMA = 0;
+            }
+
+            var txtTA = $("#txtTA").val().trim();
+            if (txtTA == "") {
+                txtTA = 0;
+            }
+
+            var txtPFOwn = $("#txtPFOwn").val().trim();
+            if (txtPFOwn == "") {
+                txtPFOwn = 0;
+            }
+
+            var txtPFOrg = "0"; // $("#txtPFOrg").val().trim();
+
+
+            var txtFestBonus = $("#txtFestBonus").val().trim();
+            if (txtFestBonus == "") {
+                txtFestBonus = 0;
+            }
+
+
+            var txtSSF = $("#txtSSF").val().trim();
+            if (txtSSF == "") {
+                txtSSF = 0;
+            }
+
+            var txtspecial = $("#txtspecial").val().trim();
+            if (txtspecial == "") {
+                txtspecial = 0;
+            }
+
+            var txtdistance = $("#txtdistance").val().trim();
+            if (txtdistance == "") {
+                txtdistance = 0;
+            }
+
+            var txtdearness = $("#txtdearness").val().trim();
+            if (txtdearness == "") {
+                txtdearness = 0;
+            }
+
+            var txtMobileBill = $("#txtMobileBill").val().trim();
+            if (txtMobileBill == "") {
+                txtMobileBill = 0;
+            }
+
+            var txtGratuityOrg = $("#txtGratuityOrg").val().trim();
+            if (txtGratuityOrg == "") {
+                txtGratuityOrg = 0;
+            }
+            var txtHealthFund = $("#txtHealthFund").val().trim();
+            if (txtHealthFund == "") {
+                txtHealthFund = 0;
+            }
+
+            var txtSalaryDate = $("#txtSalaryDate").val().trim();
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("CreateUpdate", "EmployeeSalInfo",  "http")', //CreateWorkArea(string WorkAreaName)
+                data: {
+
+                        hdnEmployeeID        :   hdnEmployeeID
+                    , txtBasic               :   txtBasic
+                    , txtHRent               :   txtHRent
+                    , txtMA                  :   txtMA
+                    , txtTA                  :   txtTA
+                    , txtPFOwn               :   txtPFOwn
+                    , txtPFOrg               :   txtPFOrg
+                    , txtFestBonus           :   txtFestBonus
+                    , txtSSF                 :   txtSSF
+                    , txtspecial             :   txtspecial
+                    , txtdistance            :   txtdistance
+                    , txtdearness            :   txtdearness
+                    , txtMobileBill          :   txtMobileBill
+                    , txtGratuityOrg         :   txtGratuityOrg
+                    , txtHealthFund          :   txtHealthFund
+                    , txtSalaryDate          :   txtSalaryDate
+
+
+                },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                   // clearProfession();
+                    $.alert.open(data);
+                    if (data == "Data Saved Successfully.")
+                    {
+                        reloadGrid();
+                        Clear();
+                    }
+                    
+                },
+                error: function (request, status, error) {
+                    $.alert.open( "Data Not Saved");
+                    reloadGrid();
+
+                }
+
+            });
+
+        }// End of Function
+
+
+
+        //////////////////////////
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/EmployeeSalInfo/GenerateEmployeeSalList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                EmployeeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EmployeeCode: {
+                    title: 'EmployeeCode',
+                    width: '3%'
+
+                },
+                EmployeeName: {
+                    title: 'EmployeeName',
+                    width: '3%'
+
+                },
+                SalaryDate: {
+                    title: 'Salary_Date',
+                    width: '8%'
+
+                },
+                Basic: {
+                    title: 'Basic',
+                     width: '3%'
+
+                },
+                HRent: {
+                    title: 'House Rent',
+                    width: '3%'
+
+                },
+                MA: {
+                    title: 'MA',
+                    width: '3%'
+
+                },
+                TA: {
+                    title: 'TA',
+                    width: '3%'
+
+                },
+                PFOwn: {
+                    title: 'PFOwn',
+                    width: '3%'
+
+                },
+                PFOrg: {
+                    title: 'PFOrg',
+                    width: '3%'
+
+                },
+                FestBonus: {
+                    title: 'FestBonus',
+                    width: '3%'
+
+                },
+                SSF: {
+                    title: 'SSF',
+                    width: '3%'
+
+                },
+                special: {
+                    title: 'special',
+                    width: '3%'
+
+                },
+                distance: {
+                    title: 'distance',
+                    width: '3%'
+
+                },
+                dearness: {
+                    title: 'dearness',
+                    width: '3%'
+
+                },
+                MobileBill: {
+                    title: 'MobileBill',
+                    width: '3%'
+
+                },
+                GratuityOrg: {
+                    title: 'GratuityOrg',
+                    width: '4%'
+
+                },
+                HealthFund: {
+                    title: 'HealthFund',
+                    width: '3%'
+
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+                        return '<div class="text-center"><a href="javascript:void(0)" name="service"' + ' id = "button' + data.record.EmployeeID + '"  OnClick = "Edit(\'' + data.record.EmployeeID + '\',\'' + data.record.Basic + '\',\'' + data.record.HRent + '\',\'' + data.record.MA + '\' ,\'' + data.record.TA + '\' ,\'' + data.record.PFOwn + '\' ,\'' + data.record.PFOrg + '\' ,\'' + data.record.FestBonus + '\' ,\'' + data.record.SSF + '\' ,\'' + data.record.special + '\' ,\'' + data.record.distance + '\' ,\'' + data.record.dearness + '\' ,\'' + data.record.MobileBill + '\' ,\'' + data.record.GratuityOrg + '\' ,\'' + data.record.HealthFund + '\' ,\'' + data.record.SalaryDate + '\' ,\'' + data.record.EmployeeCode + '\' ,\'' + data.record.EmployeeName + '\' )"><i ' + ' id = "select' + data.record.EmployeeID + '"  class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+
+
+            }
+        });
+
+        // Load Grid
+         reloadGrid();
+         //$('#grid').jtable('load');
+        //////////////////////////
+    }); // END Document Ready
+    function reloadGrid() {
+        $('#grid').jtable('load', { Duration: 0 });
+       // $('#grid').jtable('load', { DateFrom: $('#txtDateFrom').val(), MemberId: $('#MemberID').val()});
+    }
+    $('#btnSearch').click(function (e) {
+        e.preventDefault();
+        reloadGrid();
+     });
+</script>
+
+
+<h2 class="page-title"> Employee Salary Info </h2>
+
+<input type="button" value="Add New" id="btnAddNew" class="btn btn-primary" />
+
+<div class="row" style="display:none;">
+    <div class="col-md-3" style="padding-top:20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+
+
+
+
+
+
+@*</div>
+
+    </div>*@
+
+
+
+<div id="grid"></div>
+
+
+<!-- Popup Insurance Edit Insert Entry -->
+<div id="EmployeeSalInfoDiv" title="Employee Sal Info Entry & Edit" style="display:none">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Employee Code    </label>
+                <div class="col-sm-6">
+                    <input type="text" id="txtEmployeeCode" class="form-control" placeholder="Employee Code" />
+                    <input type="hidden" id="hdnEmployeeID" value="0" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Employee Name    </label>
+                <div class="col-sm-6">
+                    <input type="text" id="txtEmployeeName" class="form-control" placeholder="Employee Name" />
+                    <input type="hidden" id="hdnEmployeeID" value="0" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required">  Basic  </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtBasic" value=0 class="form-control" placeholder="Basic" />
+
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required">  House Rent  </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtHRent"   class="form-control" placeholder="House Rent" />
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Medical Allowance </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtMA"   class="form-control" placeholder="MA" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Travel Allowance </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtTA"   class="form-control" placeholder="TA" />
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> PF OWN </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtPFOwn"    class="form-control" placeholder="PFOWN" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6" style="display:none;">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> PF Org </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtPFOrg"  class="form-control" placeholder="PFOrg" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Fest Bonus </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtFestBonus"   class="form-control" placeholder="Fest Bonus" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> SSF </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtSSF"   class="form-control" placeholder="SSF" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Special </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtspecial"   class="form-control" placeholder="special" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Distance </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtdistance"   class="form-control" placeholder="distance" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Dearness </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtdearness" value=0 class="form-control" placeholder="dearness" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Mobile Bill </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtMobileBill" value=0 class="form-control" placeholder="Mobile Bill" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Gratuity Org </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtGratuityOrg" value=0 class="form-control" placeholder="Gratuity Org" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Health Fund </label>
+                <div class="col-sm-6">
+                    <input type="number" id="txtHealthFund" value=0 class="form-control" placeholder="Health Fund" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-6 required"> Salary Date </label>
+                <div class="col-sm-6">
+                    <input type="text" id="txtSalaryDate"  />
+                </div>
+            </div>
+        </div>
+
+       </div>
+
+
+
+
+
+
+
+
+
+
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <div class="form-group form-action" style="padding:10px;margin:5px;">
+                        &nbsp;
+                        <input type="button" value="Save" id="btnEmployeeSalInfoSave" class="btn btn-success" />
+                        @*&nbsp;
+                            <input type="button" value="Reset" id="btnInsuranceReset" class="btn btn-primary" />*@
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                &nbsp;
+            </div>
+        </div>
+
+
+    </div>
+
+<!-- End Of Insurance Edit Insert Entry Div -->
+
+
+
+
+
+
+
+
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

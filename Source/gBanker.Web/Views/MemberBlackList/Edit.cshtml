@@ -1,0 +1,195 @@
+﻿
+@model gBanker.Web.ViewModels.MemberBlackListViewModel
+@{
+    ViewBag.Title = "Add New Member Black List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model == null ? null : Model.centerListItems;
+    var member = ViewBag.MemberName as string;
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Auto Complete Off
+        $("input").attr("autocomplete", "off");
+
+        $("#CenterID").change(function () {
+            var cntr = $("#CenterID").val();
+            if (cntr > 0) {
+                $("#memberAutoComplete").prop("readonly", false);
+            }
+            else {
+                $("#memberAutoComplete").prop("readonly", true);
+            }
+        });
+        //Member List
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "MemberBlackList", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            $("#MemberCode").val(data[0].MemberCode);
+
+                        }
+                        else if (data.length == 0) {
+                            alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "MemberBlackList", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            //messages: {
+            //    noResults: "", results: ""
+            //},
+            messages: {
+                noResults: '',
+                results: function (resultsCount) { }
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                //$('#gridFamily').jtable('load', { MemId: $('#MemberID').val() });
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+
+    // Validation Functions
+    function isNumber(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+
+
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Edit Member Black List</h2>
+
+@using (Html.BeginForm("Edit", "MemberBlackList", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        @Html.HiddenFor(model => model.MemberBlackListID)
+        @Html.HiddenFor(model => model.MemberCode)
+        @Html.HiddenFor(model => model.OfficeID)
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control", required = "required" })
+
+                    @Html.HiddenFor(model => model.CenterID)
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", member, new { @class = "form-control", required = "required" })
+                    @Html.HiddenFor(model => model.MemberID)
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PhoneNo, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBoxFor(model => model.PhoneNo, new { @class = "form-control", onkeypress = "return isNumber(event)" })
+                    @Html.ValidationMessageFor(model => model.PhoneNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NationalID, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBoxFor(model => model.NationalID, new { @class = "form-control", onkeypress = "return isNumber(event)" })
+                    @Html.ValidationMessageFor(model => model.NationalID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SmartCard, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBoxFor(model => model.SmartCard, new { @class = "form-control", onkeypress = "return isNumber(event)" })
+                    @Html.ValidationMessageFor(model => model.SmartCard, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OtherIdNo, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextBoxFor(model => model.OtherIdNo, new { @class = "form-control", onkeypress = "return isNumber(event)" })
+                    @Html.ValidationMessageFor(model => model.OtherIdNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

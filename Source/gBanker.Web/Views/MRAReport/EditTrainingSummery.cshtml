@@ -1,0 +1,240 @@
+﻿@model gBanker.Web.ViewModels.TrainingViewModel
+
+@{
+    ViewBag.Title = "Training Summary";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script>
+    $(document).ready(function () {        
+        $("#TrainingDate").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale",
+          });
+        $("#btnReset").click(function () {
+            $("#TrainingType").val('');
+            $("#TrainingDate").val('');
+            $("#NoOfParticipants").val('');
+            $("#CourseName").val('');
+            $("#CostGeneralFund").val('');
+            $("#CostMicroFinance").val('');
+            $("#CostDonation").val('');
+            $("#OtherCostSource1").val('');
+            $("#CostAmount1").val('');
+            $("#OtherCostSource2").val('');
+            $("#CostAmount2").val('');
+            $("#OtherCostSource3").val('');
+            $("#CostAmount3").val('');
+        });
+    });
+    function UpdateTrainingSummary() {
+        var trainingID = $("#TrainingID").val();
+        var trainingType = $("#TrainingType").val();
+        var trainingDate = $("#TrainingDate").val();
+        var noOfParticipants = $("#NoOfParticipants").val();
+        var courseName = $("#CourseName").val();
+        var costGeneralFund = $("#CostGeneralFund").val();
+        var costMicroFinance = $("#CostMicroFinance").val();
+        var costDonation = $("#CostDonation").val();
+        var otherCostSource1 = $("#OtherCostSource1").val();
+        var costAmount1 = $("#CostAmount1").val();
+        var otherCostSource2 = $("#OtherCostSource2").val();
+        var costAmount2 = $("#CostAmount2").val();
+        var otherCostSource3 = $("#OtherCostSource3").val();
+        var costAmount3 = $("#CostAmount3").val();
+
+        var trainingSummary = {
+            TrainingID: trainingID,
+            TrainingType: trainingType,
+            TrainingDate: trainingDate,
+            NoOfParticipants: noOfParticipants,
+            CourseName: courseName,
+            CostGeneralFund: costGeneralFund,
+            CostMicroFinance: costMicroFinance,
+            CostDonation: costDonation,
+            OtherCostSource1: otherCostSource1,
+            CostAmount1: costAmount1,
+            OtherCostSource2: otherCostSource2,
+            CostAmount2: costAmount2,
+            OtherCostSource3: otherCostSource3,
+            CostAmount3: costAmount3
+        }
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateTrainingSummary", "MRAReport", "http")',
+            data: JSON.stringify({ trainingSummary: trainingSummary }),
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.result == 1) {
+                    $.alert.open("Success", data.message);
+                    //GetFixedAssetUpdates();
+                    Clearform();
+                } else {
+                    $.alert.open("Error", data.message);
+                    ClearForm();
+                }
+            }
+
+        });
+    }
+    function Clearform() {        
+        $("#TrainingType").val('');
+        $("#TrainingDate").val('');
+        $("#NoOfParticipants").val('');
+        $("#CourseName").val('');
+        $("#CostGeneralFund").val('');
+        $("#CostMicroFinance").val('');
+        $("#CostDonation").val('');
+        $("#OtherCostSource1").val('');
+        $("#CostAmount1").val('');
+        $("#OtherCostSource2").val('');
+        $("#CostAmount2").val('');
+        $("#OtherCostSource3").val('');
+        $("#CostAmount3").val('');
+    }
+</script>
+
+@Html.ActionLink("Back to list", "IndexTrainingSummary", null, new { @class = "pull-right" })
+<h2 class="page-title">Training Summary</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.TrainingID)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Training Type</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.TrainingType, Model.TrainingTypeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">TrainingDate</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.TrainingDate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">No Of Participants</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.NoOfParticipants, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Course Name</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CourseName, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost From General Fund</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CostGeneralFund, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost From Micro Finance</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CostMicroFinance, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost From Donation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CostDonation, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Other Cost Source 1</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OtherCostSource1, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost Amount 1</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CostAmount1, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Other Cost Source 2</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OtherCostSource2, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost Amount 2</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CostAmount2, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Other Cost Source 3</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.OtherCostSource3, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Cost Amount 3</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CostAmount3, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">                
+                <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" onclick="UpdateTrainingSummary()" />
+                <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,265 @@
+﻿
+@{
+    ViewBag.Title = "CategoryTransferReport";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+
+<script type="text/javascript">
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetMember() {
+        var ddlMember = $("#ddlMember");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMemberList", "GroupwiseReport", "http")',
+            data: { centerId: $("#ddlCenter option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMember.html('');
+                $.each(data, function (id, option) {
+                    ddlMember.append($('<option></option>').val(option.MemberID).html(option.MemberName));
+
+                //$.each(data, function (id, option) {
+                //    ddlMember.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+        GetCenter();
+        $("#ddlCenter").change(function () {
+            $("#memberAutoComplete").val('');
+            $("#hdnMemberID").val('');
+
+            var ddlCenter = $("#ddlCenter option:selected").val();
+            if (ddlCenter > 0) {
+                //  GetMember();
+            }
+            else {
+                // $("#ddlMember").empty();
+                $("#hdnMemberID").val("");
+            }
+        });
+
+        $("#txtFromDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+         // AUTO Complete for Member SELECTION
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            var CenterId = $("#ddlCenter option:selected").val();
+            if (CenterId == "0" || CenterId == "") {
+                return;
+            }
+
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberListAuto", "LoanInstallmentCorrection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: CenterId },
+                    minLength: 1,
+                    success: function (data) {
+                        debugger;
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#hdnMemberID").val(data[0].MemberID);
+                    }
+                });
+            }
+        });
+
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberListAuto", "LoanInstallmentCorrection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#ddlCenter option:selected").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#hdnMemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#hdnMemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+        // END Auto Complete
+
+
+        //$("#btnView").click(function (e) {
+        //    e.preventDefault();
+        //    var DateFrom = $("#txtFromDt").val();
+        //    var DateTo = $("#txtToDt").val();
+        //    var url;
+        //    if (DateFrom != '' && DateTo != '') {
+        //        var url = '/GroupwiseReport/GenerateCtegoryTransferReport?DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+        //        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        //    }
+        //    else {
+        //        alert('Date field cannot be blank')
+        //    }
+        //});
+
+        $("#btnPreview").click(function (e) {
+            e.preventDefault();
+            var centerID = $("#ddlCenter").val();
+            var memberID = $("#hdnMemberID").val();
+            var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var url;
+            if (DateFrom != '' && DateTo != '') {
+                var url = '/GroupwiseReport/GenerateCtegoryTransferReport?centerID=' + centerID + '&memberID=' + memberID +  '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+                $("#hdnMemberID").val('');
+                $("#memberAutoComplete").val('');
+            }
+            else {
+                alert('Date field cannot be blank')
+            }
+        });
+    });
+</script>
+<h2 class="page-title">Category Transfer Report</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Select Center", new { @class = "control-label" })
+                @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-8">&nbsp;</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+                @*@Html.DropDownList("MemberList", null, new { @ID = "ddlMember", @class = "form-control" })*@
+                @*@Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })*@
+
+                @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                <input type="hidden" id="hdnMemberID" value="0" />
+            </div>
+        </div>
+        <div class="col-md-8">&nbsp;</div>
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtFromDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <h2 class="page-title"></h2>
+    @*<div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>*@
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="Preview" class="btn btn-primary" id="btnPreview" />
+            </div>
+        </div>
+    </div>
+
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+
+
+

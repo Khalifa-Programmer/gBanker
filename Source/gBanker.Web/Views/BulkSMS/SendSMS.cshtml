@@ -1,0 +1,143 @@
+﻿
+@model gBanker.Web.ViewModels.SMSSendBulkViewModel
+
+@{
+    ViewBag.Title = "Send Bulk SMS";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    .summaryTitle {
+        color: yellow !important;
+        padding-left: 5px !important;
+    }
+
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+
+    .findElement {
+        background-color: yellow;
+    }
+
+    .hidemsg {
+        display: none;
+    }
+    /*.input{
+        font-size:40px;
+    }*/
+</style>
+
+<h2 class="page-title">SMS Bulk List</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="control-label" style="padding-top:0px;">Office</label>
+                    @Html.DropDownListFor(model => model.OfficeId, Model.OfficeList, new { @multiple = "multiple", @class = "ddl-select-picker form-control" })
+                </div>
+                <div class="col-md-3">
+                    <label class="control-label" title="Search by member key and mobile no" style="padding-top:0px;">Search Key:</label>
+                    @Html.TextBoxFor(model => model.SearchKey, new { @placeholder = "keywords", @class = "form-control", @autocomplete = "off" })
+                </div>
+                <div class="col-md-3">
+                    <label class="control-label" style="padding-top:0px;">Date From</label>
+                    @Html.TextBoxFor(model => model.DateFromValue, new { @placeholder = "start date", @class = "form-control", @autocomplete = "off" })
+                </div>
+                <div class="col-md-3">
+                    <label class="control-label" style="padding-top:0px;">Date To</label>
+                    @Html.TextBoxFor(model => model.DateToValue, new { @placeholder = "end date", @class = "form-control", @autocomplete = "off" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <font style="font-size:large; font-family:'Times New Roman', Times, serif;">
+                        <label class="knob-label"> Filter Type: </label>
+                    </font>
+                    <font style="font-size:large; font-family:'Times New Roman', Times, serif;">
+                        <label> <input type="radio" name="Filter" value="All"> All  </label>  &nbsp;
+                        <label><input type="radio" name="Filter" value="NotSend" checked> Not Send </label>  &nbsp;
+                        <label><input type="radio" name="Filter" value="Success"> Success </label>
+                        <label><input type="radio" name="Filter" value="Greetings"> Greetings(Configured) </label>
+                    </font>
+                    <input type="button" value="Filter" id="" class="btn btn-danger" style="display:none" />
+                </div>
+            </div>
+
+            <br />
+
+            <div class="row">
+                <input type="button" value="Generate SMS" id="btnGenerateSMS" class="btn btn-danger" style="display:none" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="col-sm-2" style="display:none;">
+                        <select class="form-control col-sm-2" id="option">
+                            <option value="disburse" selected="selected"> Disburse </option>
+                            <option value="loan"> Loan  </option>
+                            <option value="saving"> Savings  </option>
+                        </select>
+                    </div>
+                    <button type="button" id="btnFilter" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Filter</button>
+                    <button type="button" id="btnSendSMS" class="btn btn-danger"><i class="glyphicon glyphicon-send"></i> Send SMS</button>
+                    &nbsp;
+                </div>
+                &nbsp;
+
+                <div class="col-md-12">
+                    <div id="grid2"> </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/searchable")
+
+    <link href="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.css" rel="stylesheet" />
+    <script src="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.js"></script>
+
+    <script src="~/Assets/js/sms/bulkSMSManager.js"></script>
+}

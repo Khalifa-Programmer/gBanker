@@ -1,0 +1,321 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.CenterViewModel>
+
+@{
+    ViewBag.Title = "Samity List()";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<script src="~/Scripts/wickedpicker.js"></script>
+<link href="~/Content/wickedpicker.css" rel="stylesheet" />
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<script type="text/javascript">
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        //d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        d.setTime(d.getTime() + (1 * 60 * 60 * 1000));
+        let expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        // document.cookie = cname + "=" + cvalue + ";";
+    }
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+
+    $(document).ready(function () {
+        var options = {// now: "12:35", //hh:mm 24 hour format only, defaults to current time
+            twentyFour: true, //Display 24 hour format, defaults to false
+            upArrow: 'wickedpicker__controls__control-up', //The up arrow class selector to use, for custom CSS
+            downArrow: 'wickedpicker__controls__control-down', //The down arrow class selector to use, for custom CSS
+            close: 'wickedpicker__close', //The close class selector to use, for custom CSS
+            hoverState: 'hover-state', //The hover state class to use, for custom CSS
+            title: 'Timepicker', //The Wickedpicker's title,
+            showSeconds: false, //Whether or not to show seconds,
+            secondsInterval: 1, //Change interval for seconds, defaults to 1  ,
+            minutesInterval: 1, //Change interval for minutes, defaults to 1
+            beforeShow: null, //A function to be called before the Wickedpicker is shown
+            show: null, //A function to be called when the Wickedpicker is shown
+            clearable: false, //Make the picker's input clearable (has clickable "x")
+        };
+
+        centerType();
+        GetEmpList();
+        GetCollDay();
+
+
+        let EmpId1 = getCookie("EmpIdAdmin");
+
+        let CollDay1 = getCookie("CollDayAdmin");
+
+        $("#ddlEmp option[value='" + EmpId1 + "']").prop('selected', 'selected');
+        $("#ddlColDay option[value='" + CollDay1 + "']").prop('selected', 'selected');
+
+
+        $('#grid').jtable({
+            //title: 'Center List',
+            paging: true,
+            pageSize: 50,
+            sorting: true,
+            defaultSorting: 'CenterFullName ASC',
+
+            actions: {
+                listAction: '/Center/GetCenterInfo'
+            },
+            fields: {
+                CenterID: {
+                    key: true,
+                    list: false,
+
+                },
+                OfficeFullName: {
+                    title: 'Office',
+                },
+                CenterFullName: {
+                    title: 'Samity',
+                },
+                //CenterName: {
+                //    title: 'Samity Name',
+                //    list: false,
+                //    create: false,
+                //    edit: true
+                //},
+                CenterNameBng: {
+                    title: 'CollectionType',
+                },
+                EmployeeFullName: {
+                    title: 'Employee Name',
+                    list: true,
+                },
+                //EmployeeId: {
+                //    title: 'Employee',
+                //    list: false,
+                //    create: false,
+                //    edit: true,
+                //    options: '/Center/GetEmployee'
+                //},
+                //GeoLocationID: {
+                //    title: 'Location',
+                //    options: '/Office/GetGeoLocation',
+                //    create: false,
+                //    edit: true,
+                //    list: false
+                //},
+                CenterAddress: {
+                    title: 'Address',
+                },
+                CollectionDay: {
+                    title: 'Coll day',
+                    options: '/Center/GetCollectionDay',
+                    // options: { 'Saturday': 'Saturday', 'Sunday': 'Sunday', 'Monday': 'Monday', 'Tuesday' : 'Tuesday', 'Wednesday' : 'Wednesday', 'Thursday' : 'Thursday', 'Friday' : 'Friday' },
+
+                },
+                CollectionDate: {
+                    title: 'Coll Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    list: true
+                },
+                OperationStartDate: {
+                    title: 'Opening Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+
+                },
+                CenterStatus: {
+                    title: 'Status',
+                    options: { '1': 'Active', '2': 'Silver', '3': 'Copper', '0': 'Drop' },
+                    list: true
+
+                },
+                Organizer: {
+                    title: 'Samity Type',
+                    // options: { 'Female': 'Female', 'Male': 'Male', 'Both': 'Both' },
+                    list: true,
+
+                },
+                CenterTimeOnly: {
+                    title: 'Center Time',
+                    list: true,
+
+                },
+                CenterChiefName: {
+                    title: 'Center Chief',
+                    list: true,
+
+                },
+                AssoCenterChiefName: {
+                    title: 'Asso Center Chief',
+                    list: true,
+
+                },
+                PanelMemberName: {
+                    title: 'Panel Member',
+                    list: true,
+
+                },
+                CenterCategoryName: {
+                    title: 'Category Name',
+                    list: true,
+
+                },
+                EditLink: {
+                    title: "Edit",
+                    sorting: false,
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/Center/AdminEdit?CenterID=" + data.record.CenterID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                }
+
+
+            }
+        });
+
+
+
+        reloadGrid();
+
+
+
+    });// END Document Ready
+
+
+
+
+
+
+
+    function GetEmpList() {
+        var ddlEmp = $("#ddlEmp");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmpList", "Center", "http")',
+            data: {},
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function centerType() {
+
+        var centerType = $("#CenterType option:selected").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLastCenterCode", "Center")',
+            type: "GET",
+            dataType: 'json',
+            async: false,
+            data: { centerType: centerType },
+
+            success: function (result) {
+                $("#CenterCode").val(result.centerCode);
+
+            },
+            error: function (error) {
+                alert('error');
+            }
+        });
+    }
+   function GetCollDay() {
+      var ddlEmp = $("#ddlColDay");
+        ddlEmp.html('');
+
+        ddlEmp.append($('<option></option>').val('0').html('Please Select'));
+        ddlEmp.append($('<option></option>').val('Saturday').html('Saturday'));
+        ddlEmp.append($('<option></option>').val('Sunday').html('Sunday'));
+        ddlEmp.append($('<option></option>').val('Monday').html('Monday'));
+        ddlEmp.append($('<option></option>').val('Tuesday').html('Tuesday'));
+        ddlEmp.append($('<option></option>').val('Wednesday').html('Wednesday'));
+        ddlEmp.append($('<option></option>').val('Thursday').html('Thursday'));
+        ddlEmp.append($('<option></option>').val('Friday').html('Friday'));
+
+    }
+    function reloadGrid() {
+        $("#loading").show();
+
+
+        let EmpId = $('#ddlEmp').val();
+
+        let CollDay = $('#ddlColDay').val();
+
+        if (EmpId == "") EmpId = getCookie("EmpIdAdmin"); //$('#ddlEmp').val()
+
+        if (CollDay == "") CollDay = getCookie("CollDayAdmin"); //$('#ddlColDay').val()
+
+
+        setCookie("EmpIdAdmin", EmpId, 5);
+        setCookie("CollDayAdmin", CollDay, 5); //setCookie("CollDay", $('#ddlColDay').val(), 365);
+
+        $('#grid').jtable('load', { EmpId: EmpId, CollDay: CollDay });
+        $("#loading").hide();
+    }
+</script>
+
+@Html.ActionLink("Add New", "AdminCreate", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Samity List</h2>
+
+
+<div class="row">
+    <div class="col-md-4">
+        @Html.Label("Employee", new { @class = "control-label" })
+        @Html.DropDownList("EmpList", null, new { @ID = "ddlEmp", @class = "form-control" })
+    </div>
+    <div class="col-md-4">
+        @Html.Label("CollectionDay", new { @class = "control-label" })
+        @*@Html.DropDownList("CenList", new[] {
+            new SelectListItem() {Text="Please Select", Value="0",Selected = true},
+            new SelectListItem() {Text="Saturday", Value="Saturday"},
+            new SelectListItem() {Text="Sunday", Value="Sunday"},
+            new SelectListItem() {Text="Monday", Value="Monday"},
+            new SelectListItem() {Text="Tuesday",Value="Tuesday"},
+            new SelectListItem() {Text="Wednesday",Value="Wednesday"},
+            new SelectListItem() {Text="Thursday",Value="Thursday"},
+            new SelectListItem() {Text="Friday",Value="Friday"}
+              },
+            new { @ID = "ddlColDay", @class = "form-control" })*@
+        @Html.DropDownList("CenList", null, new { @ID = "ddlColDay", @class = "form-control" })
+    </div>
+    <div class="col-md-4" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+<br />
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

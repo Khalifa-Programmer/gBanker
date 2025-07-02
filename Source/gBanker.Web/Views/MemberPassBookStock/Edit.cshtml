@@ -1,0 +1,143 @@
+﻿@model gBanker.Web.ViewModels.MemberPassBookStockViewModel
+
+@{
+    ViewBag.Title = "MemberPassBookStock Edit";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var office = Model == null ? null : Model.officeListItems;
+
+    var officeName = office.Where(o => o.Value == Model.OfficeID.ToString()).FirstOrDefault().Text;
+}
+<style type="text/css">
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#StartingNo").blur(function () {
+            var vStartingNo = $("#StartingNo").val();
+            var vQty = $("#Qty").val();
+            //var trxType = "102";
+
+            $("#LastIssue").val(parseFloat(vStartingNo) + parseFloat(vQty))
+
+
+        });
+        $("#StartingNo").change(function () {
+            var vStartingNo = $("#StartingNo").val();
+            var vQty = $("#Qty").val();
+            //var trxType = "102";
+
+            $("#LastIssue").val(parseFloat(vStartingNo) + parseFloat(vQty))
+        });
+
+    });
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Edit MemberPassBookRegister</h2>
+
+@using (Html.BeginForm("Edit", "MemberPassBookStock", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+
+        <div class="form-group" style="display :none">
+            @Html.LabelFor(model => model.MemberPassBookStockID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.MemberPassBookStockID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.MemberPassBookStockID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("txtOficeName", officeName, new { @class = "form-control", @readonly = true })
+                    @Html.HiddenFor(model => model.OfficeID)
+                    @*@Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })*@
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.LotNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.EditorFor(model => model.LotNo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LotNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Qty, htmlAttributes: new { @class = "control-label col-md-2" })
+
+                    @Html.EditorFor(model => model.Qty, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Qty, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.StartingNo, htmlAttributes: new { @class = "control-label col-md-2" })
+
+                    @Html.EditorFor(model => model.StartingNo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.StartingNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LastIssue, htmlAttributes: new { @class = "control-label col-md-2" })
+
+                    @Html.EditorFor(model => model.LastIssue, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.LastIssue, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}
+
+
+

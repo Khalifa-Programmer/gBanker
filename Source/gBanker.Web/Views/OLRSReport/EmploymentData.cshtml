@@ -1,0 +1,44 @@
+﻿
+@model gBanker.Core.Filters.PRA_EMPLOYMENT_ReportSearchFilter
+
+@{
+    ViewBag.Title = "Employment Data List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control", @autocomplete = "off", @placeholder = "mm/yyyy" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.EmploymentType, htmlAttributes: new { @class = "control-label" })
+        @Html.DropDownListFor(model => model.EmploymentType, DropdownListHelper.GetDropdownList(DropdownListTypes.EmploymentType, Model.EmploymentType), new { @class = "form-control" })
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.SYNCED_STATUS, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control" id="SYNCED_STATUS" name="SYNCED_STATUS">
+            <option value="">Any</option>
+            <option value="1">NOT SYNCED</option>
+            <option value="2">SYNCED</option>
+        </select>
+    </div>
+    <div class="col-md-5">
+        <button type="button" id="btnSearchEd" class="btn btn-primary"><i class="fa fa-search"></i> Search</button>    
+        <button type="button" id="btnRefreshEd" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+
+<div class="raw">
+    <div id="gridEd"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/olrsReportManager.js"></script>
+}

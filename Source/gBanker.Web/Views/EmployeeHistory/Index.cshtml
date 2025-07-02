@@ -1,0 +1,95 @@
+﻿@model gBanker.Web.ViewModels.EmployeeHistoryViewModel
+
+@{
+    ViewBag.Title = "Employee History List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    var EmployeeList = Model == null ? null : Model.EmployeeList;
+}
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+
+        $("#EmployeeID").change(function () {
+            if ($("#EmployeeID option:selected").val() > 0) {
+                $('#grid').jtable('load', { EmployeeID: $("#EmployeeID option:selected").val() });
+            }
+            else {
+                $('#grid').jtable('load', { EmployeeID: null });
+            }
+        });
+
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 50,
+            sorting: false,
+            defaultSorting: 'EmployeePosting ASC',
+            actions: {
+                listAction: '/EmployeeHistory/GetList',
+            },
+            fields: {
+                EmployeeHistoryId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                EmpName: {
+                    title: 'Employee Name',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office Name',
+                    width: '10%',
+                    create: false,
+                    edit: true
+                },
+                JoiningDate: {
+                    title: 'Joining Date',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                ReleaseDate: {
+                    title: 'Release Date',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                }
+            }
+        });
+        $('#grid').jtable('load');
+    });
+
+
+</script>
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Employee History List</h2>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmployeeID, new { @class = "control-label col-md-4 required" })
+            <div class="col-md-8">
+                @Html.DropDownListFor(model => model.EmployeeID, EmployeeList, new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="grid"></div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

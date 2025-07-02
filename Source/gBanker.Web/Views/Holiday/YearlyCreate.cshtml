@@ -1,0 +1,149 @@
+﻿@model gBanker.Web.ViewModels.HolidayViewModel
+@{
+    ViewBag.Title = "Yearly Holiday";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var offc = Model == null ? null : Model.OfficeList;
+    var center = Model == null ? null : Model.CenterList;
+    var holiType = Model == null ? null : Model.HolidayTypeList;
+    var week = Model == null ? null : Model.WeeklyList;
+}
+<script type="text/javascript">
+    function LoadCenterByOfficeId(office_id) {
+        var ddlCenters = $("#CenterID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "Member", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenters.html('');
+                $.each(data, function (id, option) {
+                    ddlCenters.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#loading").hide();
+        LoadCenterByOfficeId($("#OfficeID").val());
+        $("#btnYHoliday").click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+            var week_day = $("#WeeklyList").val();
+            var holiday_desc = $("#txtDesc").val();
+            var holiday_year = $("#txtYear").val();
+            var offcId = $("#OfficeID").val();
+            //var centerId = $("#CenterID").val();
+            if (offcId != null) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveYearlyHoliday", "Holiday", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { hYear: holiday_year, week_day: week_day, holiday_desc: holiday_desc, offcId: offcId },
+                    success: function (save_result) {
+                        $("#loading").hide();
+                        var msg, css;
+                        if (result == 'S') {
+                            $("#txtParentCode").val = '';
+                            $("#AccCode").val = '';
+                            $("#AccName").val = '';
+                            msg = "Saved Successfully";
+                            css = "success";
+                        }
+                        else if (result == 'F') {
+                            msg = "Failed to Save";
+                            css = "failed";
+                        }
+                        else {
+                            msg = "Failed to Save";
+                            css = "failed";
+                        }
+                        $("#dvMessage").attr('class', css);
+                        $("#dvMessage").html(msg);
+                        $("#dvMessage").show();
+                        if (result == null)
+                            $("#dvMessage").toggle('fade', 1500);
+                    },
+                    error: function (request, status, error) {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html(request.statusText);
+                        $("#dvMessage").show();
+                    }
+                });
+            }
+        });
+    });
+</script>
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+<h2 class="page-title">Yearly Holiday Create</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @*<div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label col-md-2" })                    
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" } )                        
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })                    
+                </div>
+            </div>
+        </div>*@
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.WeeklyList, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.HiddenFor(model => model.OfficeID)
+                        @Html.DropDownListFor(model => model.WeeklyList, week, new { @class = "form-control" } )
+                        @Html.ValidationMessageFor(model => model.WeeklyList, "", new { @class = "text-danger" })
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label" })
+                    
+                        @Html.TextBox("txtDesc", "", new { @class = "form-control" })
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("", "Year", new { @class = "control-label" })                    
+                    @Html.TextBox("txtYear", "", new { @class = "form-control" })
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+
+                    <input type="submit" value="Save" class="btn btn-primary" id="btnYHoliday" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+

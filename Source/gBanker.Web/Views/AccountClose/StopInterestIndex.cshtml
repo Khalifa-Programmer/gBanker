@@ -1,0 +1,256 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.AccountCloseViewModel>
+
+@{
+    ViewBag.Title = "Stop Interest Account List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+            // title: 'Special Saving Collection List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/AccountClose/GetStopInterest?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+                ,
+
+                updateAction: '/AccountClose/StopInterestEdit',
+                //deleteAction: '/AccountClose/StopInterestDelete'
+            },
+            fields: {
+                SavingSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    //width: '10%',
+                    create: false,
+                    edit: false
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                MemberID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Info',
+                    //width: '15%',
+                    create: false,
+                    edit: true,
+                    display: function (data) {
+                        return data.record.MemberCode + ' - ' + data.record.MemberName;
+                    },
+                    input: function (data) {
+                        if (data.record) {
+                            return '<label>' + data.record.MemberCode + ' - ' + data.record.MemberName + '</label>';
+                            //return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.MemberCode + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+
+                ProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                    // width: '10%',
+                    create: false,
+                    edit: false
+                },
+
+                NoOfAccount: {
+                    title: 'Account No.',
+                    list: true,
+                    create: false,
+                    edit: false
+                },
+                Balance: {
+                    list: true,
+                    create: false,
+                    edit: true,
+                    title: 'Balance',
+                    width: '10%'//,
+                    //input: function (data) {
+                    //    if (data.record) {
+                    //        return '<input type="text" onblur="checkTotalPaid(' + data.record.DailySavingTrxID + ');"' + ' id="Balance" name="Balance" style="width:200px"  value="' + data.record.Balance + '" />';
+                    //    } else {
+                    //        return '<input type="text" name="Balance" style="width:200px" value="" />';
+                    //    }
+                    //}
+
+                }
+            }
+        });
+        @*$('#grid').jtable({
+           // title: 'Account Close',
+            actions: {
+                listAction: '/AccountClose/GetAccountClose',
+                updateAction: '/AccountClose/Edit',
+                deleteAction: '/AccountClose/Delete'
+               // deleteAction: '@Url.Action("DeleteDisburse")',
+            },
+            fields: {
+                SavingSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    //width: '10%',
+                    create: false,
+                    edit: false
+                },
+                CenterID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                   // width: '10%',
+                    create: false,
+                    edit: false
+                },
+                MemberID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Info',
+                    //width: '15%',
+                    create: false,
+                    edit: true,
+                    display: function (data) {
+                        return data.record.MemberCode + ' - ' + data.record.MemberName;
+                    },
+                    input: function (data) {
+                        if (data.record) {
+                            return '<label>' + data.record.MemberCode + ' - ' + data.record.MemberName + '</label>';
+                            //return '<input type="text" name="Name" style="width:200px" disabled="disabled" value="' + data.record.MemberCode + '" />';
+                        } else {
+                            return '<input type="text" name="Name" style="width:200px" value="enter your name here" />';
+                        }
+                    }
+                },
+
+                ProductID: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                   // width: '10%',
+                    create: false,
+                    edit: false
+                },
+
+                NoOfAccount: {
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                 Balance: {
+                    list: true,
+                     create: false,
+                     edit: true,
+                     title: 'Balance',
+                     width: '10%',
+                     input: function (data) {
+                         if (data.record) {
+                             return '<input type="text" onblur="checkTotalPaid(' + data.record.DailySavingTrxID + ');"' + ' id="Balance" name="Balance" style="width:200px"  value="' + data.record.Balance + '" />';
+                         } else {
+                             return '<input type="text" name="Balance" style="width:200px" value="" />';
+                         }
+                     }
+
+                 }
+            }
+        })
+        ;*@
+        $('#grid').jtable('load');
+        $('#EditDialogSaveButton').click(function () {
+            $("#Edit-DisburseStatus").val('Disbursed');
+        });
+    });
+
+</script>
+
+
+@Html.ActionLink("Add New", "StopInterestCreate", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Stop Interest Account</h2>
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}
+
+

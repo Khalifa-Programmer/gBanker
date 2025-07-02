@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - gBanker Web</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/themes/base/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+
+    @RenderSection("scripts", required: false)
+    <link href="~/Content/akono/styles/style.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/akono/styles/skin.css" rel="stylesheet" type="text/css" />
+    <!--[if IE 6]>
+    <script src="../content/akono/js/ie6-transparency.js"></script>
+    <script>DD_belatedPNG.fix('#header img, #featured-section h2, #circles img, #frontpage-sidebar .read-more, .blue-bullets li, #sidebar .sidebar-button, #project-content .read-more, .more-link, #contact-form .submit, .jcarousel-skin-tango .jcarousel-next-horizontal, .jcarousel-skin-tango .jcarousel-prev-horizontal, #commentform .submit');</script>
+    <style>body { behavior: url("../content/akono/styles/ie6-hover-fix.htc"); }</style>
+    <link rel="stylesheet" href="../content/akono/styles/ie6.css" />
+    <![endif]-->
+    <!--[if IE 7]><link rel="stylesheet" href="styles/ie7.css" /><![endif]-->
+    <!--[if IE 8]><link rel="stylesheet" href="styles/ie8.css" /><![endif]-->
+</head>
+<body class="home">
+    <div id="wrap">
+        @if (Request.IsAuthenticated)
+        {
+            var parentModules = gBanker.Web.Helpers.SessionHelper.AllPrentModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+            var userModules = gBanker.Web.Helpers.SessionHelper.UserSecurityModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+            <div id="header">
+                <div id="nav">
+                    <ul class="menu">
+                        <li class="current_page_item">@Html.ActionLink("Home", "Index", "Home")</li>
+                        @foreach (var module in parentModules)
+                        {
+                            if (module.AspNetSecurityModuleId != 1)
+                            {
+                                var securityModules = userModules.Where(w => w.ParentModuleId == module.AspNetSecurityModuleId).ToList();
+                                if (securityModules.Count > 0)
+                                {
+                                    <li>
+                                        <a href="#">@module.LinkText</a>
+                                        <ul class="sub-menu">
+                                            @foreach (var securityModule in securityModules)
+                                            {
+                                                <li>@Html.ActionLink(securityModule.LinkText, securityModule.ActionName, securityModule.ControllerName)</li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            }
+                        }
+                        <li><a href="#">Help</a></li>
+                    </ul>
+
+                </div>
+                <!--end nav-->
+            </div>
+        }
+        <div id="featured-section">
+            @RenderSection("featured", required: false)
+            <section id="login">
+                @Html.Partial("_LoginPartial")
+            </section>
+        </div>
+        <div id="frontpage-main">
+
+            <section class="content-wrapper main-content clear-fix">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                @RenderBody()
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Save" class="btn btn-default" id="btnSave" name="btnSave" />
+                    </div>
+                </div>
+                <div>
+                    @Html.ActionLink("Back to List", "Index")
+                </div>
+            }
+            </section>
+        </div>
+        <div id="footer">
+            <p class="copyright">Copyright &copy; @gBanker.Web.Helpers.ApplicationSettings.OrganiztionName</p>
+        </div>
+        <!--end footer-->
+    </div>
+
+    <div id="divProcessing">
+        <p>Processing, please wait . . . <img src="../../Content/ajax-loader.gif"></p>
+    </div>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            // Hide the "busy" Gif at load:
+            $("#divProcessing").hide();
+
+            // Attach click handler to the submit button:
+            //$('#btnSave').click(function () {
+            //    $('#entryForm').submit();
+            //});
+
+            // Handle the form submit event, and make the Ajax request:
+            $("form").on("submit", function (event) {
+                event.preventDefault();
+
+                // Show the "busy" Gif:
+                $("#divProcessing").show();
+                var url = $(this).attr("action");
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    success: function (resp) {
+
+                        // Hide the "busy" gif:
+                        $("#divProcessing").hide();
+
+                        // Do something useful with the data:
+                        alert("success");
+                        $("#divProcessing").hide();
+                    },
+                    error: function (err) {
+                        alert(err);
+                        $("#divProcessing").hide();
+                    }
+
+                })
+            });
+        });
+    </script>
+</body>
+</html>

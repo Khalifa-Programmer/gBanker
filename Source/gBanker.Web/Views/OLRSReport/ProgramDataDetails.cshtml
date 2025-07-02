@@ -1,0 +1,495 @@
+﻿
+@model gBanker.Data.DBDetailModels.OLRSHubs.OLRSHubPayloads.PRA_MN_RPT_TAB_XL_PD_Model
+
+@{
+    ViewBag.Title = "Program Data Details";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<a class = "pull-right" href="/olrsreport/ProgramData">Back to List</a>
+
+<h2 class="page-title" style="margin: 0 0 10px;">@ViewBag.Title</h2>
+
+<div class="program-data-details">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-3">
+                    <h4> Month/Year <span class="label label-primary">@Model.MNYR</span></h4>
+                </div>
+                <div class="col-lg-3">
+                    <h4> Indicator <span class="label label-success">@Model.IND_INFO</span></h4>
+                </div>
+                <div class="col-lg-3">
+                    <h4> Male/Female Flag <span class="label label-info">@Model.M_F_FLAG</span></h4>
+                </div>
+                <div class="col-lg-3">
+                    <h4> Total <span class="label label-warning">@Model.TOTAL</span></h4>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+
+    <div class="row">
+        <div class="col-lg-6">
+            <table class="table table-striped">
+
+                <tr>
+                    <td>@Model.LOAN_00_Product</td>
+                    <td>@Model.LOAN_00</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_01_Product</td>
+                    <td>@Model.LOAN_01</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_02_Product</td>
+                    <td>@Model.LOAN_02</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_03_Product</td>
+                    <td>@Model.LOAN_03</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_04_Product</td>
+                    <td>@Model.LOAN_04</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_05_Product</td>
+                    <td>@Model.LOAN_05</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_06_Product</td>
+                    <td>@Model.LOAN_06</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_07_Product</td>
+                    <td>@Model.LOAN_07</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_08_Product</td>
+                    <td>@Model.LOAN_08</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_09_Product</td>
+                    <td>@Model.LOAN_09</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_10_Product</td>
+                    <td>@Model.LOAN_10</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_11_Product</td>
+                    <td>@Model.LOAN_11</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_12_Product</td>
+                    <td>@Model.LOAN_12</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_13_Product</td>
+                    <td>@Model.LOAN_13</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_14_Product</td>
+                    <td>@Model.LOAN_14</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_15_Product</td>
+                    <td>@Model.LOAN_15</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_16_Product</td>
+                    <td>@Model.LOAN_16</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_17_Product</td>
+                    <td>@Model.LOAN_17</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_18_Product</td>
+                    <td>@Model.LOAN_18</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_19_Product</td>
+                    <td>@Model.LOAN_19</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_20_Product</td>
+                    <td>@Model.LOAN_20</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_20_Product</td>
+                    <td>@Model.LOAN_20</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_21_Product</td>
+                    <td>@Model.LOAN_21</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_22_Product</td>
+                    <td>@Model.LOAN_22</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_23_Product</td>
+                    <td>@Model.LOAN_23</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_24_Product</td>
+                    <td>@Model.LOAN_24</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_25_Product</td>
+                    <td>@Model.LOAN_25</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_26_Product</td>
+                    <td>@Model.LOAN_26</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_27_Product</td>
+                    <td>@Model.LOAN_27</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_28_Product</td>
+                    <td>@Model.LOAN_28</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_29_Product</td>
+                    <td>@Model.LOAN_29</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_30_Product</td>
+                    <td>@Model.LOAN_30</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_31_Product</td>
+                    <td>@Model.LOAN_31</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_32_Product</td>
+                    <td>@Model.LOAN_32</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_33_Product</td>
+                    <td>@Model.LOAN_33</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_34_Product</td>
+                    <td>@Model.LOAN_34</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_35_Product</td>
+                    <td>@Model.LOAN_35</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_36_Product</td>
+                    <td>@Model.LOAN_36</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_37_Product</td>
+                    <td>@Model.LOAN_37</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_38_Product</td>
+                    <td>@Model.LOAN_38</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_39_Product</td>
+                    <td>@Model.LOAN_39</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_40_Product</td>
+                    <td>@Model.LOAN_40</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_41_Product</td>
+                    <td>@Model.LOAN_41</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_42_Product</td>
+                    <td>@Model.LOAN_42</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_43_Product</td>
+                    <td>@Model.LOAN_43</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_44_Product</td>
+                    <td>@Model.LOAN_44</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_45_Product</td>
+                    <td>@Model.LOAN_45</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_46_Product</td>
+                    <td>@Model.LOAN_46</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_47_Product</td>
+                    <td>@Model.LOAN_47</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_48_Product</td>
+                    <td>@Model.LOAN_48</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_49_Product</td>
+                    <td>@Model.LOAN_49</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_50_Product</td>
+                    <td>@Model.LOAN_50</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_51_Product</td>
+                    <td>@Model.LOAN_51</td>
+                </tr>
+
+            </table>
+
+        </div>
+        <div class="col-lg-6">
+            <table class="table table-striped">
+                <tr>
+                    <td>@Model.LOAN_52_Product</td>
+                    <td>@Model.LOAN_52</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_53_Product</td>
+                    <td>@Model.LOAN_53</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_54_Product</td>
+                    <td>@Model.LOAN_54</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_55_Product</td>
+                    <td>@Model.LOAN_55</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_56_Product</td>
+                    <td>@Model.LOAN_56</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_57_Product</td>
+                    <td>@Model.LOAN_57</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_58_Product</td>
+                    <td>@Model.LOAN_58</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_59_Product</td>
+                    <td>@Model.LOAN_59</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_60_Product</td>
+                    <td>@Model.LOAN_60</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_61_Product</td>
+                    <td>@Model.LOAN_61</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_62_Product</td>
+                    <td>@Model.LOAN_62</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_63_Product</td>
+                    <td>@Model.LOAN_63</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_64_Product</td>
+                    <td>@Model.LOAN_64</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_65_Product</td>
+                    <td>@Model.LOAN_65</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_66_Product</td>
+                    <td>@Model.LOAN_66</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_67_Product</td>
+                    <td>@Model.LOAN_67</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_68_Product</td>
+                    <td>@Model.LOAN_68</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_69_Product</td>
+                    <td>@Model.LOAN_69</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_70_Product</td>
+                    <td>@Model.LOAN_70</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_71_Product</td>
+                    <td>@Model.LOAN_71</td>
+                </tr>
+
+
+                <tr>
+                    <td>@Model.LOAN_72_Product</td>
+                    <td>@Model.LOAN_72</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_73_Product</td>
+                    <td>@Model.LOAN_73</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_74_Product</td>
+                    <td>@Model.LOAN_74</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_75_Product</td>
+                    <td>@Model.LOAN_75</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_76_Product</td>
+                    <td>@Model.LOAN_76</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_77_Product</td>
+                    <td>@Model.LOAN_77</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_78_Product</td>
+                    <td>@Model.LOAN_78</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_79_Product</td>
+                    <td>@Model.LOAN_79</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_80_Product</td>
+                    <td>@Model.LOAN_80</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_81_Product</td>
+                    <td>@Model.LOAN_81</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_82_Product</td>
+                    <td>@Model.LOAN_82</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_83_Product</td>
+                    <td>@Model.LOAN_83</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_84_Product</td>
+                    <td>@Model.LOAN_84</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_85_Product</td>
+                    <td>@Model.LOAN_85</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_86_Product</td>
+                    <td>@Model.LOAN_86</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_87_Product</td>
+                    <td>@Model.LOAN_87</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_88_Product</td>
+                    <td>@Model.LOAN_88</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_89_Product</td>
+                    <td>@Model.LOAN_89</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_90_Product</td>
+                    <td>@Model.LOAN_90</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_91_Product</td>
+                    <td>@Model.LOAN_91</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_92_Product</td>
+                    <td>@Model.LOAN_92</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_93_Product</td>
+                    <td>@Model.LOAN_93</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_94_Product</td>
+                    <td>@Model.LOAN_94</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_95_Product</td>
+                    <td>@Model.LOAN_95</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_96_Product</td>
+                    <td>@Model.LOAN_96</td>
+                </tr>
+                <tr>
+                    <td>@Model.LOAN_97_Product</td>
+                    <td>@Model.LOAN_97</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_98_Product</td>
+                    <td>@Model.LOAN_98</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_99_Product</td>
+                    <td>@Model.LOAN_99</td>
+                </tr>
+
+                <tr>
+                    <td>@Model.LOAN_100_Product</td>
+                    <td>@Model.LOAN_100</td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

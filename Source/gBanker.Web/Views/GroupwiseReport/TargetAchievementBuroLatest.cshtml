@@ -1,0 +1,402 @@
+﻿@model gBanker.Web.ViewModels.TargetAchievementBuroLatestViewModel
+
+@{
+    ViewBag.Title = "Target Achievement Buro Latest";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+
+    .spinnermodal {
+        background-color: #FFFFFF;
+        height: 100%;
+        left: 0;
+        opacity: 0.5;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 100000;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#DateFrom").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeYear: true,
+            yearRange: "2000:2040",
+
+        });
+        $('#DateFrom').datepicker("setDate", new Date(2019, 6, 01));
+        //var DateFrom = $("#DateFrom").val();
+        //loadTargetAchievementBuroLatest(DateFrom);
+        $("#btnSearch").click(function () {
+            var DateFrom = $("#DateFrom").val();
+            var DateFromCheck = new Date($("#DateFrom").val());
+            var dateMonthCheck = ('0' + DateFromCheck.getDate()).slice(-2) + "-" + ('0' + (DateFromCheck.getMonth() + 1)).slice(-2);
+            if (dateMonthCheck == "01-07") {
+            } else {
+                $.alert.open('Error', "Please Valid Date (ex: 01-July-2019)");
+                $("#DateFrom").val("");
+            }
+            var EmployeeID = $("#EmployeeID option:selected").val();
+            loadTargetAchievementBuroLatest(DateFrom, EmployeeID);
+        });
+
+        $("#btnSave,#btnSavebotton").click(function () {
+            var DateFrom = $("#DateFrom").val();
+            var DateFromCheck = new Date($("#DateFrom").val());
+            var dateMonthCheck = ('0' + DateFromCheck.getDate()).slice(-2) + "-" + ('0' + (DateFromCheck.getMonth() + 1)).slice(-2);
+            if (dateMonthCheck == "01-07") {
+
+                var rowCount = $('#grid > div:nth-child(2) > table > tbody >tr').length;
+                var proposalList = new Array();
+                if (rowCount > 0) {
+                    for (i = 1; i <= rowCount; i++) {
+                        var Sl = $('#grid tr:eq(' + i + ') td:nth-child(2) input[type="text"]').val();
+                        //var Sl = $('#grid tr:eq(' + i + ') td:first input[type="text"]').val();
+                        //var Sl = $("#txtStatisticsReportDetailsID").val();
+                        var TargetId = $("#txtTargetId" + Sl).val();
+                        var ParticularId = $("#txtParticularId" + Sl).val();
+                        //var Balance = $("#txtBalance" + Sl).val();
+                        var Target = $("#txtTarget" + Sl).val();
+                        //var Achievement = $("#txtAchievement" + Sl).val();
+                        var OfficeID = $("#txtOfficeID" + Sl).val();
+                        //var ProductID = $("#txtProductID" + Sl).val();
+                        var EmployeeID = $("#EmployeeID option:selected").val(); //$("#txtEmployeeID" + Sl).val();
+                        var datefrom = $("#DateFrom").val(); //$("#txtDateStr" + Sl).val();
+                        var modelObject = {
+                            TargetId: TargetId,
+                            ParticularId: ParticularId,
+                            //Balance: Balance,
+                            Target: Target,
+                            //Achievement: Achievement,
+                            OfficeID: OfficeID,
+                            //ProductID: ProductID,
+                            EmployeeID: EmployeeID,
+                            Date: datefrom
+                        }
+                        proposalList.push(modelObject);
+                    }
+                }
+                debugger;
+                $.ajax({
+                    type: "POST",
+                    data: { ProposalList: proposalList },
+                    dataType: "json",
+                    url: '@Url.Action("UpdateTargetAchievementBuroLatestAll", "GroupwiseReport")',
+                    //contentType: "application/json; charset=utf-8",
+                    beforeSend: function () { showLoader(); },
+                    success: function (data) {
+                        //alert(data.result);
+                        var DateFrom = $("#DateFrom").val();
+                        var EmployeeID = $("#EmployeeID option:selected").val();
+                        loadTargetAchievementBuroLatest(DateFrom, EmployeeID);
+                        hideLoader();
+                        $.alert.open('Success', "Data Updated successfully");
+                        //if (data.result == 5) {
+                        //    hideLoader();
+                        //    $.alert.open('Success', "Data Saved successfully");
+                        //} else if (data.result == 1) {
+                        //    hideLoader();
+                        //    $.alert.open('Success', "Data Updated successfully");
+                        //}
+                    },
+                    error: function (xhr, status, error) {
+                        alert(error);
+                    }
+                });
+
+            } else {
+                $.alert.open('Error', "Please Valid Date (ex: 01-July-2019)");
+                $("#DateFrom").val("");
+            }
+            //var rowCount = $('#grid > div:nth-child(2) > table > tbody >tr').length;
+            //var proposalList = new Array();
+            //if (rowCount > 0) {
+            //    for (i = 1; i <= rowCount; i++) {
+            //        var Sl = $('#grid tr:eq(' + i + ') td:nth-child(2) input[type="text"]').val();
+            //        //var Sl = $('#grid tr:eq(' + i + ') td:first input[type="text"]').val();
+            //        //var Sl = $("#txtStatisticsReportDetailsID").val();
+            //        var TargetId = $("#txtTargetId" + Sl).val();
+            //        var ParticularId = $("#txtParticularId" + Sl).val();
+            //        //var Balance = $("#txtBalance" + Sl).val();
+            //        var Target = $("#txtTarget" + Sl).val();
+            //        //var Achievement = $("#txtAchievement" + Sl).val();
+            //        var OfficeID = $("#txtOfficeID" + Sl).val();
+            //        //var ProductID = $("#txtProductID" + Sl).val();
+            //        var EmployeeID = $("#EmployeeID option:selected").val(); //$("#txtEmployeeID" + Sl).val();
+            //        var Date = $("#DateFrom").val(); //$("#txtDateStr" + Sl).val();
+            //        var modelObject = {
+            //            TargetId: TargetId,
+            //            ParticularId: ParticularId,
+            //            //Balance: Balance,
+            //            Target: Target,
+            //            //Achievement: Achievement,
+            //            OfficeID: OfficeID,
+            //            //ProductID: ProductID,
+            //            EmployeeID: EmployeeID,
+            //            Date: Date
+            //        }
+            //        proposalList.push(modelObject);
+            //    }
+            //}
+            //debugger;
+            //$.ajax({
+            //    type: "POST",
+            //    data: { ProposalList: proposalList },
+            //    dataType: "json",
+            //    url: '@Url.Action("UpdateTargetAchievementBuroLatestAll", "GroupwiseReport")',
+            //    //contentType: "application/json; charset=utf-8",
+            //    beforeSend: function () { showLoader(); },
+            //    success: function (data) {
+            //        //alert(data.result);
+            //        var DateFrom = $("#DateFrom").val();
+            //        var EmployeeID = $("#EmployeeID option:selected").val();
+            //        loadTargetAchievementBuroLatest(DateFrom, EmployeeID);
+            //        hideLoader();
+            //        $.alert.open('Success', "Data Updated successfully");
+            //        //if (data.result == 5) {
+            //        //    hideLoader();
+            //        //    $.alert.open('Success', "Data Saved successfully");
+            //        //} else if (data.result == 1) {
+            //        //    hideLoader();
+            //        //    $.alert.open('Success', "Data Updated successfully");
+            //        //}
+            //    },
+            //    error: function (xhr, status, error) {
+            //        alert(error);
+            //    }
+            //});
+        });
+
+
+
+
+
+
+    });
+
+    var rowNumber = 0;
+    function loadTargetAchievementBuroLatest(DateFrom, EmployeeID) {
+        var DateFrom = DateFrom;
+        var EmployeeID = EmployeeID;
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            //pageSize: 25,
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("loadTargetAchievementBuroLatest", "GroupwiseReport", "http")',
+                    dataType: 'json',
+                    data: { DateFrom: DateFrom, EmployeeID: EmployeeID }
+                }
+            }
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            },
+            columns: [
+                 {
+                     width: "50px",
+                     field: "RowSl",
+                     filterable: true,
+                     title: "Sl"
+                 },
+                 {
+                     hidden: true,
+                     width: "70px",
+                     field: "TargetId",
+                     filterable: true,
+                     title: "ID",
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="text" size="3" class="text-center" readonly="true" value=' + dataItem.TargetId + ' id="txtTargetId' + dataItem.TargetId + '" ></input></div>';
+                     }
+                 },
+                 {
+                     hidden: true,
+                     width: "70px",
+                     field: "ParticularId",
+                     filterable: true,
+                     title: "ParticularId",
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="text" size="3" class="text-center" readonly="true" value=' + dataItem.ParticularId + ' id="txtParticularId' + dataItem.TargetId + '" ></input></div>';
+                     }
+
+                 },
+                 {
+                     width: "150px",
+                     field: "ParticularName",
+                     filterable: true,
+                     title: "ParticularName"
+                 },
+                 //{
+                 //    width: "70px",
+                 //    field: "Balance",
+                 //    filterable: true,
+                 //    title: "Balance",
+                 //    template: function (dataItem) {
+                 //        return '<div class="text-center"><input type="text" size="3" class="text-center" value=' + dataItem.Balance + ' id="txtBalance' + dataItem.TargetId + '"></input></div>';
+                 //    }
+                 //},
+                 //{
+                 //    width: "300px",
+                 //    field: "TargetCurrentYear",
+                 //    filterable: true,
+                 //    title: "TargetCurrentYear"
+                 //},
+                 {
+                     width: "70px",
+                     field: "Target",
+                     filterable: true,
+                     title: "Target",
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="text" size="3" class="text-center" value=' + dataItem.Target + ' id="txtTarget' + dataItem.TargetId + '"></input></div>';
+                     }
+                 },
+                 //{
+                 //    width: "70px",
+                 //    field: "Achievement",
+                 //    filterable: true,
+                 //    title: "Achievement",
+                 //    template: function (dataItem) {
+                 //        return '<div class="text-center"><input type="text" size="3" class="text-center" value=' + dataItem.Achievement + ' id="txtAchievement' + dataItem.TargetId + '"></input></div>';
+                 //    }
+                 //},
+                 {
+                     hidden: true,
+                     width: "70px",
+                     field: "EmployeeID",
+                     filterable: true,
+                     title: "EmployeeID",
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="text" readonly="true" size="3" class="text-center" value=' + dataItem.EmployeeID + ' id="txtEmployeeID' + dataItem.TargetId + '"></input></div>';
+                     }
+                 },
+                 {
+                     width: "150px",
+                     field: "DateStr",
+                     filterable: true,
+                     title: "Date",
+
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="hidden" class="text-center" readonly="true" value=' + dataItem.DateStr + ' id="txtDateStr' + dataItem.TargetId + '" ><label>' + dataItem.DateStr + '</label></input></div>';
+                     }
+                 },
+
+
+            ]
+        });
+
+    }
+
+    function showLoader() {
+        $("#progressbar").css("display", "");
+    }
+
+    function hideLoader() {
+        setTimeout(function () {
+            $("#progressbar").css("display", "none");
+        }, 1000);
+    }
+
+</script>
+
+
+<h2 class="page-title">Target Achievement Buro Latest</h2>
+@using (Html.BeginForm("SearchDivision", "GroupwiseReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <br /><br />
+
+    <div class="spinnermodal" id="progressbar" style="display: none; z-index: 10001">
+        <div style="position: fixed; z-index: 10001; top: 50%; left: 50%; height:65px">
+            <img src="~/Content/charisma-master/bower_components/colorbox/example1/images/loading.gif" />
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6">
+            <label class="control-label col-md-4"> Statistics Report Date </label>
+            <div class="col-md-8">
+                @Html.EditorFor(model => model.DateFrom, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <label class="control-label col-sm-4">Employee Name</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.EmployeeID, Model.EmployeeList, new { @class = "form-control" })
+                @Html.HiddenFor(model => model.EmployeeID)
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6  pull-right">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <input type="button" value="Search" id="btnSearch" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-8">
+            @Html.HiddenFor(model => model.TargetId)
+        </div>
+    </div>
+}
+
+<br />
+
+<div class="pull-right"><input type="button" value="Save" id="btnSave" class="btn btn-primary" /></div>
+<h2 class="page-title">Target Achievement Buro Latest List</h2>
+<div id="grid"></div>
+<div class="pull-right"><input type="button" value="Save" id="btnSavebotton" class="btn btn-primary" /></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>

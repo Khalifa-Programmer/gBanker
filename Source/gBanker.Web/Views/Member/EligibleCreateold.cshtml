@@ -1,0 +1,812 @@
+﻿@model gBanker.Web.ViewModels.MemberViewModel
+
+@{
+    ViewBag.Title = "Member Approval";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var offc = Model == null ? null : Model.OfficeList;
+    var cntr = Model == null ? null : Model.CenterList;
+    var grp = Model == null ? null : Model.GroupList;
+    var country = Model == null ? null : Model.CountryList;
+    var div = Model == null ? null : Model.DivisionList;
+    var dist = Model == null ? null : Model.DistrictList;
+    var upo = Model == null ? null : Model.UpozillaList;
+    var uni = Model == null ? null : Model.UnionList;
+    var vill = Model == null ? null : Model.VillageList;
+    var mem_cat = Model == null ? null : Model.MemberCategoryList;
+    var gen = Model == null ? null : Model.GenderList;
+    var mem_status = Model == null ? null : Model.MemberStatusList;
+    var cityzen = Model == null ? null : Model.CityzenshipList;
+    var home = Model == null ? null : Model.HomeTypeList;
+    var groupTyp = Model == null ? null : Model.GroupTypeList;
+    var edu = Model == null ? null : Model.EducationList;
+    var eco = Model == null ? null : Model.EconomicActivityList;
+    var pob = Model == null ? null : Model.PlaceOfBirthList;
+    var marry = Model == null ? null : Model.MaritalStatusList;
+    var memCat = Model == null ? null : Model.MemCategoryList;
+}
+<style>
+    .thumb-img {
+        width: 60%;
+        height: auto;
+    }
+</style>
+<script src="~/Scripts/jquery.form.min.js"></script>
+<script type="text/javascript">
+
+    function GetMemberCode(office_id, group_id) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLatestMemCode", "Member", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: { office_id: office_id, group_id: group_id },
+            success: function (last_code) {
+                $("#MemberCode").val(last_code);
+                //alert($("#MemberCode").val());
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    function LoadCenterByOfficeId(office_id) {
+        var ddlCenters = $("#CenterID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "Member", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenters.html('');
+                $.each(data, function (id, option) {
+                    ddlCenters.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    function LoadGroupByOfficeId(office_id) {
+        var ddlCenters = $("#GroupID");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGroupList", "Member", "http")',
+            data: { office_id: office_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenters.html('');
+                $.each(data, function (id, option) {
+                    ddlCenters.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+    function LoadDivisionByCountry(country_id, division_id) {
+        var ddlDivision = $("#DivisionCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDivisionList", "Member", "http")',
+            data: { country_id: country_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlDivision.html('');
+                $.each(data, function (id, option) {
+                    ddlDivision.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (division_id > 0 && division_id != null) {
+                    ddlDivision.val(division_id);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadDistrictByDivision(div_id, dis_id) {
+        var ddlDistrict = $("#DistrictCode");
+        //var ddlPlaceOfBirth = $("#PlaceOfBirth");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Member", "http")',
+            data: { div_id: div_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlDistrict.html('');
+                //ddlPlaceOfBirth.html('');
+                $.each(data, function (id, option) {
+                    ddlDistrict.append($('<option></option>').val(option.Value).html(option.Text));
+                    //ddlPlaceOfBirth.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (dis_id > 0 && dis_id != null) {
+                    ddlDistrict.val(dis_id);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadUpozillaByDistrict(dis_id, upo_id) {
+        var ddlUpozilla = $("#UpozillaCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUpozillaList", "Member", "http")',
+            data: { dis_id: dis_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlUpozilla.html('');
+                $.each(data, function (id, option) {
+                    ddlUpozilla.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (upo_id > 0 && upo_id != null) {
+                    ddlUpozilla.val(upo_id);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadUnionByUpozilla(upo_id, uni_id) {
+        var ddlUnion = $("#UnionCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUnionList", "Member", "http")',
+            data: { upo_id: upo_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlUnion.html('');
+                $.each(data, function (id, option) {
+                    ddlUnion.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (uni_id > 0 && uni_id != null) {
+                    ddlUnion.val(uni_id);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function LoadVillageByUnion(uni_id, vil_id) {
+        var ddlVillage = $("#VillageCode");
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetVillageList", "Member", "http")',
+            data: { uni_id: uni_id },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                ddlVillage.html('');
+                $.each(data, function (id, option) {
+                    ddlVillage.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (vil_id != '0' && vil_id != null) {
+                    ddlVillage.val(vil_id);
+                }
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function showMyImage(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image file cannot be greater than 100 KB.');
+            }
+            else {
+                $("#ImgFile").replaceWith($("#ImgFile").clone(true));
+                alert('Please select a valid image file');
+            }
+
+        }
+    }
+
+    $(document).ready(function () {
+        var coun_id = $("#CountryID").val();
+        var div_id = $("#hfDivisionCode").val();
+        var dis_id = $("#hfDistrictCode").val();
+        var upo_id = $("#hfUpozillaCode").val();
+        var uni_id = $("#hfUnionCode").val();
+        var vil_id = $("#hfVillageCode").val();
+        var cen_id = $("#CenterID").val();
+
+        if (coun_id != "")
+            LoadDivisionByCountry(coun_id, div_id);
+        if (div_id != "")
+            LoadDistrictByDivision(div_id, dis_id);
+        if (dis_id != "")
+            LoadUpozillaByDistrict(dis_id, upo_id);
+        if (upo_id != "")
+            LoadUnionByUpozilla(upo_id, uni_id);
+        if (uni_id != "")
+            LoadVillageByUnion(uni_id, vil_id);
+
+
+
+        $("#BirthDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1950:2025"
+            });
+        $("#JoinDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        //$("#JoinDate").val('');
+        //LoadCenterByOfficeId($("#OfficeID").val());
+        //LoadGroupByOfficeId($("#OfficeID").val());
+
+        $("#CenterID").change(function () {
+            var center_id = $("#CenterID").val();
+            if (center_id > 0) {
+                var grp = $("#CenterID :selected").text().split(',')[0];
+                $("#GroupID option:contains(" + grp + ")").attr('selected', 'selected');
+                $("#MemberCategoryID").focus();
+                //var dd = document.getElementById('GroupID');
+                //for (var i = 0; i < dd.options.length; i++) {
+                //    if (dd.options[i].text === grp) {
+                //        dd.selectedIndex = i;
+                //        break;
+                //    }
+                //}
+            }
+        });
+        $("#CountryID").change(function () {
+            var country_id = $("#CountryID").val();
+            var division_id = $("#hfDivisionCode").val();
+
+            if (division_id == null)
+            {
+                division_id = 0;
+            }
+
+            if (country_id > 0) {
+                LoadDivisionByCountry(country_id, division_id);
+            }
+        });
+        $("#DivisionCode").change(function () {
+            var div_id = $("#DivisionCode").val();
+            var dis_id = $("#hfDistrictCode").val();
+
+            if (dis_id == null) {
+                dis_id = 0;
+            }
+
+            if (div_id > 0) {
+                LoadDistrictByDivision(div_id, dis_id);
+            }
+        });
+        $("#DistrictCode").change(function () {
+            var dis_id = $("#DistrictCode").val();
+            var upo_id = $("#hfUpozillaCode").val();
+            if (dis_id > 0) {
+                LoadUpozillaByDistrict(dis_id,upo_id);
+            }
+        });
+        $("#UpozillaCode").change(function () {
+            var upo_id = $("#UpozillaCode").val();
+            var uni_id = $("#hfUnionCode").val();
+            if (upo_id > 0) {
+                LoadUnionByUpozilla(upo_id, uni_id);
+            }
+        });
+        $("#UnionCode").change(function () {
+            var uni_id = $("#UnionCode").val();
+            var vil_id = $("#hfVillageCode").val();
+            if (uni_id > 0) {
+                LoadVillageByUnion(uni_id, vil_id);
+            }
+        });
+
+        var MemberID = $("#MemberID").val();
+        $.ajax({
+           
+            url: '/Member/GetMemberProdList?id=' + MemberID,
+            type: 'POST',
+            dataType: 'json',
+           
+            data: JSON.stringify({ id: '1' }),
+            success: function (data_tbl) {
+                for (var i = 0; i < data_tbl.length; ++i) {
+                    $('#checkboxlist').append('<div>');
+                    $('#checkboxlist').append('<input type="checkbox" id=chk' + data_tbl[i].ProductID + ' value=' + data_tbl[i].ProductID + ' class="chk">' + data_tbl[i].ProductName);
+                    $('#checkboxlist').append('</div>');
+                }
+            },
+            error: function (ex) {
+                var r = jQuery.parseJSON(response.responseText);
+                alert("Message: " + r.Message);
+                alert("StackTrace: " + r.StackTrace);
+                alert("ExceptionType: " + r.ExceptionType);
+            }
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            //var allIds = new Array();
+            var Prod = new Array();
+            $(".chk:checked").each(function () {                
+                //ProdList.push($(this).val());
+                Prod[Prod.length] = $(this).val();
+            });
+            //var allTrx = new Object();            
+            //allTrx.ProdList = Prod;
+            //var json = JSON.stringify(allTrx);
+            //console.log(json);
+            $('#MemProfile').ajaxSubmit({
+                type: "POST",
+                target: '#checkboxlist',
+                async: true,
+                data: {ProdList : Prod},
+                dataType: 'json',
+                resetForm: true,
+                success: function (data) {
+                    //$("#dialog-message").html('<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Member Approved Successfully.</p>');                    
+                    //$("#dialog-message").dialog({
+                    //    modal: true,
+                    //    buttons: {
+                    //        Ok: function () {
+                    //            $(this).dialog("close");
+                    //        }
+                    //    }
+                    //});
+                    
+                    window.location.href = "/Member/Eligible";
+                },
+                error: function () {                    
+                    alert('Error');
+                }
+            });           
+        });
+                
+            
+        ///////////////
+    });
+
+</script>
+
+@Html.ActionLink("Back to List", "Eligible", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Member Approval</h2>
+
+@using (Html.BeginForm("EligibleCreate", "Member", FormMethod.Post, new { enctype = "multipart/form-data", id = "MemProfile" }))
+{
+    @Html.AntiForgeryToken()
+    <div id="dialog-message" title="Message" style="display:none;">
+        <p>
+            <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+            Your files have downloaded successfully into the My Downloads folder.
+        </p>
+    </div>
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MemberCode, htmlAttributes: new { @class = "control-label" })
+
+                    @*@Html.EditorFor(model => model.MemberCode, new { htmlAttributes = new { @class = "form-control" } })*@
+                    @Html.TextBox("MemberCodeReadonly", Model.MemberCode, new { @class = "form-control", @readonly = "readonly" })
+                    @Html.ValidationMessageFor(model => model.MemberCode, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.HiddenFor(model => model.OfficeID)
+                </div>
+            </div>
+
+
+            <div class="col-md-6">
+                &nbsp;
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @*@Html.LabelFor(model => model.MemberCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.MemberCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.MemberCode, "", new { @class = "text-danger" })*@
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.CenterID, cntr, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.HiddenFor(model => model.OfficeID)
+                    @Html.HiddenFor(model => model.MemberCode)
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GroupID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.DropDownListFor(model => model.GroupID, grp, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.GroupID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MemberCategoryID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.DropDownListFor(model => model.MemberCategoryID, mem_cat, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.MemberCategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MiddleName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.MiddleName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.MiddleName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CountryID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.CountryID, country, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.CountryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.DivisionCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.DivisionCode, div, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.DivisionCode, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.DivisionCode, new { @id = "hfDivisionCode" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.DistrictCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.DistrictCode, dist, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.DistrictCode, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.DistrictCode, new { @id = "hfDistrictCode" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UpozillaCode, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.UpozillaCode, upo, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.UpozillaCode, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.UpozillaCode, new { @id = "hfUpozillaCode" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.UnionCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.UnionCode, uni, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.UnionCode, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.UnionCode, new { @id = "hfUnionCode" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <lable class="control-label">Village / Street</lable>
+                    @Html.DropDownListFor(model => model.VillageCode, vill, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.VillageCode, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model => model.VillageCode, new { @id = "hfVillageCode" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ZipCode, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.ZipCode, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.ZipCode, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddressLine2, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.AddressLine2, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.AddressLine2, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.BirthDate, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.BirthDate, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.BirthDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PlaceOfBirth, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.PlaceOfBirth, pob, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.PlaceOfBirth, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Cityzenship, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.Cityzenship, cityzen, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.Cityzenship, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Gender, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.Gender, gen, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NationalID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.NationalID, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.NationalID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.JoinDate, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.JoinDate, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.JoinDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.HomeType, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+                    @Html.DropDownListFor(model => model.HomeType, home, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.HomeType, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GroupType, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.GroupType, groupTyp, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.GroupType, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Education, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.Education, edu, new { @class = "form-control", @disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.Education, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FatherName, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.FatherName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.FatherName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MotherName, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.MotherName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.MotherName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FamilyMember, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.FamilyMember, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.FamilyMember, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PhoneNo, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.PhoneNo, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.PhoneNo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Spouse (Husband/Wife) Name</label>
+                    @Html.EditorFor(model => model.RefereeName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.RefereeName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Co Applicant Name</label><span style="color:red; font-size:15px;"> * </span>
+                    @Html.EditorFor(model => model.CoApplicantName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.CoApplicantName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.EconomicActivity, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.EconomicActivity, eco, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.EconomicActivity, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TotalWealth, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.TotalWealth, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.TotalWealth, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MaritalStatus, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.MaritalStatus, marry, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MaritalStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MemCategory, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.MemCategory, memCat, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MemCategory, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SmartCard, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.SmartCard, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.SmartCard, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MemberImg, htmlAttributes: new { @class = "control-label" })
+
+                            @Html.TextBoxFor(model => model.ImgFile, new { type = "file", @onchange = "showMyImage(this);", @class = "form-control" })
+                            @*<input type="file" accept="image/*" onchange="showMyImage(this)" id="imagedata"ImgFile />*@
+                            @Html.ValidationMessageFor(model => model.MemberImg, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <img id="thumbnil" src="~/Member/RetrieveImage/@Model.MemberID" alt="Member Image" class="img-responsive thumb-img" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="FingerThumb" src="~/Member/RetrieveFingerImage/@Model.MemberID" alt="Member Image" class="img-responsive thumb-img" style="float: right;" />
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ThumbImg, htmlAttributes: new { @class = "control-label" })
+                            @Html.TextBoxFor(model => model.ThumbImgFile, new { type = "file", @onchange = "showMyImage(this);", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.ThumbImg, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div id="checkboxlist"></div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="Approved" class="btn btn-primary" id="btnSave" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+

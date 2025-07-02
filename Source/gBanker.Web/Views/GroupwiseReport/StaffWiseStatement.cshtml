@@ -1,0 +1,389 @@
+﻿
+@{
+    ViewBag.Title = "StaffWiseStatement";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+
+    function GetZoneOffice() {
+        var HO_val = $("#ddlHO").val();
+        if (HO_val > 0) {
+            var ddlZone = $("#ddlZone");
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetZoneList", "GroupwiseReport", "http")',
+                data: { HO_val: HO_val },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    ddlZone.html('');
+                    ddlZone.append($('<option></option>').val("0").html("Please Select"));
+                    $.each(data, function (id, option) {
+                        ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        else {
+            $("#ddlZone").empty();
+            $("#ddlArea").empty();
+            $("#ddlOffice").empty();
+        }
+    }
+
+    function GetHO() {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "GroupwiseReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                GetZoneOffice();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function rdcheckinfo() {
+        var rdcheck = $("input[name='under']:checked").val();
+        if (rdcheck == "rdHead") {
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+            $("#ddlOffice").prop("disabled", true);
+            $("#hdnvalue").val(rdcheck);
+        }
+        else if (rdcheck == "rdZone") {
+            $("#ddlZone").prop("disabled", false);
+            $("#ddlArea").prop("disabled", true);
+            $("#ddlOffice").prop("disabled", true);
+            $("#hdnvalue").val(rdcheck);
+        }
+        else if (rdcheck == "rdArea") {
+            $("#ddlZone").prop("disabled", false);
+            $("#ddlArea").prop("disabled", false);
+            $("#ddlOffice").prop("disabled", true);
+            $("#hdnvalue").val(rdcheck);
+        }
+        else if (rdcheck == "rdOffice") {
+            $("#ddlZone").prop("disabled", false);
+            $("#ddlArea").prop("disabled", false);
+            $("#ddlOffice").prop("disabled", false);
+            $("#hdnvalue").val(rdcheck);
+        } else {
+
+        }
+    }
+
+
+    $(document).ready(function () {
+        $("#dv").hide();
+        GetHO();
+
+        $("input[type='radio']").on("change", function (e) {
+            rdcheckinfo();
+        });
+
+        $("input[type='radio']").on("change", function (e) {
+            if (e.target.id == "rdDivision" && e.target.checked) {
+                $("#ddlZone").val('');
+                $("#ddlZone").attr("readonly", true)
+                $("#ddlOffice").val('');
+                $("#ddlArea").val('');
+                $("#ddlArea").attr("readonly", true)
+                $("#ddlOffice").attr("readonly", true)
+                $("#dv").show();
+                $("#dvZone").hide();
+                getDivisionAndRegion('/Office/DivisionShow', $("#ddlDivision"))
+            }
+            else {
+                $("#ddlZone").attr("readonly", false)
+                $("#ddlOffice").attr("readonly", false)
+                $("#ddlArea").attr("readonly", false)
+                $("#ddlDivision").empty();
+                $("#ddlProgram").empty();
+                $("#dv").hide();
+                $("#dvZone").show();
+            }
+        })
+
+        function getDivisionAndRegion(url, ddl) {
+            //debugger
+            ddl.html('');
+            ddl.append($('<option></option>').val("").html("Please Select"));
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: url,
+                //data: { HO_val: HO_val, zone_val: zone_val },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+
+
+                    $.each(data, function (id, option) {
+                        ddl.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        $("#ddlDivision").change(function () {
+
+            getDivisionAndRegion('/Office/RegionShow?rdID=' + ($(this).val() ? $(this).val() : '-1') + '', $("#ddlProgram"))
+        });
+
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "GroupwiseReport", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlArea.html('');
+                        ddlArea.append($('<option></option>').val("0").html("Please Select"));
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        $("#ddlOffice").empty();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0 && area_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetBranchOfficeList", "GroupwiseReport", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+
+                        ddlOffice.html('');
+                        ddlOffice.append($('<option></option>').val("0").html("Please Select"));
+                        $.each(data, function (id, option) {
+                            ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+
+
+        $("#txtToDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var Qtype;
+            var office_id;
+            var DateTo = $("#txtToDt").val();
+            var rdcheck = $("#hdnvalue").val();
+
+            if (rdcheck == "rdHead") {
+                office_id = 0;
+                if (rdcheck == "rdHead" && office_id == 0) {
+                    office_id = 0;
+                    Qtype = 1;
+                } else{
+                    office_id = 0;
+                    Qtype = 1;
+                }
+
+            } else if (rdcheck == "rdZone") {
+                office_id = $("#ddlZone").val();
+                if (rdcheck == "rdZone" && office_id == 0) {
+                    office_id = 0;
+                    Qtype = 2;
+                } else {
+                    office_id = office_id;
+                    Qtype = 2;
+                }
+
+            } else if (rdcheck == "rdArea") {
+                office_id = $("#ddlArea").val();
+                if (rdcheck == "rdArea" && office_id == 0) {
+                    office_id = 0;
+                    Qtype = 3;
+                } else {
+                    office_id = office_id;
+                    Qtype = 3;
+                }
+
+            } else if (rdcheck == "rdOffice") {
+                office_id = $("#ddlOffice").val();
+                if (rdcheck == "rdOffice" && office_id == 0) {
+                    office_id = 0;
+                    Qtype = 4;
+                } else {
+                    office_id = office_id;
+                    Qtype = 4;
+                }
+
+            } else {
+                alert("Please select Any button");
+            }
+
+            if (office_id == null || office_id == "") {
+                
+                office_id = 0;
+            }
+
+
+            //var url = '/GroupwiseReport/GeneratePOMIS1HQConsolidateOfficewise?Qtype=' + Qtype + '&OfficeId=' + office_id + '&DateTo=' + DateTo;
+            var url = '/GroupwiseReport/GenerateStaffWiseStatement?OfficeId=' + office_id + '&Qtype=' + Qtype + '&DateTo=' + DateTo;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+        });
+
+
+    });
+</script>
+
+<h2 class="page-title">Staff Wise Statement Report</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Head Office", new { @class = "control-label" })
+                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control", @readonly = "true" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <input type="radio" id="rdHead" name="under" value="rdHead">
+                    <label for="under">Head Office Wise</label>
+                    &nbsp;&nbsp;&nbsp;
+                    <input type="radio" id="rdZone" name="under" value="rdZone">
+                    <label for="under">Zone Wise</label>
+                    &nbsp;&nbsp;&nbsp;
+                    <input type="radio" id="rdArea" name="under" value="rdArea">
+                    <label for="under">Area Wise</label>
+                    &nbsp;&nbsp;&nbsp;
+                    <input type="radio" id="rdOffice" name="under" value="rdOffice">
+                    <label for="under">Office Wise</label><br>
+                </div>
+            </div>
+        </div>
+        <div id="dv">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">Program/Project</label>
+                        <select class="form-control" id="ddlDivision"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">Division/Region</label>
+                        <select class="form-control" id="ddlProgram"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dvZone">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Zone Office", new { @class = "control-label" })
+                        @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Area Office", new { @class = "control-label" })
+                        @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Office", new { @class = "control-label" })
+                        @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <input style="display:none" type="button" name="hdnvalue" id="hdnvalue" value="" />
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

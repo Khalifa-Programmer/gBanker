@@ -1,0 +1,252 @@
+﻿@model gBanker.Web.ViewModels.MemberLedgerViewModel
+
+@{
+    ViewBag.Title = "Member Ledger";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var member = Model == null ? null : Model.memberListItems;
+    var office = Model == null ? null : Model.officeListItems;
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        @*$("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "RepaymentSchedule", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, oficeId: $("#OfficeID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            reloadGrid();
+                        }
+                        else if (data.length == 0) {
+                            alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                            alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                    
+                });
+               // reloadGrid();
+            }
+        });*@
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "RepaymentSchedule", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, oficeId: $("#OfficeID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+        //////////////////////////
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MemberLedger/GetMemberLedger?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InstallmentDate: {
+                    title: 'Inst. Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                  //  width: '10%'
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                   // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                   // width: '10%'
+
+                },
+                FirstName: {
+                    title: 'Member Name',
+                   // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                   // width: '8%'
+                },
+                InstallmentNo: {
+                    title: 'Installment No.',
+                    // width: '8%'
+                },
+                PrincipalLoan: {
+                    title: 'Principal Loan',
+                   // width: '8%'
+                },
+                LoanDue: {
+                    title: 'Loan Due',
+                   // width: '8%'
+                },
+                LoanInstallment: {
+                    title: 'Loan Paid',
+                   // width: '8%'
+                },
+                LoanBalance: {
+                    title: 'Loan Balance',
+                   // width: '8%'
+                },
+                IntCharge: {
+                    title: 'Int. Charge',
+                   // width: '8%'
+                },
+                InterestPaid: {
+                    title: 'Int. Paid',
+                   // width: '8%'
+                },
+                InterestBalance: {
+                    title: 'Int. Balance',
+                   // width: '8%'
+                },
+                CreateUser: {
+                    title: 'Create User',
+                    // width: '8%'
+                },
+                CreateDate: {
+                    title: 'Create Date',
+                    type: 'date',
+                    display: function (data) {
+                        return moment(data.record.CreateDate).format('DD/MM/YYYY HH:mm:ss');
+                    }
+                   // displayFormat: 'd-M-yy',
+                },
+            }
+        });
+        //reloadGrid();
+         //$('#grid').jtable('load');
+        //////////////////////////
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { MemberId: $('#MemberID').val() });
+    }
+    $('#btnProduct').click(function (e) {
+        e.preventDefault();
+        reloadGrid();
+     });
+</script>
+
+
+<h2 class="page-title">Borrower Ledger</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+            @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+            @Html.HiddenFor(model => model.MemberID)
+        </div>
+    </div>
+    <div class="col-md-6" style="padding-top:20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+        <div style="display:none">
+            
+                @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                @Html.HiddenFor(model => model.OfficeID)
+                @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+            </div>
+        </div> 
+
+    </div>
+   
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+<script src="~/Scripts/moment.min.js"></script>

@@ -1,0 +1,141 @@
+﻿
+@model gBanker.Core.Filters.PO_MONTHLY_ACC_BAL_ReportSearchFilter
+
+@{
+    ViewBag.Title = "Accounting Data List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style>
+    
+
+</style>
+<h2 class="page-title">@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control", @autocomplete = "off", @placeholder = "mm/yyyy" })
+        @Html.ValidationMessageFor(model => model.MNYR)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.ACCGROUP, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control" id="ACCGROUP" name="ACCGROUP">
+            <option value="BS">Balance Sheet</option>
+            <option value="IS">Income Expenditure</option>
+            <option value="RP">Receipt Payment</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.SearchTerm, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.SearchTerm, new { @class = "form-control", @autocomplete = "off", @placeholder = "keys- acc code" })
+        @Html.ValidationMessageFor(model => model.SearchTerm)
+    </div>
+    <div class="col-md-3">
+        @Html.LabelFor(model => model.SYNCED_STATUS, htmlAttributes: new { @class = "control-label" })
+        <select class="form-control" id="SYNCED_STATUS" name="SYNCED_STATUS">
+            <option value="">Any</option>
+            <option value="1">NOT SYNCED</option>
+            <option value="2">SYNCED</option>
+        </select>
+    </div>
+    <div class="col-md-5">
+        <button type="button" id="btnSearchAd" class="btn btn-primary"><i class="fa fa-search"></i> Search</button>
+        <button type="button" id="btnRefreshAd" class="btn btn-primary"><i class="fa fa-refresh"></i> Reset</button>
+        @*<button type="button" id="btnSyncToPKSF" class="btn btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>*@
+    </div>
+</div>
+
+<div class="panel panel-primary" style="padding-top: 5px; padding-right: 5px; padding-bottom: 0px; padding-left: 5px;">
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="padding: 4px 10px">BAL_DR</div>
+                    <div class="panel-body BAL_DR" style="padding: 4px;">4 </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+                <div class="panel panel-success">
+                    <div class="panel-heading" style="padding: 4px 10px">BAL_CR</div>
+                    <div class="panel-body BAL_CR" style="padding: 4px;">4521</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+                <div class="panel panel-info">
+                    <div class="panel-heading" style="padding: 4px 10px">CUM_BAL_DR</div>
+                    <div class="panel-body CUM_BAL_DR" style="padding: 4px;">4521</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+
+                <div class="panel panel-warning">
+                    <div class="panel-heading panel-warning" style=" padding: 4px 10px">CUM_BAL_CR</div>
+                    <div class="panel-body CUM_BAL_CR" style="padding: 4px;">7845</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+                <div class="panel panel-danger">
+                    <div class="panel-heading" style="padding: 4px 10px">THIS_MONTH_CASH</div>
+                    <div class="panel-body THIS_MONTH_CASH" style="padding: 4px;">4512</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="padding: 4px 10px">THIS_FY_CASH</div>
+                    <div class="panel-body THIS_FY_CASH" style="padding: 4px;">12454</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+
+                <div class="panel panel-success">
+                    <div class="panel-heading" style="padding: 4px 10px">THIS_MONTH_NONCASH</div>
+                    <div class="panel-body THIS_MONTH_NONCASH" style="padding: 4px;">4545</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+
+                <div class="panel panel-info">
+                    <div class="panel-heading" style="padding: 4px 10px">THIS_FY_NONCASH</div>
+                    <div class="panel-body THIS_FY_NONCASH" style="padding: 4px;">4545452</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel-group" style="margin-bottom: 5px !important;">
+
+                <div class="panel panel-warning">
+                    <div class="panel-heading" style="padding: 4px 10px">LAST_JUNE</div>
+                    <div class="panel-body LAST_JUNE" style="padding: 4px;">47984</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="raw">
+    <div id="gridAd"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/olrsReportManager.js"></script>
+}

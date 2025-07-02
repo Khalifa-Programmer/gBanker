@@ -1,0 +1,411 @@
+﻿@model gBanker.Web.ViewModels.StatisticsReportDetailsViewModel
+
+@{
+    ViewBag.Title = "Statistics Report Details";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+    .spinnermodal {
+        background-color: #FFFFFF;
+        height: 100%;
+        left: 0;
+        opacity: 0.5;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 100000;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#DateFrom").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1950:2050"
+
+        });
+
+        $("#DateTo").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1950:2050"
+
+        });
+
+
+
+        var DateFrom = $("#DateFrom").val();
+        //var DateTo = $("#DateTo").val();
+        loadStatisticsReportDetails(DateFrom);
+        $("#btnSearch").click(function () {
+            var DateFrom = $("#DateFrom").val();
+            //var DateTo = $("#DateTo").val();
+            loadStatisticsReportDetails(DateFrom);
+        });
+
+        $("#btnSave,#btnSavebotton").click(function () {
+            var rowCount = $('#grid > div:nth-child(2) > table > tbody >tr').length;
+            var proposalList = new Array();
+            if (rowCount > 0) {
+                for (i = 1; i <= rowCount; i++) {
+                    var Sl = $('#grid tr:eq(' + i + ') td:nth-child(2) input[type="text"]').val();
+                    //var Sl = $('#grid tr:eq(' + i + ') td:first input[type="text"]').val();
+                    //var Sl = $("#txtStatisticsReportDetailsID").val();
+                    var StatisticsReportDetailsID = $("#txtStatisticsReportDetailsID" + Sl).val();
+                    var AmountM = $("#txtAmountM" + Sl).val();
+                    var AmountF = $("#txtAmountF" + Sl).val();
+                    var StatisticsReportDetailsDate = $("#txtStatisticsReportDetailsDateStr" + Sl).val();
+                    //alert(txtAmountMA);
+                    //alert(txtAmountFA);
+
+                    var modelObject = {
+                        StatisticsReportDetailsID: StatisticsReportDetailsID,
+                        AmountM: AmountM,
+                        AmountF: AmountF,
+                        StatisticsReportDetailsDate: StatisticsReportDetailsDate
+                    }
+                    proposalList.push(modelObject);
+                }
+            }
+            //$('#AjaxLoader').show();
+            debugger;
+            $.ajax({
+                type: "POST",
+                data: { ProposalList: proposalList },
+                dataType: "json",
+                url: '@Url.Action("UpdateCollectionAmountsAll", "GroupwiseReport")',
+                //contentType: "application/json; charset=utf-8",
+                beforeSend: function () { showLoader(); },
+                success: function (data) {
+                    //$.alert.open('Success', data);
+                    if (data.result == 1) {
+                        //$('#AjaxLoader').hide();
+                        hideLoader();
+                        $.alert.open('Success', "Data Updated successfully");
+                        //loadDivision();
+                        //$("#txtAmountM" + StatisticsReportDetailsID).css('border-color', 'red');
+                    }
+                    //$('#AjaxLoader').hide();
+                    hideLoader();
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+
+            //alert(rowCount);
+        });
+
+
+    });
+
+    var rowNumber = 0;
+    function loadStatisticsReportDetails(DateFrom) {
+        var DateFrom = DateFrom;
+        //var DateTo = DateTo;
+        //$('#AjaxLoader').show();
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            //pageSize: 25,
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("loadStatisticsReportDetails", "GroupwiseReport", "http")',
+                    dataType: 'json',
+                    data: { DateFrom: DateFrom }
+                }
+            }
+        });
+        //$('#AjaxLoader').hide();
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            },
+            columns: [
+                 //{
+                 //    title: "SL",
+                 //    template: "#= ++record #",
+                 //    width: 40
+                 //},
+
+                 {
+                    width: "50px",
+                    field: "RowSl",
+                    filterable: true,
+                    title: "Sl"
+                 },
+                 {
+                     hidden: true,
+                     width: "150px",
+                     field: "StatisticsReportDetailsID",
+                     filterable: true,
+                     title: "ID",
+
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="text" class="text-center" readonly="true" value=' + dataItem.StatisticsReportDetailsID + ' id="txtStatisticsReportDetailsID' + dataItem.StatisticsReportDetailsID + '" ></input></div>';
+                     }
+                 },
+                 //{
+                 //    width: "150px",
+                 //    field: "StatisticsReportId",
+                 //    filterable: true,
+                 //    title: "Report Id"
+                 //},
+                 {
+                     width: "70px",
+                     field: "ReportType",
+                     filterable: true,
+                     title: "Type"
+                 },
+                 {
+                     width: "150px",
+                     field: "ItemHeadName",
+                     filterable: true,
+                     title: "ItemHead"
+                 },
+                 {
+                     width: "70px",
+                     field: "ItemSubID",
+                     filterable: true,
+                     title: "ItemSub"
+                 },
+                 //{
+                 //    width: "150px",
+                 //    field: "StatisticsDescriptionID",
+                 //    filterable: true,
+                 //    title: "Report DescriptionID"
+                 //},
+                 {
+                     width: "300px",
+                     field: "statisticsDesprition",
+                     filterable: true,
+                     title: "Desprition"
+                 },
+                 //{
+                 //    width: "100px",
+                 //    field: "ColumnShow",
+                 //    filterable: true,
+                 //    title: "Column"
+                 //},
+                 {
+                     field: "AmountM",
+                     title: "Column1",
+                     filterable: false,
+                     width: "160px",
+                     template: function (dataItem) {
+                         if (dataItem.ColumnShow == 0) {
+                             //return '<div class="text-center"><input type="text" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '" onblur="CollectionAmountsM(' + dataItem.AmountM + ',' + dataItem.StatisticsReportDetailsID + ',' + "'" + dataItem.StatisticsReportDetailsDateStr + "'" + ');"></input></div>';
+                             return '<div class="text-center"><input type="text" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else if (dataItem.ColumnShow == 1) {
+                             //return '<div class="text-center"><input type="text" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '" onblur="CollectionAmountsM(' + dataItem.AmountM + ',' + dataItem.StatisticsReportDetailsID + ',' + "'" + dataItem.StatisticsReportDetailsDateStr + "'" + ');"></input></div>';
+                             return '<div class="text-center"><input type="text" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else if (dataItem.ColumnShow == 2) {
+                             //return '<div class="text-center"><input type="hidden" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '" onblur="CollectionAmountsM(' + dataItem.AmountM + ',' + dataItem.StatisticsReportDetailsID + ',' + "'" + dataItem.StatisticsReportDetailsDateStr + "'" + ');"></input></div>';
+                             return '<div class="text-center"><input type="hidden" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else if (dataItem.ColumnShow == 3) {
+                           //return '<div class="text-center"><input type="hidden" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '" onblur="CollectionAmountsM(' + dataItem.AmountM + ',' + dataItem.StatisticsReportDetailsID + ',' + "'" + dataItem.StatisticsReportDetailsDateStr + "'" + ');"></input></div>';
+                             return '<div class="text-center"><input type="hidden" class="text-center" value=' + dataItem.AmountM + ' id="txtAmountM' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else {
+                             return '<div class="text-center"><input type="hidden" class="text-center" id="txtAmountM' + dataItem.AmountM + '"></input></div>';
+                         }
+                     }
+                 },
+                 {
+                     field: "AmountF",
+                     title: "Column2",
+                     filterable: false,
+                     width: "160px",
+                     template: function (dataItem) {
+                         if (dataItem.ColumnShow == 0) {
+                             return '<div class="text-center"><input type="text" class="text-center" value=' + dataItem.AmountF + ' id="txtAmountF' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else if (dataItem.ColumnShow == 1) {
+                             return '<div class="text-center"><input type="hidden" class="text-center" value=' + dataItem.AmountF + ' id="txtAmountF' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else if (dataItem.ColumnShow == 2) {
+                             return '<div class="text-center"><input type="text" class="text-center" value=' + dataItem.AmountF + ' id="txtAmountF' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else if (dataItem.ColumnShow == 3) {
+                             return '<div class="text-center"><input type="hidden" class="text-center" value=' + dataItem.AmountF + ' id="txtAmountF' + dataItem.StatisticsReportDetailsID + '"></input></div>';
+                         }
+                         else {
+                             return '<div class="text-center"><input type="hidden" class="text-center" id="txtAmountF' + dataItem.AmountF + '"></input></div>';
+                         }
+                     }
+                 },
+                 {
+                     width: "150px",
+                     field: "StatisticsReportDetailsDateStr",
+                     filterable: true,
+                     title: "Statistics Report Date",
+
+                     template: function (dataItem) {
+                         return '<div class="text-center"><input type="hidden" class="text-center" readonly="true" value=' + dataItem.StatisticsReportDetailsDateStr + ' id="txtStatisticsReportDetailsDateStr' + dataItem.StatisticsReportDetailsID + '" ><label>' + dataItem.StatisticsReportDetailsDateStr + '</label></input></div>';
+                     }
+                 },
+
+            ]
+        });
+
+    }
+
+    //function GenerateCollectionAmountsM(AmountM, StatisticsReportDetailsID, StatisticsReportDetailsDateStr) {
+    //    var item = {};
+    //    item.AmountM = AmountM;
+    //    item.StatisticsReportDetailsID = StatisticsReportDetailsID;
+    //    item.StatisticsReportDetailsDateStr = StatisticsReportDetailsDateStr;
+    //    return item;
+    //}
+
+    @*function CollectionAmountsM(AmountM, StatisticsReportDetailsID, StatisticsReportDetailsDateStr) {
+        var AmountM = $("#txtAmountM" + StatisticsReportDetailsID).val();
+        var statisticsReportDetails = GenerateCollectionAmountsM(AmountM, StatisticsReportDetailsID, StatisticsReportDetailsDateStr);
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            async: true,
+            cache: false,
+            url: '@Url.Action("UpdateCollectionAmountsAmountM", "GroupwiseReport")',
+            data: JSON.stringify({ statisticsReportDetails: statisticsReportDetails }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                //$.alert.open('Success', data);
+                if (data == "Updated successfully") {
+                    //loadDivision();
+                    $("#txtAmountM" + StatisticsReportDetailsID).css('border-color', 'red');
+                }
+            },
+            error: function (xhr, status, error) {
+                alert(error);
+            }
+        });
+    }*@
+
+
+
+
+    function showLoader() {
+        $("#progressbar").css("display", "");
+    }
+
+    function hideLoader() {
+        setTimeout(function () {
+            $("#progressbar").css("display", "none");
+        }, 1000);
+    }
+
+</script>
+
+
+<h2 class="page-title">Statistics Report Details</h2>
+@using (Html.BeginForm("SearchDivision", "GroupwiseReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <br /><br />
+    @*<div id="AjaxLoader" class="ajaxLoader"></div>*@
+
+    <div class="spinnermodal" id="progressbar" style="display: none; z-index: 10001">
+        <div style="position: fixed; z-index: 10001; top: 50%; left: 50%; height:65px">
+            @*<img src="~/Images/loading.gif" alt="Loading..." />*@
+            <img src="~/Content/charisma-master/bower_components/colorbox/example1/images/loading.gif" />
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-6">
+            <label class="control-label col-md-4"> Statistics Report Date </label>
+            <div class="col-md-8">
+                @Html.EditorFor(model => model.DateFrom, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+        <div class="col-sm-6">
+        </div>
+    </div>
+    @*<div class="row">
+            <div class="col-sm-6">
+                <label class="control-label col-md-4"> Date To </label>
+                <div class="col-md-8">
+                    @Html.EditorFor(model => model.DateTo, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+            <div class="col-sm-6">
+            </div>
+        </div>*@
+
+    <div class="row">
+        <div class="col-sm-6  pull-right">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <input type="button" value="Search" id="btnSearch" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-8">
+            @Html.HiddenFor(model => model.StatisticsReportDetailsID)
+        </div>
+    </div>
+}
+
+<br />
+
+<div class="pull-right"><input type="button" value="Save" id="btnSave" class="btn btn-primary" /></div>
+<h2 class="page-title">Statistics Report Details List</h2>
+<div id="grid"></div>
+<div class="pull-right"><input type="button" value="Save" id="btnSavebotton" class="btn btn-primary" /></div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>

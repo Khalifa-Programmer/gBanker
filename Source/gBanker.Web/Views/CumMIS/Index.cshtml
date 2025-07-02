@@ -1,0 +1,200 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.CumMISViewModel>
+
+@{
+    ViewBag.Title = "Cum. MIS List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        //confirmDayInitiated();
+        $('#grid').jtable({
+            // title: 'Approved  List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/CumMIS/GetCumMISInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+                //listAction: '/LoanApproval/GetLoanApprovals'
+
+            },
+            fields: {
+               
+                
+                CumMisID: {
+
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+
+                    },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '10%'
+
+                },
+                CenterCode: {
+                    title: 'Samity Code',
+                    width: '10%'
+                },
+               
+                ProductCode: {
+                    title: 'Product Code',
+                    width: '10%'
+                },
+                CumMisItemName: {
+                    title: 'CumMisItem Name',
+                    width: '10%'
+                },
+
+                MisDate: {
+                    title: 'Entry Date',
+                    type: 'date',
+                    displayFormat: 'd-M-yy',
+                    width: '12%'
+                },
+               
+                NoOfLoanee: {
+                    title: 'NoOfLoanee',
+                    width: '10%'
+                },
+                UpToLoanDis: {
+                    title: 'UpToLoanDis',
+                    width: '10%'
+                },
+                UptoDisburseMent: {
+                    title: 'UptoDisbursement',
+                    width: '10%'
+                },
+                UpToRecovery: {
+                    title: 'UpToRecovery',
+                    width: '5%'
+                },
+                UptoAdmission: {
+                    title: 'UptoAdmission',
+                    width: '8%'
+                },
+                UpToDropOut: {
+                    title: 'UpToDropOut',
+                    width: '5%'
+                },
+                UptoFullyRepaid: {
+                    title: 'UptoFullyRepaid',
+                    width: '5%'
+                },
+                UptoDeposit: {
+                    title: 'UptoDeposit',
+                    width: '5%'
+                },
+                UptoInterest: {
+                    title: 'UptoInterest',
+                    width: '5%'
+                },
+                uptowithdrawal: {
+                    title: 'uptowithdrawal',
+                    width: '5%'
+                },
+                WriteOffLoan: {
+                    title: 'WriteOffLoan',
+                    width: '5%'
+                },
+                WriteOffInterest: {
+                    title: 'WriteOffInterest',
+                    width: '5%'
+                },
+                //IsActive: {
+                //    title: 'IsActive',
+                //    width: '40%'
+                //},
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        // return '<a href="/LoanApproval/Edit/' + data.record.LoanSummaryID + '">Edit</a>';
+                        //return "<a href='/LoanApproval/Edit/" + data.record.LoanSummaryID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                        return "<div class='text-center'><a href='/CumMIS/Edit/" + data.record.CumMisID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        //return '<a href="/LoanApproval/Delete/' + data.record.LoanSummaryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                        //return '<div class="text-center delete-link"><a href="/LoanApproval/Delete/' + data.record.LoanSummaryID + '" ' + 'onclick="return confirm(' + '"' + 'Are you sure you want to delete this item?' + '"' + ');"><i class="fa fa-trash-o"></i></a></div>';
+                        return '<div class="text-center delete-link"><a href="/CumMIS/Delete/' + data.record.CumMisID + '" ' + ' OnClick="return confirm(' + "'" + 'Are you sure you want to delete this item?' + "'" + ');"' + '><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+
+
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Cummulative MIS List</h2>
+
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="CenterCode">Samity Code</option>
+            <option value="ProductCode">Product Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+
+
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,452 @@
+﻿@model gBanker.Web.ViewModels.EmployeeOfficeMappingViewModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var HeadList = (ViewBag.HeadList as List<SelectListItem>) ?? new List<SelectListItem>();
+    HeadList.Insert(0, new SelectListItem() { Text = "Select Office", Value = "0", Selected = true });
+    var zoneList = (ViewBag.ZoneList as List<SelectListItem>) ?? new List<SelectListItem>();
+    zoneList.Insert(0, new SelectListItem() { Text = "Select Zone", Value = "0", Selected = true });
+    var areaList = new List<SelectListItem>();
+    areaList.Insert(0, new SelectListItem()
+    {
+        Text = "Select Area",
+        Value = "0",
+        Selected =
+        true
+    });
+}
+
+
+<script type="text/javascript">
+
+     function SaveOfficeList() {
+         var dtTable = document.getElementById("tblAvailableOffice").rows.length;
+         var allOfficeId = new Array();
+        for (i = 1; i < dtTable; i++) {
+            var value = $('#txtOfficeId' + i).val();
+            var chkResult = $('#txtCheckId' + i).is(":checked");
+            if (chkResult == true) {
+                allOfficeId[allOfficeId.length] = value;
+            }
+        }
+
+        if (allOfficeId.length == 0) {
+            $.alert.open("Message", "Please Select From List.")
+            return;
+        }
+
+         var EmployeeId = $("#EmployeeId").val();
+
+        var allTrx = new Object();
+        allTrx.allOfficeIds = allOfficeId;
+         allTrx.empId = EmployeeId;
+        console.log(allTrx);
+        var json = JSON.stringify(allTrx);
+        $('#AjaxLoader').show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+
+            url: '@Url.Action("EmployeeOfficeSave", "FundTransferMapping", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+            success: function (data) {
+                if (data != 0) {
+                    $('#AjaxLoader').hide();
+                    //$(".success").show(800).fadeToggle(3000);
+                    loadOffice();
+                    SelectedOfficeList();
+                    $.alert.open("info", "Saved Sucessfully");
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("error", "Fail to Save");
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function SelectedOfficeList() {
+        var dtTable = $('#tblSelectedOffice');
+        var empID = $("#EmployeeId").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSelectedOfficeList", "FundTransferMapping", "http")',
+            data: { empID: empID },
+            dataType: 'json',
+            async: true,
+            success: function (List_OfficeInfoViewModel) {
+
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                $.each(List_OfficeInfoViewModel, function (index, off) {
+                    var sl = index + 1;
+                    tableBody.append('<tr>' +
+                                 '<td><input type="checkbox" style="width:18px;height:18px" id="txtSelectedCheck' + sl + '"/></td>' +
+                                 '<td>' + sl + '</td>' +
+                                 '<td>' + off.OfficeCode + '<input type="text"  value="' + off.OfficeID + '" style="display:none;" name="OfficeId" id="txtSelectedOfficeId' + sl + '" />' +
+                                 '<td>' + off.OfficeName + '</td>' +
+                                 '</tr>')
+                })
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);//tblSelectedCourse
+            }
+        });
+    }
+
+     function EditOfficeList() {
+        var dtTable = document.getElementById("tblSelectedOffice").rows.length;
+        var allOfficeId = new Array();
+        for (i = 1; i < dtTable; i++) {
+            var value = $('#txtSelectedOfficeId' + i).val();
+            var chkResult = $('#txtSelectedCheck' + i).is(":checked");
+            if (chkResult == true) {
+                allOfficeId[allOfficeId.length] = value;
+                //alert(value);
+            }
+        }
+
+         if (allOfficeId.length == 0) {
+            $.alert.open("Message", "Please Select From List.")
+            return;
+        }
+
+        var EmpID = $("#EmployeeId").val();
+        var allTrx = new Object();
+         allTrx.OfficeIds = allOfficeId;
+         allTrx.EmpId = EmpID;
+
+        var json = JSON.stringify(allTrx);
+        $('#AjaxLoader').show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("EmpWiseOfficeDelete", "FundTransferMapping", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (data) {
+                if (data != 0) {
+
+                    loadOffice();
+                    SelectedOfficeList();
+
+                    $(".success").show(800).fadeToggle(3000);
+                    $.alert.open("info", "Update Sucessfully");
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("error", "Fail to Update");
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $("#ZoneCode").change(function () {
+            loadArea();
+            loadOffice();
+        });
+        $("#AreaCode").change(function () {
+            loadOffice();
+        });
+
+        $("#employeeAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetEmployeeList", "FundTransferMapping", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { empid: request.term},
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.EmployeeID,
+                                label: item.EmployeeName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages : {
+                noResults : '',
+                results: function (resultsCount) {
+
+                }
+            },
+            focus: function (event, ui) {
+                $("#employeeAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#employeeAutoComplete").val(ui.item.label);
+                $("#EmployeeId").val(ui.item.value);
+                SelectedOfficeList();
+                return false;
+            },
+            change: function (event, ui) {
+                $("#employeeAutoComplete").val(ui.item.label);
+                $("#EmployeeId").val(ui.item.value);
+               /// GetMemberPhotoSignature(ui.item.value);
+                return false;
+            }
+            });
+        $('#btnSelect').click(function (e) {
+            e.preventDefault();
+            SaveOfficeList();
+        });
+
+        $("#btnCancel").click(function (e) {
+
+            e.preventDefault();
+            EditOfficeList();
+        });
+
+    });
+    function loadArea() {
+        var zoneCode = $("#ZoneCode").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "EmployeeOfficeMapping")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { zoneCode: zoneCode },
+            success: function (data) {
+                var d = data.Options;
+
+                var mySelect = $("#AreaCode");
+                mySelect.empty();
+                mySelect.append(
+                       $('<option></option>').val("0").html("Select Area")
+                   );
+                $.each(d, function (i, item) {
+                    mySelect.append(
+                        $('<option></option>').val(item.Value).html(item.Text)
+                    );item
+                });
+            },
+            error: function(err)
+            {
+                alert(err);
+            }
+        });
+    }
+    function loadOffice() {
+
+        var employeeCode = $("#EmployeeCode").val();
+
+        var zoneCode = $("#ZoneCode").val();
+        var areaCode = $("#AreaCode").val();
+
+        var div = $("#officeContainer");
+        div.empty();
+        var dtTable = $('#tblAvailableOffice');
+        var tableBody = dtTable.find('tbody');
+        tableBody.empty();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LoadOffice", "FundTransferMapping")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { zoneCode: zoneCode, areaCode: areaCode, employeeCode:employeeCode },
+            success: function (data) {
+                var d = data.Options;
+                $.each(d, function (i, item) {
+                    /*var checked = item.Selected == true ? "checked='checked'" : "";*/
+                    //div.append(
+                    //    $('<span><input type="checkbox" id="chk_' + item.Value + '" ' + checked +  '" />' +  item.Text + '<span><br/>')
+
+                    //);
+                    var sl = i + 1;
+                    const officeCode = item.Text.split('-')[0]
+                    const officeName = item.Text.split('-')[1]
+                    tableBody.append('<tr>' +
+                        '<td><input type="checkbox" style="width:18px;height:18px" id="txtCheckId' + sl + '"/></td>' +
+                        '<td>' + sl + '</td>' +
+                        '<td>' + officeCode + '<input type="text"  value="' + item.Value + '" style="display:none;" name="OfficeId" id="txtOfficeId' + sl + '" />' +
+                        '<td>' + officeName + '</td>' +
+                        '</tr>')
+                });
+            },
+            error: function (err) {
+                alert(err);
+            }
+        });
+
+    }
+
+</script>
+<h2 class="page-title">Fund Transfer Mapping</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="">
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.HeadOfficeCode, htmlAttributes: new { @class = "control-label" })
+
+                @Html.DropDownListFor(model => model.HeadOfficeCode, HeadList, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.HeadOfficeCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row" id="memberAutoCompleteSec">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.Label("Employee", htmlAttributes: new { @class = "control-label" })
+
+                @Html.TextBox("employeeAutoComplete", "", new { @class = "form-control" })
+                @Html.HiddenFor(model => model.EmployeeId)
+                @Html.TextBoxFor(model => model.EmployeeId, new { @style = "display:none" })
+                @Html.ValidationMessageFor(model => model.EmployeeId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ZoneCode, htmlAttributes: new { @class = "control-label" })
+
+                @Html.DropDownListFor(model => model.ZoneCode, zoneList, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.ZoneCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AreaCode, htmlAttributes: new { @class = "control-label" })
+
+                @Html.DropDownListFor(model => model.AreaCode, areaList, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.AreaCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            @Html.Label("Assigned Office List: ", htmlAttributes: new { @class = "control-label" })
+
+            <div class="form-group">
+                <div id="officeContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <table id="ProductList">
+        <tr class="row">
+            <td class="col-sm-5" style="vertical-align:top;">
+                <table cellpadding="5" cellspacing="0">
+                    <tr>
+                        <td align="center">
+                            <label style="font-weight: 700; font-size: 20px; text-align: center;">Available Office List</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <table class="table table-hover" id="tblAvailableOffice" style="width:100%">
+                                <thead class="thead-dark">
+                                    <tr class="headings">
+                                        <th>
+                                            <input type="checkbox" style="width:18px;height:18px" id="check_all" />
+                                        </th>
+                                        <th class="column-title">SL</th>
+                                        <th class="column-title">office Code</th>
+                                        <th class="column-title">Office Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td class="col-sm-2" style="vertical-align:top; width:8%; padding-top:30%; text-align:center;">
+                <button style="width:90px" type="submit" id="btnSelect" class="btn btn-success"> Add >> </button>
+                <br />
+                <button style="width:90px" type="submit" id="btnCancel" class="btn btn-warning"> << Remove</button>
+            </td>
+            <td class="col-sm-5" style="vertical-align:top;">
+                <table cellpadding="5" cellspacing="0">
+                    <tr>
+                        <td align="center">
+                            <label style="font-weight: 700; font-size: 20px; text-align: center;">Assigned Office List</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <table class="table table-hover" id="tblSelectedOffice" style="width:100%">
+                                <thead class="thead-dark">
+                                    <tr class="headings">
+                                        <th>
+                                            <input type="checkbox" style="width:18px;height:18px" id="check_allSelected" />
+                                        </th>
+                                        <th class="column-title">SL</th>
+                                        <th class="column-title">Code</th>
+                                        <th class="column-title">Office Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

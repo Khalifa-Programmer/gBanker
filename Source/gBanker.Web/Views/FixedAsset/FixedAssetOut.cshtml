@@ -1,0 +1,1031 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Asset Sale/Disposal";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    function GetHO(ddlVal) {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlHO').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetZone(HO_val, ddlVal) {
+        var ddlZone = $("#ddlZone");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetZoneList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZone.html('');
+                $.each(data, function (id, option) {
+                    ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+
+                    $('#ddlZone').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetArea(HO_val, zone_val, ddlVal) {
+        var ddlArea = $("#ddlArea");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlArea.html('');
+                $.each(data, function (id, option) {
+                    ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+                if (ddlVal != null) {
+                    $('#ddlArea').val(ddlVal);
+                }
+                else {
+                    $("#ddlArea").prop('selectedIndex', 0);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetOffice(HO_val, zone_val, area_val, ddlVal) {
+        var ddlOffice = $("#ddlOffice");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlOffice').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function CheckOffcLevel() {
+        var offcLevel = $('#lblOffcLevel').html();
+        var firstLevel = $('#lblFirstLevel').html();
+        var secondLevel = $('#lblSecondLevel').html();
+        var thirdLevel = $('#lblThirdLevel').html();
+        var fourthLevel = $('#lblFourthLevel').html();
+        //alert(offcLevel);
+        if (offcLevel == 1) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+        }
+        if (offcLevel == 2) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            // GetArea(firstLevel, secondLevel, thirdLevel);
+            GetArea(firstLevel, secondLevel, null);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+        }
+        if (offcLevel == 3) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+        }
+        if (offcLevel == 4) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            $("#ddlZone").prop("disabled", true);
+            $("#ddlArea").prop("disabled", true);
+            $("#ddlOffice").prop("disabled", true);
+        }
+
+    }
+
+
+
+    $(document).ready(function () {
+        CheckOffcLevel();
+        $("#ddlHO").change(function () {
+            var HO_val = $("#ddlHO").val();
+            if (HO_val > 0) {
+                var ddlZone = $("#ddlZone");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetZoneList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlZone.html('');
+                        $.each(data, function (id, option) {
+                            ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        GetOfficeWiseAssetGroup();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlZone").empty();
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlArea.html('');
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        GetOfficeWiseAssetGroup();
+                        $("#ddlOffice").empty();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetOfficeList", "AccTrialBalance", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlOffice.html('');
+                        $.each(data, function (id, option) {
+                            ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        GetOfficeWiseAssetGroup();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+        GetFixedAssetOutList();
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        $("#AssetOutDate").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+           changeMonth: true,
+           changeYear: true,
+           yearRange: '-10:+0'
+       });
+
+
+
+        $("#AssetOutDate").change(function () {
+            GetOfficeWiseAssetGroup();
+        });
+
+
+        $("#AssetGroupID").change(function () {
+
+            if ($("#ddlHO").val() > 0) {
+                var office_id;
+                if ($("#ddlZone").val() > 0) {
+                    if ($("#ddlArea").val() > 0) {
+                        if ($("#ddlOffice").val() > 0) {
+                            office_id = $("#ddlOffice").val();
+                        }
+                        else {
+                            office_id = $("#ddlArea").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlZone").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlHO").val();
+                }
+            }
+            var assetOutDate = $("#AssetOutDate").val();
+            var groupId = $("#AssetGroupID").val();
+            var ddlAssetName = $("#AssetCode");
+            if (office_id != "" && groupId != "" && assetOutDate!="") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetGroupWiseAssetName", "FixedAsset", "http")',
+                    data: { office_id:office_id, groupId: groupId, assetOutDate: assetOutDate },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data.length > 0) {
+                            ddlAssetName.empty('');
+                            $.each(data, function (id, option) {
+                                ddlAssetName.append($('<option></option>').val(option.Value).html(option.Text));
+                            });
+                        } else {
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                        }
+                    }
+                });
+            }
+            else {
+                $("#AssetCode").html("<option value=''>Please Select</option>")
+            }
+        });
+        $("#AssetCode").change(function () {
+
+            if ($("#ddlHO").val() > 0) {
+                var office_id;
+                if ($("#ddlZone").val() > 0) {
+                    if ($("#ddlArea").val() > 0) {
+                        if ($("#ddlOffice").val() > 0) {
+                            office_id = $("#ddlOffice").val();
+                        }
+                        else {
+                            office_id = $("#ddlArea").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlZone").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlHO").val();
+                }
+            }
+            var assetOutDate = $("#AssetOutDate").val();
+            var assetCode = $("#AssetCode").val();
+            var ddlAssetSerial = $("#AssetSerial");
+            if ( office_id!="" && assetOutDate!="" && assetCode != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetWiseAssetSerial", "FixedAsset", "http")',
+                    data: { office_id: office_id, assetOutDate: assetOutDate, assetCode: assetCode },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlAssetSerial.html('');
+                        $.each(data, function (id, option) {
+                            ddlAssetSerial.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    }
+                });
+            }
+        })
+        $("#SellingPrice").blur(function () {
+            if ($("#ddlHO").val() > 0) {
+                var office_id;
+                if ($("#ddlZone").val() > 0) {
+                    if ($("#ddlArea").val() > 0) {
+                        if ($("#ddlOffice").val() > 0) {
+                            office_id = $("#ddlOffice").val();
+                        }
+                        else {
+                            office_id = $("#ddlArea").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlZone").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlHO").val();
+                }
+            }
+            var assetOutDate = $("#AssetOutDate").val();
+            var assetSerial = $("#AssetSerial").val();
+            if (office_id!="" && assetOutDate!="" && assetSerial != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetSerialWiseAssetInfo", "FixedAsset", "http")',
+                    data: { office_id: office_id, assetOutDate: assetOutDate, assetSerial: assetSerial },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        debugger;
+                        if (data.length > 0) {
+                            var sellingPrice = $("#SellingPrice").val();
+                            $("#AssetCost").val(data[0].TotalCost);
+                            var totalCost =parseFloat(data[0].TotalCost);
+                            $("#AccumulatedDepriciation").val(data[0].AccumulatedDepriciation);
+                            $("#CurrentDepri").val(data[0].CurrentDepriciation);
+                            $("#BookValue").val(data[0].BookValue);
+                            var bookValue = parseFloat(data[0].BookValue);
+                            $("#TotalProfitLoss").val(parseFloat(bookValue) - parseFloat(sellingPrice));
+                            $("#CapitalGain").val(parseFloat(sellingPrice) - parseFloat(totalCost));
+                            $("#BusinessGain").val(parseFloat(totalCost) - parseFloat(bookValue));
+                            $("#DailyTransactionId").val(data[0].DailyTransactionId);
+                        } else {
+                            $("#AssetCost").val('');
+                            $("#AccumulatedDepriciation").val('');
+                            $("#CurrentDepri").val('');
+                            $("#TotalProfitLoss").val('');
+                            $("#CapitalGain").val('');
+                            $("#BusinessGain").val('');
+                        }
+                    }
+                });
+            }
+        })
+
+
+        $("#btnReset").click(function () {
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+            ClearForm();
+        });
+
+    });
+
+    function GetOfficeWiseAssetGroup() {
+        if ($("#ddlHO").val() > 0) {
+            var office_id;
+            if ($("#ddlZone").val() > 0) {
+                if ($("#ddlArea").val() > 0) {
+                    if ($("#ddlOffice").val() > 0) {
+                        office_id = $("#ddlOffice").val();
+                    }
+                    else {
+                        office_id = $("#ddlArea").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlZone").val();
+                }
+            }
+            else {
+                office_id = $("#ddlHO").val();
+            }
+        }
+        var assetOutDate = $("#AssetOutDate").val();
+        var ddlAssetGroup = $("#AssetGroupID");
+        if (office_id != "" && assetOutDate != "") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetOfficeWiseAssetGroup", "FixedAsset", "http")',
+                data: { officeID: office_id, assetOutDate: assetOutDate },
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        ddlAssetGroup.empty('');
+                        $.each(data, function (id, option) {
+                            ddlAssetGroup.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    } else {
+                        ddlAssetGroup.html("<option value=''>Please Select</option>");
+                    }
+                }
+            });
+        } else {
+            $.alert.open('Please Select Any office and Date of Disposal/Sale');
+        }
+    }
+
+
+    function SaveAssetOutInfo() {
+        debugger;
+        if ($("#ddlHO").val() > 0) {
+            var office_id;
+            if ($("#ddlZone").val() > 0) {
+                if ($("#ddlArea").val() > 0) {
+                    if ($("#ddlOffice").val() > 0) {
+                        office_id = $("#ddlOffice").val();
+                    }
+                    else {
+                        office_id = $("#ddlArea").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlZone").val();
+                }
+            }
+            else {
+                office_id = $("#ddlHO").val();
+            }
+        }
+        var DailyTransactionId = $("#DailyTransactionId").val();
+        var assetOutDate = $("#AssetOutDate").val();
+        var transactionType = $("#TransactionType").val();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetID = $("#AssetCode").val();
+        var assetSerial = $("#AssetSerial").val();        
+        var sellingPrice = $("#SellingPrice").val();
+        var assetCost = $("#AssetCost").val();
+        var accumulatedDepriciation = $("#AccumulatedDepriciation").val();
+        var currentDepri = $("#CurrentDepri").val();
+        var bookValue = $("#BookValue").val();
+        var totalProfitLoss = $("#TotalProfitLoss").val();
+        var capitalGain = $("#CapitalGain").val();
+        var businessGain = $("#BusinessGain").val();
+        var remarks = $("#Remarks").val();
+
+        if (transactionType != "" && assetGroupID != "" && assetID != "" && assetSerial != "" && sellingPrice != "" && assetCost != "" ) {
+            var AssetOutInfo = {
+                OfficeID : office_id,
+                DailyTransactionId : DailyTransactionId,
+                FixedAssetOutDate: assetOutDate,
+                TransactionType: transactionType,
+                AssetGroupID: assetGroupID,
+                AssetID: assetID,
+                AssetSerial: assetSerial,
+                SellingPrice: sellingPrice,
+                AssetCost: assetCost,
+                AccumulatedDepriciation: accumulatedDepriciation,
+                CurrentDepri: currentDepri,
+                BookValue: bookValue,
+                TotalProfitLoss: totalProfitLoss,
+                CapitalGain: capitalGain,
+                BusinessGain:businessGain,
+                Remarks: remarks
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveAssetOutInfo", "FixedAsset", "http")',
+                data: JSON.stringify({ AssetOutInfo: AssetOutInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetFixedAssetOutList();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        } else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function ClearForm() {
+        $("#AssetOutDate").val('');
+        $("#TransactionType").val('');
+        $("#AssetGroupID").val('');
+        $("#AssetCode").val('');
+        $("#AssetSerial").val('');
+        $("#VoucherNo").val('');
+        $("#Usable").val('');
+        $("#ClientId").val('');
+        $("#SellingPrice").val('');
+        $("#AssetCost").val('');
+        $("#AccumulatedDepriciation").val('');
+        $("#CurrentDepri").val('');
+        $("#BookValue").val('');
+        $("#TotalProfitLoss").val('');
+        $("#CapitalGain").val('');
+        $("#Remarks").val('');
+    }
+    function GetFixedAssetOutList() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FixedAsset/GetFixedAssetOutList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                AssetOutID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                TransactionType: {
+                    width: '10%',
+                    title: 'TranType'
+                },
+                AssetGroupID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetName: {
+                    width: '10%',
+                    title: 'AssetName'
+                },
+                AssetSerial: {
+                    width: '10%',
+                    title: 'AssetSerial',
+                },
+
+                ClientId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                SellingPrice: {
+                    width: '10%',
+                    title: 'SellingPrice',
+                },
+                AssetCost: {
+                    width: '10%',
+                    title: 'AssetCost',
+                },
+                AccumulatedDepriciation: {
+                    width: '10%',
+                    title: 'AccuDepr',
+                },
+                CurrentDepri: {
+                    width: '10%',
+                    title: 'CurrDepri',
+                },
+                BookValue: {
+                    width: '10%',
+                    title: 'BookValue',
+                },
+                TotalProfitLoss: {
+                    width: '10%',
+                    title: 'TotalProfitLoss',
+                },
+                CapitalGain: {
+                    width: '10%',
+                    title: 'CapitalGain',
+                },
+                BusinessGain: {
+                    width: '10%',
+                    title: 'BusinessGain',
+                },
+                Remarks: {
+                    width: '10%',
+                    title: 'Remarks',
+                },
+                //EditLink: {
+                //    title: "Edit",
+                //    width: '5%',
+                //    sorting: false,
+                //    display: function (data) {
+
+                //        return '<div class="text-center"><a href="#" OnClick="EditFixedAssetOut( ' + data.record.AssetOutID + ',' + "'" + data.record.TransactionType + "'" + ',' + "'" + data.record.AssetGroupID + "'" + ',' + "'" + data.record.AssetID + "'" + ',' + "'" + data.record.AssetSerial + "'" + ',' + "'" + data.record.VoucherNo + "'" + ',' + "'" + data.record.Usable + "'" + ',' + data.record.ClientId +
+                //            ',' + "'" + data.record.SellingPrice + "'" + ',' + "'" + data.record.AssetCost + "'" + ',' + "'" + data.record.AccumulatedDepriciation + "'" + ',' + "'" + data.record.CurrentDepri + "'" + ',' + "'" + data.record.BookValue + "'" + ',' + "'" + data.record.TotalProfitLoss + "'" + ',' + "'" + data.record.CapitalGain + "'" + ',' + "'" + data.record.Remarks + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                //    }
+                //},
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteFixedAssetOut(' + data.record.AssetOutID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+
+        });
+        $('#grid').jtable('load');
+    }
+
+
+    function EditFixedAssetOut(AssetOutID, TransactionType, AssetGroupID, AssetID, AssetSerial, VoucherNo, Usable, ClientId, SellingPrice, AssetCost, AccumulatedDepriciation, CurrentDepri, BookValue, TotalProfitLoss, CapitalGain, Remarks) {
+
+        $("#AssetOutID").val(AssetOutID);
+        $("#TransactionType").val(TransactionType);
+        $("#AssetGroupID").val(AssetGroupID).trigger('change').attr('Disabled', true);
+        $("#AssetCode").val(AssetID).trigger('change').attr('Disabled', true);
+        $("#AssetSerial").val(AssetSerial).trigger('change').attr('Disabled', true);
+        $("#VoucherNo").val(VoucherNo);
+        $("#Usable").val(Usable == 'true' ? 1 : 0);
+        $("#ClientId").val(ClientId);
+        $("#SellingPrice").val(SellingPrice);
+        $("#AssetCost").val(AssetCost);
+        $("#AccumulatedDepriciation").val(AccumulatedDepriciation);
+        $("#CurrentDepri").val(CurrentDepri);
+        $("#BookValue").val(BookValue);
+        $("#TotalProfitLoss").val(TotalProfitLoss);
+        $("#CapitalGain").val(CapitalGain);
+        $("#Remarks").val(Remarks);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+    function UpdateAssetOutInfo() {
+
+        var assetOutID = $("#AssetOutID").val();
+        var assetOutDate = $("#AssetOutDate").val();
+        var transactionType = $("#TransactionType").val();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetID = $("#AssetCode").val();
+        var assetSerial = $("#AssetSerial").val();
+        var sellingPrice = $("#SellingPrice").val();
+        var assetCost = $("#AssetCost").val();
+        var accumulatedDepriciation = $("#AccumulatedDepriciation").val();
+        var currentDepri = $("#CurrentDepri").val();
+        var bookValue = $("#BookValue").val();
+        var totalProfitLoss = $("#TotalProfitLoss").val();
+        var capitalGain = $("#CapitalGain").val();
+        var remarks = $("#Remarks").val();
+
+        if (transactionType != "" && assetGroupID != "" && assetID != "" && assetSerial != "" && sellingPrice != "" && assetCost != "" ) {
+            var AssetOutInfo = {
+                AssetOutID: assetOutID,
+                FixedAssetOutDate: assetOutDate,
+                TransactionType: transactionType,
+                AssetGroupID: assetGroupID,
+                AssetID: assetID,
+                AssetSerial: assetSerial,
+                SellingPrice: sellingPrice,
+                AssetCost: assetCost,
+                AccumulatedDepriciation: accumulatedDepriciation,
+                CurrentDepri: currentDepri,
+                BookValue: bookValue,
+                TotalProfitLoss: totalProfitLoss,
+                CapitalGain: capitalGain,
+                Remarks: remarks
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateAssetOutInfo", "FixedAsset", "http")',
+                data: JSON.stringify({ AssetOutInfo: AssetOutInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetFixedAssetOutList();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        } else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function DeleteFixedAssetOut(AssetOutID) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteFixedAssetOut", "FixedAsset", "http")',
+                    data: { AssetOutID: AssetOutID },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            $('#grid').jtable('load');
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+</script>
+
+
+<h2 class="page-title">Asset Sale/Disposal</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.AssetOutID)
+    @Html.HiddenFor(model => model.DailyTransactionId)
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title panel-title-OfficeSelection">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOfficeSelection"><i class="fa fa-plus"></i>&nbsp;Office Selection</a>
+            </h4>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Head Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control" })
+                        </div>
+                        @Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
+                        @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
+                        @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
+                        @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
+                        @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Zone Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Area Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Branch Office</label>
+                        <div class="col-sm-7">
+                            @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @*Ends Office Selection*@
+
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title panel-title-OfficeSelection">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOfficeSelection"><i class="fa fa-plus"></i>&nbsp;Asset Selection</a>
+            </h4>
+        </div>
+        <div class="panel-body">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Date of Disposal/Sale <span style="color:red; font-size:15px;">*</span></label>
+                        <div class="col-sm-7">
+                            @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "AssetOutDate", @class = "form-control", @autocomplete="off"})
+                            @Html.HiddenFor(model => model.AssetOutID)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Transaction Type <span style="color:red; font-size:15px;">*</span></label>
+                        <div class="col-sm-7">
+                            @Html.DropDownListFor(model => model.TransactionType, Model.TransactionTypeList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Asset Group <span style="color:red; font-size:15px;">*</span></label>
+                        <div class="col-sm-7">
+                            @Html.DropDownListFor(model => model.AssetGroupID, Model.AssetGroupIdList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Asset Code <span style="color:red; font-size:15px;">*</span></label>
+                        <div class="col-sm-7">
+                            @Html.DropDownListFor(model => model.AssetCode, Model.AssetCodeList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Asset Serial <span style="color:red; font-size:15px;">*</span></label>
+                        <div class="col-sm-7">
+                            @Html.DropDownListFor(model => model.AssetSerial, Model.AssetSerialList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>                
+            </div>            
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Selling Price <span style="color:red; font-size:15px;">*</span></label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.SellingPrice, new { @class = "form-control", @autocomplete = "off" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Cost of the Asset</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.AssetCost, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Accumulated Depriciation</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.AccumulatedDepriciation, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Current Depriciation</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.CurrentDepri, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Book Value</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.BookValue, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Total Profit/Loss</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.TotalProfitLoss, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Capital Gain</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.CapitalGain, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Business Gain/Loss</label>
+                        <div class="col-sm-7">
+                            @Html.TextBoxFor(model => model.BusinessGain, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Remarks</label>
+                        <div class="col-sm-7">
+                            @Html.TextAreaFor(model => model.Remarks, new { @class = "form-control"})
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="row">
+            <div class="col-sm-offset-4">
+                <input type="button" value="Save" id="btnSave" onclick="SaveAssetOutInfo()" class="btn btn-primary" />
+                <input type="button" value="Update" id="btnUpdate" onclick="UpdateAssetOutInfo()" class="btn btn-primary" />
+                <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/gbUtility")
+        @Scripts.Render("~/bundles/jtable")
+    }

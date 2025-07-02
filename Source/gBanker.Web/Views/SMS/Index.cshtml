@@ -1,0 +1,1188 @@
+﻿@{
+    ViewBag.Title = "SMS";
+    //Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .ui-autocomplete {
+        z-index: 999999 !important;
+    }
+</style>
+
+
+
+<h2>SMS</h2>
+
+
+<script type="text/javascript">
+
+    function GetGroupName() {
+        var ddlSendGroup = $("#ddlSendGroup");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGroupList", "SMS", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlSendGroup.html('');
+                ddlSendGroup.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ddlSendGroup.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function SaveGroup() {     
+        var SMSGroupId = $("#SMSGroupId").val();
+        if (SMSGroupId == "" || SMSGroupId == "0" || SMSGroupId == 0)
+        {
+            SMSGroupId = 0;
+        }
+        var txtGroupName = $("#txtGroupName").val();
+        if (txtGroupName == "")
+        {
+            txtGroupName = 0;
+        }
+        var ddlProduct = $('option:selected', $('#ddlProduct')).val();
+        if (ddlProduct == 0)
+        {
+            ddlProduct = 0;
+        }
+        var ddlBranch = $('option:selected', $('#ddlBranch')).val();
+        if (ddlBranch == 0)
+        {
+           // alert(ddlBranch);
+            ddlBranch = 0;
+        }
+        else if ($('#selectedBranch').val() != "0")
+        {
+            ddlBranch = $('#selectedBranch').val();
+        }
+        var ddlSamity = $('option:selected', $('#ddlSamity')).val();
+        if (ddlSamity == 0) {
+            ddlSamity = 0;
+        }
+        else {
+            ddlSamity = $('option:selected', $('#ddlSamity')).val();
+            ddlBranch = 0; // if Samity Selected then Branch will be 0
+        }
+        var Other = $('option:selected', $('#Other')).val();
+        if (Other == 0) {
+            Other = 0;
+        }
+        var txtPhoneNo = $("#txtPhoneNo").val();
+        if (txtPhoneNo == "")
+        {
+            txtPhoneNo = 0;
+        }
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateUpdateNewGroup", "SMS", "http")', //SP::: SMS_CreateUpdateMessage
+            data: {
+                SMSGroupId      : SMSGroupId   ,
+                txtGroupName    : txtGroupName ,
+                ddlProduct      : ddlProduct   ,
+                ddlBranch       : ddlBranch    ,
+                ddlSamity       : ddlSamity     ,
+                Other           : Other         ,
+                txtPhoneNo      : txtPhoneNo
+            },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                alert(data);
+            },
+            error: function (request, status, error) {
+
+            }
+
+        });
+
+    }
+
+    function GetSamity() {
+        var ddlSamity = $("#ddlSamity");
+
+        var ddlBranch = $('option:selected', $('#ddlBranch')).val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSamityList", "SMS", "http")',
+            data: { ddlBranch: ddlBranch },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlSamity.html('');
+                ddlSamity.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ddlSamity.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+
+    function GetBranch() {
+        var ddlBranch = $("#ddlBranch");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBranchList", "SMS", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlBranch.html('');
+                ddlBranch.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ddlBranch.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetProduct() {
+        var ddlProduct = $("#ddlProduct");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "SMS", "http")',
+            data: {  },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProduct.html('');
+                ddlProduct.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ddlProduct.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetMessageSubCategory() {
+
+        var MessageTypeId = $('option:selected', $('#ddlMessageType')).val();
+
+
+        var ddlMessageCategory = $("#ddlMessageCategory");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMessageSubCategory", "SMS", "http")',
+            data: { MessageTypeId: MessageTypeId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlMessageCategory.html('');
+                ddlMessageCategory.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ddlMessageCategory.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetMessage() {
+
+        var ddlSendMessageType = $('option:selected', $('#ddlSendMessageType')).val();
+        var ddlSENDSubCategories = $('option:selected', $('#ddlSENDSubCategories')).val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMessage", "SMS", "http")',
+            data: { MessageTypeId: ddlSendMessageType, MessageCategoryId: ddlSENDSubCategories },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.each(data, function (index, data) {
+                    if (data != "Error") {
+                        $("#SENDMessageDetailsId").val(data.MessageDetails);
+                    }
+                    else {
+
+                        $("#SENDMessageDetailsId").val('');
+                    }
+                });
+            },
+            error: function (request, status, error) {
+                $("#ComponentAmount").val('');
+                //alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetSENDMessageSubCategory() {
+
+        var ddlSendMessageType = $('option:selected', $('#ddlSendMessageType')).val();
+
+
+        var ddlSENDSubCategories = $("#ddlSENDSubCategories");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMessageSubCategory", "SMS", "http")',
+            data: { MessageTypeId: ddlSendMessageType },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlSENDSubCategories.html('');
+                ddlSENDSubCategories.append($('<option></option>').val("0").html("Please Select"));
+                $.each(data, function (id, option) {
+                    ddlSENDSubCategories.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetMessageType() {
+        var ddlMessageType = $("#ddlMessageType");
+
+        var ddlSendMessageType = $("#ddlSendMessageType");
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetMessageTypeList", "SMS", "http")',
+                data: {  },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    ddlMessageType.html('');
+                    ddlMessageType.append($('<option></option>').val("0").html("Please Select"));
+                    $.each(data, function (id, option) {
+                        ddlMessageType.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+
+                    ddlSendMessageType.html('');
+                    ddlSendMessageType.append($('<option></option>').val("0").html("Please Select"));
+                    $.each(data, function (id, option) {
+                        ddlSendMessageType.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+
+
+
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+
+    function GetMessageCount()
+    {
+        var characters = 0;
+        characters = $('#MessageDetailsId').val().length;
+        var chara = (characters-1) / 160;
+        var totalMessage = (parseInt(chara)) + 1;
+        return totalMessage;
+
+    }
+
+    function GetCharacterLimit() {
+
+        var totalMessage = 0
+        totalMessage = GetMessageCount();
+        var totalCharacter = 0;
+        var i;
+        for (i = 0; i < totalMessage; i++) {
+            totalCharacter += 160;
+        }
+
+        return totalCharacter;
+    }
+
+    function SaveMessage()
+    {
+
+        var SMSMessageId            =  $("#SMSMessageId").val();
+        var MessageCategoryId       =  $('option:selected', $('#ddlMessageCategory')).val();
+        var MessageTypeId           =  $('option:selected', $('#ddlMessageType')).val();
+        var MessageDetails          =  $("#MessageDetailsId").val();
+        var Characters              = GetCharacterLimit();
+        var MessageSize             = GetMessageCount();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CreateUpdateNewMessage", "SMS", "http")', //SP::: SMS_CreateUpdateMessage
+            data: {
+                SMSMessageId            : SMSMessageId         ,
+                MessageCategoryId       : MessageCategoryId    ,
+                MessageTypeId           : MessageTypeId        ,
+                MessageDetails          : MessageDetails       ,
+                Characters              : Characters           ,
+                MessageSize             : MessageSize
+            },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                alert("Data Seved Successfully");
+            },
+            error: function (request, status, error) {
+                alert(request);
+            }
+
+        });
+
+    }
+
+
+    function SaveSENDMessage() {
+
+        var SendTo = '';
+        var ddlSENDType = $('option:selected', $('#ddlSENDType')).val();
+        if (ddlSENDType == 'Individual')
+        {
+            SendTo = $("#txtContactNo").val();
+        }
+        else if (ddlSENDType == 'Group')
+        {
+            SendTo = $('option:selected', $('#ddlSendGroup')).val();
+        }
+
+        var ddlSendMessageType = $('option:selected', $('#ddlSendMessageType')).val();
+        var ddlSENDSubCategories = $('option:selected', $('#ddlSENDSubCategories')).val();
+        var SENDMessageDetailsId = $("#SENDMessageDetailsId").val();
+        var txtSENDWebLink = $("#txtSENDWebLink").val();
+        var txtSENDDate = $("#txtSENDDate").val();
+
+        var model = {
+            ddlSENDType: ddlSENDType,
+            SendTo: SendTo,
+            ddlSendMessageType: ddlSendMessageType,
+            ddlSENDSubCategories: ddlSENDSubCategories,
+            SENDMessageDetailsId: SENDMessageDetailsId,
+            txtSENDWebLink: txtSENDWebLink && txtSENDWebLink!==''? txtSENDWebLink:'',
+            txtSENDDate: txtSENDDate
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/SMS/SENDMessage', 
+            data: model,
+            dataType: 'json',
+            async: true,
+            success: function (result) {
+                $.alert.open(result);
+            },
+            error: function (request, status, error) {
+                console.log(error);
+
+                $.alert.open("Message Not Sent. Error Occured."); 
+            }
+        });
+    }
+
+
+    function clearMessagePopup()
+    {
+        $('#SMSMessageId').val(0);
+        $("#ddlMessageType").prop('selectedIndex', 0);
+        $("#ddlMessageCategory").prop('selectedIndex', 0);
+        $('#MessageDetailsId').val("");
+        $("#lblCount").text("");
+
+    }
+
+    function clearGroupPopup() {
+        $('#SMSGroupId').val(0);
+        $('#txtGroupName').val("");
+        $("#ddlProduct").prop('selectedIndex', 0);
+        $("#ddlBranch").prop('selectedIndex', 0);
+        $("#ddlSamity").prop('selectedIndex', 0);
+        $("#ddlSamity").prop("disabled", false);
+        $('#txtPhoneNo').val("");
+        $('#selectedBranch').val("");
+        $("#selectedBranch").hide();
+    }
+
+    function clearSendMessagePopup() {
+        $("#ddlSENDType").prop('selectedIndex', 0);
+        $('#txtContactNo').val("");
+        $("#ddlSendGroup").prop('selectedIndex', 0);
+        $("#ddlSendMessageType").prop('selectedIndex', 0);
+        $("#ddlSENDSubCategories").prop('selectedIndex', 0);
+        $('#SENDMessageDetailsId').val("");
+        $('#txtSENDWebLink').val("");
+        $("#txtSENDDate").datepicker(
+       'setDate', new Date());
+
+        $('#selectedBranch').val("");
+    }
+
+    function GetMessage2() {
+
+        var ddlSendMessageType = $('option:selected', $('#ddlMessageType')).val();
+        var ddlSENDSubCategories = $('option:selected', $('#ddlMessageCategory')).val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMessage", "SMS", "http")',
+            data: { MessageTypeId: ddlSendMessageType, MessageCategoryId: ddlSENDSubCategories },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.each(data, function (index, data) {
+                    if (data != "Error") {
+                        $("#MessageDetailsId").val(data.MessageDetails);
+                    }
+                    else {
+
+                        $("#MessageDetailsId").val('');
+                    }
+                });
+            },
+            error: function (request, status, error) {
+                $("#ComponentAmount").val('');
+                //alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+        $("#selectedBranch").hide();
+        GetMessageType();
+        GetProduct();
+        GetBranch();
+        GetSamity();
+
+        $('#ddlMessageType').change(function () {
+            $("#MessageDetailsId").val("");
+            $("#ddlMessageCategory").prop('selectedIndex', 0);
+        });
+
+        $('#ddlMessageCategory').change(function () {
+
+            $("#MessageDetailsId").val("");
+
+            var Val = 0;
+            val = $('option:selected', $('#ddlMessageType')).val();
+            var Val2 = 0;
+            val2 = $('option:selected', $('#ddlMessageCategory')).val();
+            if (val > 0 && val2 > 0) {
+                GetMessage2();
+            }
+        });
+
+
+
+        $("#btnBranchAdd").click(function (e) {
+
+
+            if ($('option:selected', $('#ddlBranch')).val() == 0) {
+                alert("Please Select Branch ");
+                return;
+            }
+
+            $("#selectedBranch").show();
+            $("#ddlSamity").prop('selectedIndex', 0);
+            $("#ddlSamity").prop("disabled", true);
+
+
+            if ($('option:selected', $('#ddlBranch')).val() != 0) {
+                if ($("#selectedBranch").val() == 0) {
+                    var selectedBranch = $('option:selected', $('#ddlBranch')).val();
+                    $("#selectedBranch").val(selectedBranch);
+                }
+                else {
+                    var selectedBranch = $("#selectedBranch").val() + "," + $('option:selected', $('#ddlBranch')).val();
+                    $("#selectedBranch").val(selectedBranch);
+                }
+
+            }
+
+        });
+
+
+        $('#ddlBranch').change(function () {
+            if ($('option:selected', $('#ddlBranch')).val() != 0)
+            {
+                GetSamity();
+            }
+        });
+
+        $('#ddlSENDSubCategories').change(function () {
+
+            $("#SENDMessageDetailsId").val("");
+            $("#txtSENDWebLink").val("");
+
+
+            var Val = 0;
+            val = $('option:selected', $('#ddlSendMessageType')).val();
+            var Val2 = 0;
+            val2 = $('option:selected', $('#ddlSENDSubCategories')).val();
+            if (val > 0 && val2 > 0) {
+                GetMessage();
+            }
+        });
+
+
+
+        $('#ddlSendMessageType').change(function () {
+
+
+            var Val = 0;
+            val = $('option:selected', $('#ddlSendMessageType')).val();
+            if (val > 0) {
+                GetSENDMessageSubCategory();
+            }
+        });
+
+
+                $('#ddlMessageType').change(function () {
+
+
+                    var Val = 0;
+                    val = $('option:selected', $('#ddlMessageType')).val();
+                    if (val > 0)
+                    {
+                        GetMessageSubCategory();
+                    }
+                });
+
+                $('#ddlSENDType').change(function () {
+
+                    if ($('option:selected', $('#ddlSENDType')).val() == 'Individual')
+                    {
+                        //SendContactNo
+                        $("#SendContactNo").show();
+                        $("#SendGroup").hide();
+                    }
+                    else if ($('option:selected', $('#ddlSENDType')).val() == 'Group')
+                    {
+                        //Load Group
+                        GetGroupName();
+                        //SendGroup
+                        $("#SendContactNo").hide();
+                        $("#SendGroup").show();
+                    }
+
+
+                });
+
+                function popupMessageDiv() {
+                   $('html, body').animate({ scrollTop: $('#MessageDiv').offset().top }, 'slow');
+                    $("#MessageDiv").dialog({
+                        autoOpen: false,
+                        height: 530,
+                        width: 950,
+                        modal: true,
+                        buttons: {
+                            //"Save": function () {
+                            //    SaveUpdateProgram();
+                            //},
+                            "Close": function () {
+                                //alert("No Office selected. Employee office will be used.");
+                                // window.location.href = "Member/Create";
+
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+
+                    var showPopup = "True";
+                    if (showPopup == "True") {
+                        $("#MessageDiv").dialog('open');
+                    }
+
+                }//End of Show Popup
+
+                function popupGroupDiv() {
+                    $('html, body').animate({ scrollTop: $('#GroupDiv').offset().top }, 'slow');
+                    $("#GroupDiv").dialog({
+                        autoOpen: false,
+                        height: 530,
+                        width: 960,
+                        modal: true,
+                        buttons: {
+                            //"Save": function () {
+                            //    SaveUpdateProgram();
+                            //},
+                            "Close": function () {
+                                //alert("No Office selected. Employee office will be used.");
+                                // window.location.href = "Member/Create";
+
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+
+                    var showPopup = "True";
+                    if (showPopup == "True") {
+                        $("#GroupDiv").dialog('open');
+                    }
+
+                }//End of Show Popup
+
+                $("#AddMessage").click(function (e) {
+
+                    popupMessageDiv();
+
+                });
+
+                $("#btnAddGroup").click(function (e) {
+
+                    popupGroupDiv();
+
+                });
+
+
+                $("#btnMessageReset").click(function () {
+
+                    clearMessagePopup();
+
+                   });
+
+
+                $("#btnGroupReset").click(function () {
+
+                    clearGroupPopup();
+
+                });
+
+                $("#btnSENDMessageReset").click(function () {
+
+                    clearSendMessagePopup();
+
+                });
+
+                $("#MessageDetailsId").keyup(function () {
+                    $("#lblCount").text("Character: " + ($(this).val().length) + "/" + GetCharacterLimit() + ". \n Total Message: " + GetMessageCount());
+                });
+
+
+                $("#btnMessageSave").click(function (e) {
+                    if ($("#MessageDetailsId").val().length == 0)
+                    {
+                        $.alert.open("Please Write a Message.");
+                        return;
+                    }
+
+                    if ($('option:selected', $('#ddlMessageType')).val() == 0)
+                    {
+                        $.alert.open("Please Select a Message Type.");
+                        return;
+                    }
+
+                    if ($('option:selected', $('#ddlMessageCategory')).val() == 0) {
+                        $.alert.open("Please Select a Message Category.");
+                        return;
+                    }
+
+                    // If All validation OK Then Save
+
+                    SaveMessage();
+
+
+                });
+
+
+                $("#btnGroupSave").click(function (e) {
+                    debugger;
+                    if ($("#txtGroupName").val().length == 0)
+                    {
+                        $.alert.open("Please Give a Group Name.");
+                        return;
+                    }
+
+                    if ($("#txtPhoneNo").val().length == 0 && $('option:selected', $('#ddlProduct')).val() == 0 && $('option:selected', $('#ddlBranch')).val() == 0 && $('option:selected', $('#Other')).val() == 0) {
+                        $.alert.open("Please Select an Option.");
+                        return;
+                    }
+
+
+                    SaveGroup();
+
+
+                });
+
+
+
+
+                $("#btnSENDMessageSave").click(function (e) {
+
+                    if ($("#SENDMessageDetailsId").val().length == 0) {
+                        $.alert.open("Please Write a Message.");
+                        return;
+                    }
+
+
+                    SaveSENDMessage();
+
+
+                });
+
+
+           $("#txtSENDDate").datepicker(
+              {
+                  dateFormat: "dd-M-yy",
+                  showAnim: "scale",
+                  changeMonth: true,
+                  changeYear: true,
+                  yearRange: "1920:2100"
+
+              });
+         $("#txtSENDDate").datepicker(
+        'setDate', new Date());
+
+
+                $('#gridMessage').jtable({
+                    //title: 'Member List',
+                    paging: true,
+                    pageSize: 20,
+                    sorting: true,
+                    defaultSorting: 'SMSMessageId ASC',
+                    actions: {
+                        //deleteAction: '/Member/Delete',
+                        listAction: function (postData, jtParams) {
+                            console.log("Loading from custom function...");
+                            return $.Deferred(function ($dfd) {
+                                $.ajax({
+                                    url: '/SMS/GetMessageList?MessageId=' + 0 +'&jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: postData,
+                                    success: function (data) {
+                                        $dfd.resolve(data);
+                                    },
+                                    error: function () {
+                                        $dfd.reject();
+                                    }
+                                });
+                            });
+                        }
+                    },
+
+                    fields: {
+                        rowSl: {
+                            title: 'SI No',
+                            width: '10%'
+                        },
+                        SMSMessageId: {
+                            key: true,
+                            list: false,
+                            create: false,
+                            edit: false
+                        },
+                        MessageCategoryName: {
+                            title: 'Message Category Name',
+                            width: '20%'
+                        },
+                        MessageType: {
+                            title: 'Message Type',
+                            width: '20%'
+                        },
+                        MessageDetails: {
+                            title: 'Message Details',
+                            width: '40%'
+                        },
+                        Characters: {
+                            title: 'Characters',
+                            width: '5%'
+                        },
+                        MessageSize: {
+                            title: 'Size',
+                            width: '5%'
+                        },
+                        //EditLink: {
+                        //    title: "Edit",
+                        //    sorting: false,
+                        //    display: function (data) {
+                        //        return '<div class="text-center"><a href="#" OnClick="Edit(' + data.record.SMSMessageId + ')"><i class="fa fa-pencil-square-o"></i></a></div>';
+                        //    }
+                        //},
+                        //DeleteLink: {
+                        //    title: "InActive",
+                        //    display: function (data) {
+                        //        return '<div class="text-center"><a href="#" OnClick="Delete(' + data.record.SMSMessageId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                        //    }
+                        //}
+                    }
+                });
+
+                reloadGrid();
+
+
+        });// END document Ready
+
+
+    function reloadGrid() {
+
+        $("#loading").show();
+        $('#gridMessage').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val(), typeFilterColumn: $('#TypeFilterColumn').val() });
+        $("#loading").hide();
+    }
+
+
+
+
+
+
+</script>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="form-group">
+            <div class="form-group form-action" style="padding:10px;margin:5px;">
+                &nbsp;
+                <input type="button" value="Add Message" id="AddMessage" class="btn btn-success" />
+                &nbsp;
+                <input type="button" value="Add Group" id="btnAddGroup" class="btn btn-success" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Popup Message Entry -->
+<div id="MessageDiv" title="Message Entry" style="display:none">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Message Type </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlMessageType", @class = "form-control" })
+                    <input type="hidden" id="SMSMessageId" value="0" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Categories </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlMessageCategory", @class = "form-control" })
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group">
+            <label class="control-label col-md-2">  </label>
+            <div class="col-md-10">
+                <textarea id="MessageDetailsId" class="col-md-12" rows="4" cols="50" placeholder="Your Message"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <label id="lblCount" class="control-label col-md-8">  </label>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Save" id="btnMessageSave" class="btn btn-success" />
+                    &nbsp;
+                    <input type="button" value="Reset" id="btnMessageReset" class="btn btn-facebook" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            &nbsp;
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="gridMessage">
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- End Of Message Entry Div -->
+<!-- POPUP Group -->
+
+<div id="GroupDiv" title="Group Entry" style="display:none">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Group Name </label>
+                <div class="col-md-8">
+                    <input type="hidden" id="SMSGroupId" value="0" />
+                    <input type="text" class="form-control" id="txtGroupName" placeholder="Group Name" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6" style="display:none;">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Product </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlProduct", @class = "form-control" })
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Branch </label>
+                <div class="col-md-5">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlBranch", @class = "form-control" })
+
+                </div>
+                <div class="col-md-3">
+                    <input type="button" id="btnBranchAdd" value="+" class="btn btn-success" />
+                    <input type="text" id="selectedBranch" value="0" />
+
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Samity </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlSamity", @class = "form-control" })
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Other </label>
+                <div class="col-md-8">
+                    <select id="Other" class="form-control">
+                        <option value="0" selected="selected">Please Select</option>
+                        <option value="All Employee"> All Employee</option>
+                        <option value="All Members">All Members</option>
+                        <option value="All"> All </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-3"> Phone No  </label>
+                <div class="col-md-9">
+                    <textarea id="txtPhoneNo" class="col-md-12" rows="2" cols="50" placeholder="Phone Numbers."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="Save" id="btnGroupSave" class="btn btn-success" />
+                    &nbsp;
+                    <input type="button" value="Reset" id="btnGroupReset" class="btn btn-facebook" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            &nbsp;
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="gridGroup">
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- END Group-->
+<!-- SEND SMS -->
+<div id="SEND SMS">
+    @*khalid*@
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Type </label>
+                <div class="col-md-8">
+                    <select id="ddlSENDType" class="form-control">
+                        <option value="0" selected="selected"> Please Select </option>
+                        <option value="Individual"> Individual </option>
+                        <option value="Group"> Group </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6" id="SendContactNo" style="display:none;">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Contact No </label>
+                <div class="col-md-8">
+                    <input type="text" id="txtContactNo" placeholder="Contact No" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6" id="SendGroup" style="display:none;">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Group </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlSendGroup", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Message Type </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlSendMessageType", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Sub/Categories </label>
+                <div class="col-md-8">
+                    @Html.DropDownList("comtype", null, new { @ID = "ddlSENDSubCategories", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <br />
+    <div class="row">
+        <div class="form-group">
+            <label class="control-label col-md-2">  </label>
+            <div class="col-md-10">
+                <textarea id="SENDMessageDetailsId" class="col-md-12" rows="4" cols="50" placeholder="Your Message"></textarea>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="form-group">
+            <label class="control-label col-md-2"> Insert Web Link  </label>
+            <div class="col-md-10">
+                <textarea id="txtSENDWebLink" class="col-md-12" rows="2" cols="50" placeholder="Your Link"></textarea>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4"> Effective Date </label>
+                <div class="col-md-8">
+                    <input type="text" id="txtSENDDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <div class="form-group form-action" style="padding:10px;margin:5px;">
+                    &nbsp;
+                    <input type="button" value="SEND" id="btnSENDMessageSave" class="btn btn-success" />
+                    &nbsp;
+                    <input type="button" value="Reset" id="btnSENDMessageReset" class="btn btn-facebook" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            &nbsp;
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="gridMessage">
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- End Of Message Entry Div -->
+
+<style type="text/css">
+    .ui-dialog {
+        top: 68px !important;
+        width: 50% !important;
+    }
+</style>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

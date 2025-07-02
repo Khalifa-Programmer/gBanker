@@ -1,0 +1,431 @@
+﻿
+@{
+    ViewBag.Title = "POMISProcess";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script type="text/javascript">
+    var btnView;
+    function PomisProcess_1() {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SavingProcess", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { ProcessDate: ProcessDate },
+            success: function (result) {
+                //if (result == 1) {
+                //    $("#checkbox1").prop('checked', true);
+                //    $("#lbl1").css("color:green;width:20px;font-size:x-large");
+                //}
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function PomisProcess_2() {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LoanstatementProcess", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { ProcessDate: ProcessDate },
+            success: function (result) {
+                //if (result == 2) {
+                //    $("#checkbox2").prop('checked', true);
+                //    $("#lbl2").css("color:green;width:20px;font-size:x-large");
+                //}
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function PomisProcess_3() {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("overdueProcess", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { ProcessDate: ProcessDate },
+            success: function (result) {
+                //if (result == 3) {
+                //    $("#checkbox3").prop('checked', true);
+                //    $("#lbl3").css("color:green;width:20px;font-size:x-large");
+                //}
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function PomisProcess_3_OverDue() {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("overdueProcessDueType", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { ProcessDate: ProcessDate },
+            success: function (result) {
+                //if (result == 4) {
+                //    $("#checkbox4").prop('checked', true);
+                //    $("#lbl3").css("color:green;width:20px;font-size:x-large");
+                //}
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function StaffProfile() {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("StaffProfile", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { ProcessDate: ProcessDate },
+            success: function (result) {
+                //if (result == 5) {
+                //    $("#checkbox5").prop('checked', true);
+                //    $("#lbl3").css("color:green;width:20px;font-size:x-large");
+                //}
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function PomisProcess(consoQueueNo) {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("RunPMOISProcess", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { checkInfo: consoQueueNo, ProcessDate: ProcessDate },
+            success: function (result) {
+
+                //if(result == 1)
+                //{
+                //    $("#checkbox1").prop('checked', true);
+                //    $("#lbl1").css("color:green;width:20px;font-size:x-large");
+                //}
+                //else if (result == 2)
+                //{
+                //    $("#checkbox2").prop('checked', true);
+                //    $("#lbl2").css("color:green;width:20px;font-size:x-large");
+                //}
+                //else if (result == 3) {
+                //    $("#checkbox3").prop('checked', true);
+                //    $("#lbl3").css("color:green;width:20px;font-size:x-large");
+                //}
+                //else if (result == 4) {
+                //    $("#checkbox4").prop('checked', true);
+                //    $("#lbl3").css("color:green;width:20px;font-size:x-large");
+                //}
+                //else if (result == 5) {
+                //    $("#checkbox5").prop('checked', true);
+                //    $("#lbl3").css("color:green;width:20px;font-size:x-large");
+                //}
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function SaveMISConsolidationProcess(queueNo) {
+        var ProcessDate = $("#txtToDt").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveMISConsolidationProcess", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { queueNo: queueNo, ProcessDate: ProcessDate },
+            success: function (consoQueueNo) {
+                debugger;
+                if (consoQueueNo == 0) {
+                    PomisProcess_1();
+                    PomisProcess_2();
+                    PomisProcess_3();
+                    PomisProcess_3_OverDue();
+                    StaffProfile();
+                    //$("#checkboxAll").prop('checked', true);
+                    UpdateQueueStatus(consoQueueNo);
+                }
+                else if (consoQueueNo == 1)
+                {
+                    PomisProcess(consoQueueNo);
+                    UpdateQueueStatus(consoQueueNo);
+                }
+                else if (consoQueueNo == 2)
+                {
+                    PomisProcess(consoQueueNo);
+                    UpdateQueueStatus(consoQueueNo);
+                }
+                else if (consoQueueNo == 3)
+                {
+                    PomisProcess(consoQueueNo);
+                    UpdateQueueStatus(consoQueueNo);
+                }
+                else if (consoQueueNo == 4)
+                {
+                    PomisProcess(consoQueueNo);
+                    UpdateQueueStatus(consoQueueNo);
+                }
+                else if (consoQueueNo == 5) {
+                    PomisProcess(consoQueueNo);
+                    UpdateQueueStatus(consoQueueNo);
+                }
+                else if (consoQueueNo.message != null) {
+                    $.alert.open("error", consoQueueNo.message);
+                    $("#btnView").html("Process");
+                    $('#btnView').attr('disabled', false);
+                }
+            },
+            failure: function () {
+                $.alert.open("error", data.message);
+            }
+        });
+    }
+
+    function SaveMISConsolidationProcess_Note4(queueNo) {
+        var ProcessDate = $("#txtToDt").val();
+
+        $("#btnView").html("Processing...");
+        $('#btnProcess').attr("disabled", true);
+
+         $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("ConsolidationProcess_Note4", "POMIS", "http")',
+             data: { queueNo: queueNo, ProcessDate: ProcessDate },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                $("#AjaxLoader").hide();
+                $('#btnProcess').attr("disabled", true);
+                $.alert.open("Message", data);
+
+            },
+             error: function (request, status, error) {
+                $('#btnProcess').attr("disabled",false);
+                $("#AjaxLoader").hide();
+                $.alert.open("Message", error);
+            }
+
+         });
+
+        $("#btnView").html("Processing");
+        ('#btnProcess').attr("disabled", false);
+    }
+
+
+
+
+
+
+    function UpdateQueueStatus(consoQueueNo) {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("UpdateQueueStatus", "POMIS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { QueueNo: consoQueueNo },
+            success: function (data) {
+                debugger;
+                if (data != null) {
+                    $.alert.open("Success", data.message);
+                    $("#btnView").html("Process");
+                    $('#btnView').attr('disabled', false);
+                }
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#checkboxAll").prop('checked', true);
+
+        $("#checkboxAll").click(function () {
+            $("#checkbox1").prop('checked', false);
+            $("#checkbox2").prop('checked', false);
+            $("#checkbox3").prop('checked', false);
+            $("#checkbox4").prop('checked', false);
+            $("#checkbox5").prop('checked', false);
+            $("#checkboxAll").prop('checked', true);
+            $("#checkbox21").prop('checked', false);
+
+        });
+        $("#checkbox1").click(function () {
+            $("#checkbox2").prop('checked', false);
+            $("#checkbox3").prop('checked', false);
+            $("#checkbox1").prop('checked', true);
+            $("#checkbox4").prop('checked', false);
+            $("#checkbox5").prop('checked', false);
+            $("#checkboxAll").prop('checked', false);
+            $("#checkbox21").prop('checked', false);
+
+        });
+        $("#checkbox2").click(function () {
+            $("#checkbox1").prop('checked', false);
+            $("#checkbox3").prop('checked', false);
+            $("#checkbox2").prop('checked', true);
+            $("#checkbox4").prop('checked', false);
+            $("#checkbox5").prop('checked', false);
+            $("#checkboxAll").prop('checked', false);
+            $("#checkbox21").prop('checked', false);
+
+        });
+        $("#checkbox3").click(function () {
+            $("#checkbox1").prop('checked', false);
+            $("#checkbox2").prop('checked', false);
+            $("#checkbox3").prop('checked', true);
+            $("#checkbox4").prop('checked', false);
+            $("#checkbox5").prop('checked', false);
+            $("#checkboxAll").prop('checked', false);
+            $("#checkbox21").prop('checked', false);
+
+        });
+        $("#checkbox4").click(function () {
+            $("#checkbox1").prop('checked', false);
+            $("#checkbox2").prop('checked', false);
+            $("#checkbox3").prop('checked', false);
+            $("#checkbox4").prop('checked', true);
+            $("#checkbox5").prop('checked', false);
+            $("#checkboxAll").prop('checked', false);
+            $("#checkbox21").prop('checked', false);
+
+        });
+        $("#checkbox5").click(function () {
+            $("#checkbox1").prop('checked', false);
+            $("#checkbox2").prop('checked', false);
+            $("#checkbox3").prop('checked', false);
+            $("#checkbox4").prop('checked', false);
+            $("#checkbox5").prop('checked', true);
+            $("#checkboxAll").prop('checked', false);
+            $("#checkbox21").prop('checked', false);
+
+        });
+        $("#checkbox21").click(function () {
+            $("#checkbox1").prop('checked', false);
+            $("#checkbox2").prop('checked', false);
+            $("#checkbox3").prop('checked', false);
+            $("#checkbox4").prop('checked', false);
+            $("#checkbox5").prop('checked', false);
+            $("#checkboxAll").prop('checked', false);
+            $("#checkbox21").prop('checked', true);
+        });
+
+        $("#txtToDt").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            var allCheck = $("#checkboxAll").is(":checked");
+            var POMIS1Check = $("#checkbox1").is(":checked");
+            var POMIS2Check = $("#checkbox2").is(":checked");
+            var POMIS3Check = $("#checkbox3").is(":checked");
+            var POMISNote421 = $("#checkbox21").is(":checked");
+            var POMIS3Check_OverDue = $("#checkbox4").is(":checked");
+            var staffProfile = $("#checkbox5").is(":checked");
+            var queueNo;
+
+            $("#btnView").html("Processing...");
+            $('#btnView').attr('disabled', 'disabled');
+
+            if (allCheck == true)
+            {
+                queueNo = 0;
+                SaveMISConsolidationProcess(queueNo);
+            }
+            else if (POMIS1Check == true) {
+                queueNo = 1;
+                SaveMISConsolidationProcess(queueNo);
+            }
+            else if (POMIS2Check == true) {
+                queueNo = 2;
+                SaveMISConsolidationProcess(queueNo);
+            }
+            else if (POMIS3Check == true) {
+                queueNo = 3;
+                SaveMISConsolidationProcess(queueNo);
+            }
+            else if (POMIS3Check_OverDue == true) {
+                queueNo = 4;
+                SaveMISConsolidationProcess(queueNo);
+            }
+            else if (POMISNote421 == true) {
+                queueNo = 21;
+                SaveMISConsolidationProcess_Note4(queueNo);
+            }
+            else { //(staffProfile == true)
+                queueNo = 5;
+                SaveMISConsolidationProcess(queueNo);
+            }
+        });
+
+
+
+
+
+
+
+
+
+    });
+</script>
+<h2 class="page-title">Head Office Consolidation</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div>
+            <input type="checkbox" id="checkboxAll" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lblAll">All</label> <br />
+            <input type="checkbox" id="checkbox1" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lbl1">POMIS_1(Savings Statememt)</label> <br />
+            <input type="checkbox" id="checkbox2" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lbl2">POMIS_2(Loan Statement)</label> <br />
+            <input type="checkbox" id="checkbox3" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lbl3">POMIS_3(Overdue Statement)</label> <br />
+            <input type="checkbox" id="checkbox4" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lbl3">POMIS_3(Overdue Statement OverdueType)</label> <br />
+            <input type="checkbox" id="checkbox5" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lbl3">Staff Profile</label> <br />
+            <input type="checkbox" id="checkbox21" style="height:20px;width:20px;" />&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-size:large;" id="lbl3">POMISNote4</label> <br />
+
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <button type="button" class="btn btn-primary" id="btnView">Process</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

@@ -1,0 +1,71 @@
+﻿
+@{
+    ViewBag.Title = "EmployeeListReport";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+        
+            var EmployeeStatus = $("#ddlQtype").val();
+
+            var url = '/GroupwiseReport/GenerateEmployeeListReport?EmployeeStatus=' + EmployeeStatus;
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+
+
+
+<h2 class="page-title">Employee List Report</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Report", new { @class = "control-label" })
+                    @Html.DropDownList("QtypeList", new[] {
+                      new SelectListItem() {Text="Please Select", Value="9",Selected = true},
+                      new SelectListItem() {Text="Drop", Value="0"},
+                      new SelectListItem() {Text="Active",Value="1"},
+                      new SelectListItem() { Text = "All", Value = "2" }},
+                      new { @ID = "ddlQtype", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+
+
+
+
+
+

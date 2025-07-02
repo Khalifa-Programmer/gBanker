@@ -1,0 +1,209 @@
+﻿@model gBanker.Web.Models.RegisterModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var items = ViewData["UserList"] as List<SelectListItem>;
+}
+<script type="text/javascript">
+    function GetUserList() {
+        var ddlEmp = $("#ddlUser");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetUserList", "Account", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlEmp.html('');
+                $.each(data, function (id, option) {
+                    ddlEmp.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        GetUserList();
+        //$('#grid').jtable({
+        //    //title: 'Login List',
+        //    paging: true,
+        //    pageSize: 20,
+        //    sorting: true,
+        //    defaultSorting: 'UserName ASC',
+        //    actions: {
+        //        listAction: function (postData, jtParams) {
+        //            console.log("Loading from custom function...");
+        //            return $.Deferred(function ($dfd) {
+        //                $.ajax({
+        //                    url: '/Account/GetAllLogins?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+        //                    type: 'POST',
+        //                    dataType: 'json',
+        //                    data: postData,
+        //                    success: function (data) {
+        //                        $dfd.resolve(data);
+        //                    },
+        //                    error: function () {
+        //                        $dfd.reject();
+        //                    }
+        //                });
+        //            });
+        //        },
+        //        updateAction: '/Account/EditUserRole'
+
+        //    },
+        //    fields: {
+        //        Id: {
+        //            key: true,
+        //            list: false,
+        //            create: false,
+        //            edit: false
+        //        },
+        //        UserName: {
+        //            title: 'User Name',
+        //            width: '20%',
+        //            input:function(data)
+        //            {
+        //                return '<span>' + data.record.UserName + '</span>';
+        //            }
+
+        //        },
+        //        FullName: {
+        //            title: 'Full Name',
+        //            width: '30%',
+        //            input:function(data)
+        //            {
+        //                return '<span>' + data.record.FullName + '</span>';
+        //            }
+        //        },
+        //        Email: {
+        //            title: 'Email',
+        //            width: '30%',
+        //            edit: true,
+        //            create: true,
+        //            input: function (data) {
+        //                return '<textarea>' + data.record.Email + '</textarea>';
+        //            }
+        //        },
+        //        RoleId: {
+        //            title: 'Role Name',
+        //            width: '20%',
+        //            options: function(data) {
+        //                    return '/Account/RoleList/';
+        //            }
+        //        },
+        //        DeleteLink: {
+        //            title: "Delete",
+        //            display: function (data) {
+        //                return '<a href="/Account/DeleteLogin/' + data.record.Id + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+        //            },
+        //            edit: false
+        //        }
+        //    }
+        //});
+
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'UserName ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Account/GetAllLogins?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                Id: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                UserName: {
+                    title: 'User Name',
+                    width: '20%'
+                },
+                FirstName: {
+                    title: 'Full Name',
+                    width: '30%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '30%'
+                },
+                RoleId: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                RoleName: {
+                    title: 'Role Name',
+                    width: '20%'
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {      
+                        debugger;
+                        return "<div class='text-center'><a href='/Account/EditUser/" + data.record.Id + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    },
+                },
+
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<a href="/Account/DeleteLogin/' + data.record.Id + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '><i class="fa fa-trash-o"></i></a>';
+                    },
+                    edit: false
+                }
+            }
+        });
+        reloadGrid();
+
+    });
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { EmpId: $('#ddlUser').val() });
+        $("#loading").hide();
+    }
+</script>
+@Html.ActionLink("Add New Login", "Register", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Login User List</h2>
+
+
+<div class="row">
+    <div class="col-md-4">
+        @Html.Label("User Name", new { @class = "control-label" })
+        @Html.DropDownList("UserList", items, new { @ID = "ddlUser", @class = "form-control" })
+    </div>
+
+    <div class="col-md-4" style="padding-top:22px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

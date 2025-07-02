@@ -1,0 +1,114 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.InvestorViewModel>
+
+@{
+    ViewBag.Title = "Investor List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+    function deleteConfirm(status) {
+        if (status == "true") {
+            return confirm('Are you sure you want to delete this record');
+        }
+        else {
+            alert("You cannot delete this record because it is already disabled.");
+            return false;
+        }
+    }
+</script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+           // title: 'Investor List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+
+                listAction: '/Investor/GetInvestors'
+              
+            },
+            fields: {
+                InvestorID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                InvestorCode: {
+                    title: 'Investor Code',
+                    width: '20%'
+
+                },
+                InvestorName: {
+                    title: 'Investor Name',
+                    width: '40%'
+                },
+                
+                IsActive: {
+                    title: 'IsActive',
+                    width: '40%',
+                    list: false
+                },
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/Investor/Edit/" + data.record.InvestorID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                       // return "<a href='/Investor/Edit/" + data.record.InvestorID + "'><img src='../../Scripts/jtable/themes/basic/edit.png' alt='Edit'/></a>";
+                        //return '<a href="/Investor/Edit/' + data.record.InvestorID + '">Edit</a>';
+                    }
+                }
+                ,
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="/Investor/Delete/' + data.record.InvestorID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                       //return '<a href="/Investor/Delete/' + data.record.InvestorID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                    }
+                }
+            }
+        });
+        $('#grid').jtable('load');
+
+       
+    });
+
+</script>
+
+
+@*<table style="width:100%;">
+    <tr>
+        <td style="width:90%"><h2>Investor List</h2></td>
+        <td>@Html.ActionLink("Add New", "Create")</td>
+    </tr>
+</table>
+<hr />*@
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Investor List</h2>
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

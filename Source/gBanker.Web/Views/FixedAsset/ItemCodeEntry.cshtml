@@ -1,0 +1,310 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Asset Group Entry";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+        GetAssetGroupInfo();
+        $("#btnSave").click(function () {
+            var groupCode = $("#GroupCode").val();
+            var groupName = $("#GroupName").val();
+            var accountCode = $("#AccountCode").val();
+            var depriciationDebit = $("#DepriciationDebit").val();
+            var depriciationCredit = $("#DepriciationCredit").val();
+            if (groupCode != "" && groupName != "" && accountCode != "" && depriciationDebit != "" && depriciationCredit != "") {
+                var obj = {
+                    GroupCode: groupCode,
+                    GroupName: groupName,
+                    AccountCode: accountCode,
+                    DepriciationDebit: depriciationDebit,
+                    DepriciationCredit: depriciationCredit
+                }
+                $.ajax({
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveAssetGroupInformation", "FixedAsset", "http")',
+                    data: JSON.stringify({ obj: obj }),
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            GetAssetGroupInfo();
+                            ClearForm();
+                        } else {
+                            $.alert.open("Error", data.message);
+                            ClearForm();
+                        }
+                    }
+
+                });
+            }
+            else {
+                $.alert.open("Error", "Please insert required field");
+            }
+
+        });
+        $("#btnUpdate").click(function () {
+            var groupId = $("#AssetGroupInfoID").val();
+            var groupCode = $("#GroupCode").val();
+            var groupName = $("#GroupName").val();
+            var accountCode = $("#AccountCode").val();
+            var depriciationDebit = $("#DepriciationDebit").val();
+            var depriciationCredit = $("#DepriciationCredit").val();
+            if (groupCode != "" && groupName != "" && accountCode != "" && depriciationDebit != "" && depriciationCredit != "") {
+                var obj = {
+                    AssetGroupInfoID: groupId,
+                    GroupCode: groupCode,
+                    GroupName: groupName,
+                    AccountCode: accountCode,
+                    DepriciationDebit: depriciationDebit,
+                    DepriciationCredit: depriciationCredit
+                }
+                $.ajax({
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("UpdateAssetGroupInformation", "FixedAsset", "http")',
+                    data: JSON.stringify({ obj: obj }),
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            GetAssetGroupInfo();
+                            ClearForm();
+                            $("#btnUpdate").hide();
+                            $("#btnReset").hide();
+                            $("#btnSave").show();
+                        } else {
+                            $.alert.open("Error", data.message);
+                            ClearForm();
+                        }
+                    }
+
+                });
+            }
+            else {
+                $.alert.open("Error", "Please insert required field");
+            }
+
+        });
+        $("#btnReset").click(function () {
+            $("#btnUpdate").hide();
+            $("#btnSave").show();
+            $("#btnReset").hide();
+            ClearForm();
+        });
+
+
+
+    });
+    function ClearForm() {
+        $("#GroupCode").val('');
+        $("#GroupName").val('');
+        $("#AccountCode").val('');
+        $("#DepriciationDebit").val('');
+        $("#DepriciationCredit").val('');
+    }
+    function GetAssetGroupInfo() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FixedAsset/GetAssetGroupInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                AssetGroupID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetGroupCode: {
+                    width: '10%',
+                    title: 'Group Code'
+                },
+                AssetGroupName: {
+                    width: '10%',
+                    title: 'Group Name'
+                },
+                AssetInAccCode: {
+                    width: '10%',
+                    title: 'Account Code'
+                },
+                AssetCurDepriDr: {
+                    width: '10%',
+                    title: 'Depriciation Code (Debit)'
+                },
+                AssetAccuDepriCr: {
+                    width: '10%',
+                    title: 'Depriciation Code (Credit)'
+                },
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+
+                        return '<div class="text-center"><a href="#" OnClick="EditGroupInfo( ' + data.record.AssetGroupID + ',' + "'" + data.record.AssetGroupCode + "'" + ',' + "'" + data.record.AssetGroupName + "'" + ',' + "'" + data.record.AssetInAccCode + "'" + ',' + "'" + data.record.AssetCurDepriDr + "'" + ',' + "'" + data.record.AssetAccuDepriCr + "'" + ' );"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+
+                },
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteGroupInfo(' + data.record.AssetGroupID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+
+        });
+        $('#grid').jtable('load');
+
+    }
+    function EditGroupInfo(assetGroupInfoID, assetGroupInfoCode, assetGroupInfoName, assetInAccCode, assetCurDepriDr, assetAccuDepriCr) {
+        debugger;
+        $("#AssetGroupInfoID").val(assetGroupInfoID);
+        $("#GroupCode").val(assetGroupInfoCode);
+        $("#GroupName").val(assetGroupInfoName);
+        $("#AccountCode").val(assetInAccCode);
+        $("#DepriciationDebit").val(assetCurDepriDr);
+        $("#DepriciationCredit").val(assetAccuDepriCr);
+
+        $("#btnUpdate").show();
+        $("#btnSave").hide();
+        $("#btnReset").show();
+    }
+
+    function Reset() {
+        $("#btnUpdate").hide();
+        $("#btnSave").show();
+        $("#btnReset").hide();
+    }
+    function DeleteGroupInfo(AssetGroupInfoID) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteGroupInfo", "FixedAsset", "http")',
+                    data: { AssetGroupInfoID: AssetGroupInfoID },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            $('#grid').jtable('load');
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+</script>
+
+
+
+<h2 class="page-title">Asset Group Information</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.AssetGroupInfoID)
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Group Code</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GroupCode, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Group Name</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.GroupName, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Account Code</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AccountCode, Model.AccountCodeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Depriciation Code (Debit)</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DepriciationDebit, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4 required">Accumulated Depriciation (Credit)</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DepriciationCredit, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Save" id="btnSave" class="btn btn-primary" />
+            <input type="button" value="Update" id="btnUpdate" class="btn btn-primary" />
+            <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}

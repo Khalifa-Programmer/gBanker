@@ -1,0 +1,440 @@
+﻿@model gBanker.Web.ViewModels.DailySavingCollectionViewModel
+
+@{
+    ViewBag.Title = "Transfer Savings Collection Create";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var product = Model == null ? null : Model.productListItems;
+    var membercategory = Model == null ? null : Model.membercategoryListItems;
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var purpose = Model == null ? null : Model.purposeListItems;
+    var member = Model == null ? null : Model.memberListItems;
+    var cashItem = Model == null ? null : Model.cashListItems;
+    // var vmaxLoanterm == null ? null : Model.vMaxLoanTerm.ToString();
+
+}
+
+
+<script type="text/javascript">
+    $body = $("body");
+
+    function SetProductid(value) {
+
+        var ddlValue = $("#ProductID option:selected").val();
+        $("#hfProdId").val(ddlValue);
+
+    }
+
+
+    function CalcLoanTerm() {
+        //alert('fn');
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+
+        if (prodId > 0 && memId > 0 && officeId > 0 && centerId > 0) {
+
+            $body.addClass("loading");
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetNoOfAccount", "DailySavingCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, ProdId: prodId },
+
+                success: function (result) {
+                    $("#NoOfAccount").val(result.LoanTerm);
+                    $("#Balance").val(result.Balance);
+                    $body.removeClass("loading");
+
+
+                },
+                error: function (err) {
+                    $body.removeClass("loading");
+                }
+            });
+        }
+    }
+
+    @*function CalcBalance() {
+        //alert('fn');
+        var prodId = $("#hfProdId").val();
+        var memId = $("#MemberID").val();
+        var officeId = $("#OfficeID").val();
+        var centerId = $("#CenterID").val();
+
+        if (prodId > 0 && memId > 0 && officeId > 0 && centerId > 0) {
+
+            $body.addClass("loading");
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetInstallment", "SpecialSavingCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { officeId: officeId, centerId: centerId, MemId: memId, ProdId: prodId },
+
+                success: function (result) {
+
+                    $("#Balance").val(result.Balance);
+                    $body.removeClass("loading");
+
+
+                },
+                error: function (err) {
+                    $body.removeClass("loading");
+                }
+            });
+        }
+    }*@
+    $(document).ready(function () {
+
+        $("#ProductID").change(function () {
+            CalcLoanTerm();
+           // CalcBalance()
+        });
+        $("#CenterID").change(function () {
+            CalcLoanTerm();
+            CalcBalance()
+        });
+        $("#MemberID").change(function () {
+            CalcLoanTerm();
+            //CalcBalance()
+        });
+        $("#OfficeID").change(function () {
+            CalcLoanTerm();
+           // CalcBalance()
+        });
+
+        ////////////////////////////////////
+        $("#SavingInstallment").keyup(function () {
+            var SavingInstallment = $("#SavingInstallment").val();
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var centerId = $("#CenterID").val();
+            var NOA = $("#NoOfAccount").val();
+            var wd = $("#Withdrawal").val();
+            var penalty = $("#Penalty").val();
+
+
+            if (wd.length == 0) {
+                wd = "0";
+                $("#Withdrawal").val("0");
+
+            }
+            if (penalty.length == 0) {
+                penalty = "0";
+                $("#Penalty").val("0");
+
+            }
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetInstallment", "DailySavingCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { OfficeID: officeId, CenterID: centerId, MemId: memId, ProdId: prodId, NoOfAccount: NOA, SavingInstallment: SavingInstallment, WithDrawal: wd, penalty: penalty },
+
+                success: function (result) {
+                   // CalcBalance();
+                    $("#Balance").val(result.loan);
+                  //  $("#IntPaid").val(result.interest);
+
+                }
+            });
+        });
+        ////////////////////////////////////
+        ////////////////////////////////////
+        $("#Withdrawal").keyup(function () {
+            var SavingInstallment = $("#SavingInstallment").val();
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var centerId = $("#CenterID").val();
+            var NOA = $("#NoOfAccount").val();
+            var wd = $("#Withdrawal").val();
+            var penalty = $("#Penalty").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetInstallment", "DailySavingCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { OfficeID: officeId, CenterID: centerId, MemId: memId, ProdId: prodId, NoOfAccount: NOA, SavingInstallment: SavingInstallment, WithDrawal: wd, penalty: penalty },
+
+                success: function (result) {
+                    // CalcBalance();
+                    $("#Balance").val(result.loan);
+                    //  $("#IntPaid").val(result.interest);
+
+                }
+            });
+        });
+        $("#Penalty").keyup(function () {
+            var SavingInstallment = $("#SavingInstallment").val();
+            var prodId = $("#hfProdId").val();
+            var memId = $("#MemberID").val();
+            var officeId = $("#OfficeID").val();
+            var centerId = $("#CenterID").val();
+            var NOA = $("#NoOfAccount").val();
+            var wd = $("#Withdrawal").val();
+            var penalty = $("#Penalty").val();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetInstallment", "DailySavingCollection", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { OfficeID: officeId, CenterID: centerId, MemId: memId, ProdId: prodId, NoOfAccount: NOA, SavingInstallment: SavingInstallment, WithDrawal: wd, penalty: penalty },
+
+                success: function (result) {
+                    // CalcBalance();
+                    $("#Balance").val(result.loan);
+                    //  $("#IntPaid").val(result.interest);
+
+                }
+            });
+        });
+
+        $("#memberAutoComplete").blur(function () {
+            var member = $("#memberAutoComplete").val();
+            ///function
+
+            if (member.length > 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "DailySavingCollection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: member, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        // alert(data.length);
+                        if (data.length == 1) {
+                            $("#memberAutoComplete").val(data[0].MemberName);
+                            $("#MemberID").val(data[0].MemberID);
+                            CalcLoanTerm();
+                        }
+                        else if (data.length == 0) {
+                          //  alert("No member found.");
+                            $("#MemberID").val("");
+
+                        }
+                        else {
+                          //  alert("More than one member found with the given Member code.");
+                            $("#MemberID").val("");
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "DailySavingCollection", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, centerId: $("#CenterID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+    });
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+       // $("#TransactionDate").datepicker();
+
+      //  gBankerDatePicker("TransactionDate");
+    });
+</script>
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Add Transfer Collection</h2>
+
+@using (Html.BeginForm("Create", "DailySavingCollection", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group" style="display:none">
+            @Html.LabelFor(model => model.DailySavingTrxID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DailySavingTrxID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.DailySavingTrxID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group" style="display:none">
+            @Html.LabelFor(model => model.SavingSummaryID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.SavingSummaryID, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.SavingSummaryID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CenterID, htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.MemberID)
+                    @Html.TextBoxFor(model => model.MemberID, new { @style = "display:none" })
+                    @Html.ValidationMessageFor(model => model.MemberID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control", onchange = "SetProductid(this.value);" })
+                    @*@Html.DropDownListFor(model => model.ProductID, product, new { @class = "form-control" })*@
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.ProductID, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.ProductID, product, new { onchange = "SetProductid(this.value);" })
+                    @Html.Hidden("hfProdId")
+                    @Html.ValidationMessageFor(model => model.ProductID, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NoOfAccount, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.NoOfAccount, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.NoOfAccount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TransactionDate, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.TransactionDate, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                    @Html.ValidationMessageFor(model => model.TransactionDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SavingInstallment, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.SavingInstallment, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.SavingInstallment, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Withdrawal, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Withdrawal, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Withdrawal, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Penalty, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Penalty, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Penalty, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Balance, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-group form-action">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+}

@@ -1,0 +1,449 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+
+<script type="text/javascript">
+    var officeLevel =@ViewBag.OfficeLevel;
+    $(document).ready(function () {
+        $("#txtFrom,#txtTo").datepicker(
+      {
+          dateFormat: "dd-M-yy",
+          showAnim: "scale"
+      });
+        $("#btnReport").click(function(e){
+            e.preventDefault();
+            if($("#txtFrom").val() &&$("#txtTo").val()){
+                window.open(url = "/InventoryReport/CommonReports?reportTypeId=20"+ "&categoryId=0&itemId=0&from=" + $('#txtFrom').val()
+                                    + "&to=" + $('#txtTo').val(), 'mywindow'
+                              , 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=no,width=600,height=600');
+            }
+        });
+        if(officeLevel==2)
+            $("#ddlStatus").html("<option value=''>Select Status</option><option value='I'>Dispose Status</option><option value='D'>Item Dispose</option>")
+        else if(officeLevel==4)
+            $("#ddlStatus").html("<option value='I'>Dispose Status</option>")
+        $("#btnSearch").click(function(e){
+            e.preventDefault();
+            if(officeLevel==1)ConsulateGridNew();
+            else GeneralGrid();
+        })
+
+        function ConsulateGrid(){
+            $('#grid').jtable({
+                sorting: true,
+                defaultSorting: 'DisposeRequestID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+                            $.ajax({
+                                url: '/Requisition/ConsolidateDisposeData?from='+$("#txtFrom").val()+'&to='+$("#txtTo").val()+'',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                },
+                fields: {
+                    ConsolidateDisposeID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    ItemID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    WarehouseName: {
+                        title: 'Request Office',
+                        width: '25%'
+                    },
+                    ConsolidateDate: {
+                        title: 'Request Date',
+                        type: 'date',
+                        displayFormat: 'dd-mm-yy',
+                        width: '10%'
+                    },
+                    ItemCode: {
+                        title: 'Item Code',
+                        width: '25%'
+                    },
+                    ItemName: {
+                        title: 'Item Name',
+                        width: '25%'
+                    },
+                    Qty: {
+                        title: 'Qty',
+                        width: '25%'
+                    },
+
+                    ViewLink: {
+                        title: "Command",
+                        width: '20%',
+                        display: function (data) {
+                            return (officeLevel==1  ?'<div class="text-center view-link"><a href="#" title="Approved" onclick="SendConsolidateDisposeRequest(' + data.record.ConsolidateDisposeID +','+data.record.ItemID+')"><i class="fa fa-check"></i></a></div>'
+                                 : "")
+                        }
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+        function ConsulateGridNew(){
+            $('#grid').jtable({
+                sorting: true,
+                defaultSorting: 'DisposeRequestID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+                            $.ajax({
+                                url: '/Requisition/ConsolidateDisposeDataNew?from='+$("#txtFrom").val()+'&to='+$("#txtTo").val()+'',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                },
+                fields: {
+                    WarehouseID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+
+                    WarehouseName: {
+                        title: 'Request Office',
+                        width: '25%'
+                    },
+                    Qty: {
+                        title: 'Qty',
+                        width: '25%'
+                    },
+
+                    ViewLink: {
+                        title: "Command",
+                        width: '20%',
+                        display: function (data) {
+                            return (officeLevel==1  ?'<div class="text-center view-link"><a href="#" title="View" onclick="ViewDisposeRequest(' + data.record.WarehouseID+','+data.record.Qty+')"><i class="fa fa-eye"></i></a> | '+
+                                '<a href="#" title="Report Viewer" onclick="ViewItemWiseReport(' + data.record.WarehouseID+','+data.record.Qty+')"><i class="fa fa-file"></i></a> | '+
+                                '<a href="#" title="Approved" onclick="SendConsolidateDisposeRequestNew(' + data.record.WarehouseID+','+data.record.Qty+')"><i class="fa fa-check"></i></a></div>'
+                                 : "")
+                            //return (officeLevel==1  ?'<div class="text-center view-link"><a href="#" title="Approved" onclick="SendConsolidateDisposeRequest(' + data.record.ConsolidateDisposeID +','+data.record.ItemID+')"><i class="fa fa-check"></i></a></div>'
+                            //     : "")
+                        }
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+        function GeneralGrid(){
+            $('#grid').jtable({
+                sorting: true,
+                defaultSorting: 'DisposeRequestID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+                            $.ajax({
+                                url: '/Requisition/GetDisposeRequest?status='+$("#ddlStatus").val()+''+'&from='+$("#txtFrom").val()+'&to='+$("#txtTo").val()+'',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                },
+                fields: {
+                    DisposeRequestID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    DisposeRequestNo: {
+                        title: 'Slip No',
+                        width: '10%'
+
+                    },
+                    RequestDate: {
+                        title: 'Request Date',
+                        type: 'date',
+                        displayFormat: 'dd-mm-yy',
+                        width: '10%'
+                    },
+                    ItemCode: {
+                        title: 'Item Code',
+                        width: '25%'
+                    },
+                    ItemName: {
+                        title: 'Item Name',
+                        width: '25%'
+                    },
+                    Qty: {
+                        title: 'Qty',
+                        width: '25%'
+                    },
+                    UnitPrice: {
+                        title: 'Unit Price',
+                        width: '25%'
+                    },
+                    WarehouseName: {
+                        title: 'Request Office',
+                        width: '25%'
+                    },
+                    RequestRemark: {
+                        title: 'Request Remark',
+                        width: '25%'
+                    },
+                    DisposeStatus: {
+                        title: 'Status',
+                        display: function (data) {
+                            return (data.record.DisposeStatus == 0  ? "Reject"
+                                : data.record.DisposeStatus == 1?"Request"
+                                :data.record.DisposeStatus == 2?"Approved"
+                                :data.record.DisposeStatus == 3?"Dispose":"")
+                        },
+                        width: '10%'
+                    },
+
+                    ViewLink: {
+                        title: "Command",
+                        width: '20%',
+                        display: function (data) {
+                            return (officeLevel==2 && data.record.DisposeStatus == 2 ?'<div class="text-center view-link"><a href="#" title="Dispose" onclick="SendDisposeRequest(' + data.record.DisposeRequestID + ",'D'" + ')"><i class="fa fa-check"></i></a> | <a href="#" title="Reject" onclick="SendDisposeRequest(' + data.record.DisposeRequestID + ",'r'" + ')"><i class="fa fa-times"></i></a></div>'
+                                :officeLevel==2 && data.record.DisposeStatus == 1 && $("#ddlStatus").val()=='C' ?'<div class="text-center view-link"><a href="#" title="Send" onclick="SendDisposeRequest(' + data.record.DisposeRequestID + ",'C'" + ')"><i class="fa fa-paper-plane"></i></a></div>'
+                                 : "");
+                        }
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+    });
+    function ViewDisposeRequest(WarehouseID,Qty){
+        var gridurl = '/Requisition/ConsolidateDisposeDataNew?from=' + $("#txtFrom").val() + '&to=' + $("#txtTo").val() + '&officeID='+WarehouseID+'&reportType=Item'
+        $("#hdnurl").val(gridurl)
+
+        $('#ItemGrid').jtable({
+            // title: 'Product List',
+            paging: false,
+            sorting: true,
+            defaultSorting: 'WarehouseID ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function..."+gridurl);
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: $("#hdnurl").val(),
+                            type: 'POST',
+                            dataType: 'json',
+                            cache: false,
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                WarehouseID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                ItemID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                WarehouseName: {
+                    title: 'Office',
+                    width: '30%'
+                },
+                ItemCode: {
+                    title: 'Item Code',
+                    width: '10%'
+                },
+                ItemName: {
+                    title: 'Item Name',
+                    width: '30%'
+                },
+                Qty: {
+                    title: 'Qty',
+                    width: '15%'
+                },
+
+                CommandLink: {
+                    title: "Command",
+                    display: function (data) {
+                        return '<div class="text-center view-link">' +
+                            '<a href="#" title="Details Report" onclick="ViewOfficeWiseItemReport(' + data.record.WarehouseID + ','+data.record.ItemID+')"><i class="fa fa-file"></i></a> | '+
+                        '<a href="#" title="Reject" onclick="RejectOfficeWiseItem(' + data.record.WarehouseID + ','+data.record.ItemID+','+data.record.Qty+')"><i class="fa fa-trash-o"></i></a>'+
+                        '</div>';
+                    }
+                }
+            },
+        });
+
+        $('#ItemGrid').jtable('load');
+        //$("#ItemGrid").scrollTop()
+        $('#dvMode').modal('show');
+
+
+    }
+
+    function ViewItemWiseReport(WarehouseID){
+        if($("#txtFrom").val() &&$("#txtTo").val()){
+            window.open(url = "/InventoryReport/CommonReports?reportTypeId=21"+ "&categoryId=0&itemId=0&from=" + $('#txtFrom').val()
+                +"&OfficeID="+WarehouseID+"&reportType=Item"+ "&to=" + $('#txtTo').val(), 'mywindow'
+                          , 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=no,width=600,height=600');
+        }
+    }
+    function ViewOfficeWiseItemReport(WarehouseID,itemID){
+        if($("#txtFrom").val() &&$("#txtTo").val()){
+            window.open(url = "/InventoryReport/CommonReports?reportTypeId=22"+ "&categoryId=0&itemId="+itemID+"&from=" + $('#txtFrom').val()
+                +"&OfficeID="+WarehouseID+"&reportType=OffItem"+ "&to=" + $('#txtTo').val(), 'mywindow'
+                          , 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=no,width=600,height=600');
+        }
+    }
+    function SendConsolidateDisposeRequestNew(WarehouseID,Qty){
+        if($("#txtFrom").val() &&$("#txtTo").val()){
+            var data = GenerateAjaxRequist('/Requisition/ApprovedDisposeRequestNew', JSON.stringify({ WarehouseID: WarehouseID,Qty:Qty,from:$("#txtFrom").val(),to:$("#txtTo").val() }), "POST")
+            $.alert.open("Success", data.message);
+            $("#btnSearch").click();
+        }
+        else
+            $.alert.open("warning", "Date Select");
+    }
+    function RejectOfficeWiseItem(WarehouseID,itemID,Qty){
+        if($("#txtFrom").val() &&$("#txtTo").val()){
+            var data = GenerateAjaxRequist('/Requisition/RejectOfficeWiseItem', JSON.stringify({ WarehouseID: WarehouseID,itemID:itemID,Qty:Qty,from:$("#txtFrom").val(),to:$("#txtTo").val() }), "POST")
+            $("#dvmessage").html("<b style='color:red'>"+data.message+"</b>");
+            $('#ItemGrid').jtable('load');
+            $("#btnSearch").click();
+        }
+        else
+            $.alert.open("warning", "Date Select");
+    }
+    function SendConsolidateDisposeRequest(ConsolidateDisposeID ,ItemID){
+        var data = GenerateAjaxRequist('/Requisition/ApprovedDisposeRequest', JSON.stringify({ ConsolidateDisposeID: ConsolidateDisposeID,ItemID:ItemID }), "POST")
+        $.alert.open("Success", data.message);
+        $("#btnSearch").click();
+    }
+    function SendDisposeRequest(DisposeRequestID,status){
+        var data = GenerateAjaxRequist('/Requisition/SendDisposeRequest', JSON.stringify({ DisposeRequestID: DisposeRequestID,status:status }), "POST")
+        $.alert.open("Success", data.message);
+        $("#btnSearch").click();
+    }
+</script>
+<div class="row">
+    <div class="col-md-12">
+        @if (ViewBag.OfficeLevel == 4)
+        {
+            <div class="pull-left">
+                <h2 class="page-title">Despose Status</h2>
+            </div>
+            <div class="pull-right">
+                @Html.ActionLink("Dispose Request", "DisposeRequisitionCreate", "requisition", null, new { @class = "btn btn-info  btn-sm" })
+            </div>
+        }
+        else if (ViewBag.OfficeLevel == 2)
+        {
+            <div class="pull-left">
+                <h2 class="page-title">Despose Status</h2>
+            </div>
+            <div class="pull-right">
+                @Html.ActionLink("Dispose Request Create", "DisposeRequisitionCreate", "requisition", null, new { @class = "btn btn-info  btn-sm" })
+                @Html.ActionLink("Dispose Send", "DisposeRequisitionSend", "requisition", null, new { @class = "btn btn-warning  btn-sm" })
+            </div>
+        }
+        else if (ViewBag.OfficeLevel == 1)
+        {
+            <div class="pull-left">
+                <h2 class="page-title">Requisition Approved Status</h2>
+            </div>
+        }
+    </div>
+</div>
+<div class="form-horizontal">
+    <table>
+        <tr>
+            @if (ViewBag.OfficeLevel != 1)
+            {
+                <td>Status</td>
+                <td><select class="form-control" id="ddlStatus"></select></td>
+            }
+            <td>From</td>
+            <td><input type="text" class="form-control" autocomplete="off" id="txtFrom" /></td>
+            <td>To</td>
+            <td><input type="text" class="form-control" autocomplete="off" id="txtTo" /></td>
+            <td><button type="button" id="btnSearch" class="btn btn-info">Search</button></td>
+            @if (ViewBag.OfficeLevel == 1)
+            {
+                <td><button type="button" id="btnReport" class="btn btn-primary">Report</button></td>
+            }
+
+        </tr>
+    </table>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="dvMode" tabindex="-1" role="dialog" aria-labelledby="dvMode" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 id="hItem"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="dvmessage"></div>
+                <div id="ItemGrid"></div>
+                <input type="hidden" id="hdnurl" />
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

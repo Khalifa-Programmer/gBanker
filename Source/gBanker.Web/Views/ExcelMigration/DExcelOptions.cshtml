@@ -1,0 +1,181 @@
+﻿ 
+
+@{
+    ViewBag.Title = "Excel Download";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+ 
+}
+
+<style>
+    .jtable > thead > tr {
+        height: 50px;
+    }
+</style>
+
+
+<style type="text/css">
+    .ajaxLoader {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('../../Images/ajax-loading.gif') 50% 50% no-repeat;
+        /*ajax-loader2 .gif;*/
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+    modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+</style>
+
+<style type="text/css">
+    .webgrid-table {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        font-size: 1.2em;
+        width: 100%;
+        display: table;
+        border-collapse: separate;
+        border: solid 1px #98BF21;
+        background-color: white;
+    }
+
+        .webgrid-table td, th {
+            border: 1px solid #98BF21;
+            padding: 3px 7px 2px;
+        }
+
+    .webgrid-header {
+        background-color: #A7C942;
+        color: #FFFFFF;
+        padding-bottom: 4px;
+        padding-top: 5px;
+        text-align: left;
+    }
+
+    .webgrid-footer {
+    }
+
+    .webgrid-row-style {
+        padding: 3px 7px 2px;
+    }
+
+    .webgrid-alternating-row {
+        background-color: #EAF2D3;
+        padding: 3px 7px 2px;
+    }
+</style>
+
+
+
+<h2>Download Excel Data</h2>
+
+<script>
+  
+    
+    $(document).ready(function () {
+       
+        $("#btnExecute").click(function () {
+     
+            $('#AjaxLoader').show();
+            $("#SelectedTillDate").val($("#TillDate").val());
+            ExecuteSP();
+           
+           $('#AjaxLoader').hide();
+     
+        });
+
+        $("#btnDownloadExcel").click(function () {
+           // ExecuteSP();
+           
+            let selectedMonth = $("#ddlMonth option:selected").val();
+            let selectedYears = $("#ddlYears option:selected").val();
+            let ExcelOption = $("#ddlExcelOption option:selected").val(); 
+
+            if(selectedMonth == 0)
+            {
+                alert("Please Select Month.");
+                return;
+            }
+            else if(selectedYears == 0)
+            {
+                alert("Please Select Year")
+                return;
+            }
+            url = '/ExcelMigration/DownloadExcelOptions?selectedMonth=' + selectedMonth + '&selectedYear=' + selectedYears + '&ExcelOption='+ ExcelOption; //DownloadExcel
+            window.open(url);
+        });// ENd btn
+      
+         
+ 
+    });// END Document Ready
+
+</script>
+<hr />
+
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Excel Download</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("comtype", null, new { @ID = "ddlExcelOption", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">MONTH</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("Months", null, new { @ID = "ddlMonth", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label col-sm-4">YEAR</label>
+            <div class="col-sm-8">
+                @Html.DropDownList("Years", null, new { @ID = "ddlYears", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+
+</div>
+<br />
+ 
+<div class="row">
+    <input type="button" value="Download Excel" id="btnDownloadExcel" class="btn btn-primary" />
+
+</div>
+ 
+<!-- End Of Note Div -->
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

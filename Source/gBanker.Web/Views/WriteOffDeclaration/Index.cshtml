@@ -1,0 +1,277 @@
+﻿@model gBanker.Web.ViewModels.WriteOffDeclarationViewModel
+
+@{
+    ViewBag.Title = "WriteOff DeclarationList";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var member = Model == null ? null : Model.memberListItems;
+    var office = Model == null ? null : Model.branchListItems;
+
+}
+
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#memberAutoComplete").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetMemberList", "WriteOffDeclaration", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { memberid: request.term, oficeId: $("#OfficeID").val() },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.MemberID,
+                                label: item.MemberName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#memberAutoComplete").val(ui.item.label);
+                $("#MemberID").val(ui.item.value);
+                return false;
+            }
+        });
+
+        $("#txtDateFrom").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+        $("#txtDateTo").datepicker(
+          {
+              dateFormat: "dd-M-yy",
+              showAnim: "scale"
+          });
+
+        //////////////////////////
+        $('#grid').jtable({
+            //title: 'MemberCategory List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/WriteOffDeclaration/GenerateWriteOffList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                LoanSummaryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                OfficeID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+                CenterCode: {
+                    title: 'Samity Code',
+                   // width: '8%'
+
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                   // width: '10%'
+
+                },
+                FirstName: {
+                    title: 'Member Name',
+                   // width: '12%'
+
+                },
+                ProductCode: {
+                    title: 'Product Code',
+                   // width: '8%'
+                },
+                LoanTerm: {
+                    title: 'Loan Term',
+                    // width: '8%'
+                },
+
+                PrincipalLoan: {
+                    title: 'Principal Loan',
+                   // width: '8%'
+                },
+
+
+
+                LoanPaid: {
+                    title: 'Loan Paid',
+                   // width: '8%'
+                },
+
+                LoanBalance: {
+                    title: 'Loan Balance',
+                    // width: '8%'
+                },
+                IntCharge: {
+                    title: 'Int. Charge',
+                   // width: '8%'
+                },
+
+                intPaid: {
+                    title: 'Int. Paid',
+                   // width: '8%'
+                },
+                intBal: {
+                    title: 'Interest Balance',
+                    // width: '8%'
+                },
+                DisburseDate: {
+                    title: 'Disburse Date',
+                    // width: '8%'
+                },
+                //EditLink: {
+                //    title: "Edit",
+                //    display: function (data) {
+                //        return "<div class='text-center'><a href='/WriteOffDeclaration/Edit/" + data.record.LoanSummaryID + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                //    }
+                //}
+                //,
+
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="/WriteOffDeclaration/Delete/' + data.record.LoanSummaryID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                    }
+                }
+            }
+        });
+        reloadGrid();
+         //$('#grid').jtable('load');
+        //////////////////////////
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { DateFrom: $('#txtDateFrom').val(), MemberId: $('#MemberID').val() });
+    }
+    $('#btnProduct').click(function (e) {
+        e.preventDefault();
+        reloadGrid();
+     });
+</script>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+
+    @*<div class="row">
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.searchData, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.searchData, search, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.searchData, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>*@
+
+
+}
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+
+<h2 class="page-title">WriteOff History</h2>
+@*<div class="row">
+
+    <div class="col-md-6" style="padding-top:20px;">*@
+
+
+<div class="row">
+    <div class="col-md-4" style="display:none">
+        <div class="form-group">
+            @Html.Label("Member", htmlAttributes: new { @class = "control-label" })
+
+            @Html.TextBox("memberAutoComplete", "", new { @class = "form-control" })
+            @Html.HiddenFor(model => model.MemberID)
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            @Html.Label("DateFrom", new { @class = "control-label" })
+            @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtDateFrom", @class = "form-control" })
+            @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+        </div>
+       
+        <div style="display:none">
+
+            @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })
+            @Html.DropDownListFor(model => model.OfficeID, office, new { @class = "form-control" })
+            @Html.HiddenFor(model => model.OfficeID)
+            @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="col-md-4" style="padding-top:20px;">
+        <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGrid();" />
+    </div>
+</div>
+
+@*</div>
+
+    </div>*@
+
+
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

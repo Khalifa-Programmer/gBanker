@@ -1,0 +1,184 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<style type="text/css">
+    div.jtable-main-container table.jtable tbody > tr.jtable-row-selected {
+        -webkit-text-shadow: 0 0 0 0 !important;
+        text-shadow: 0 0 0 0 !important;
+        color: black !important;
+    }
+</style>
+
+<script type="text/javascript">
+    var officeLevel =@ViewBag.OfficeLevel;
+    $(document).ready(function () {
+        $("#txtFrom,#txtTo").datepicker(
+      {
+          dateFormat: "dd-M-yy",
+          showAnim: "scale"
+      });
+
+        $("#btnSearch").click(function(e){
+            e.preventDefault();
+            GeneralGrid();
+        })
+
+        function GeneralGrid(){
+            $('#grid').jtable({
+                sorting: false,
+                selecting: true, //Enable selecting
+                multiselect: true, //Allow multiple selecting
+                selectingCheckboxes: true,
+                defaultSorting: 'DisposeRequestID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+                            $.ajax({
+                                url: '/Requisition/GetDisposeRequest?status=C'+'&from='+$("#txtFrom").val()+'&to='+$("#txtTo").val()+'',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                },
+                fields: {
+                    DisposeRequestID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    DisposeRequestNo: {
+                        title: 'Slip No',
+                        width: '10%'
+
+                    },
+                    RequestDate: {
+                        title: 'Request Date',
+                        type: 'date',
+                        displayFormat: 'dd-mm-yy',
+                        width: '10%'
+                    },
+                    ItemCode: {
+                        title: 'Item Code',
+                        width: '9%'
+                    },
+                    ItemName: {
+                        title: 'Item Name',
+                        width: '25%'
+                    },
+                    Qty: {
+                        title: 'Qty',
+                        width: '9%'
+                    },
+                    ApproveQty: {
+                        title: 'Approve Qty',
+                        display:function(data){
+                            return '<input type="number" id="'+data.record.DisposeRequestID+'" value="'+data.record.Qty+'" style="width:100px;" />'
+                        },
+                        width: '9%'
+                    },
+                    UnitPrice: {
+                        title: 'Unit Price',
+                        width: '9%'
+                    },
+                    WarehouseName: {
+                        title: 'Request Office',
+                        width: '25%'
+                    },
+                    RequestRemark: {
+                        title: 'Request Remark',
+                        width: '25%'
+                    },
+                    DisposeStatus: {
+                        title: 'Status',
+                        display: function (data) {
+                            return (data.record.DisposeStatus == 0  ? "Reject"
+                                : data.record.DisposeStatus == 1?"Request"
+                                :data.record.DisposeStatus == 2?"Approved"
+                                :data.record.DisposeStatus == 3?"Dispose":"")
+                        },
+                        width: '10%'
+                    }
+                }
+            });
+            $('#grid').jtable('load');
+        }
+
+        $("#btnSend").click(function(e){
+            e.preventDefault();
+            jsonObj = [];
+            $('#grid').jtable('selectedRows').each(function () {
+                var qty=parseInt($(this).context.cells[5].innerText);
+                var Appqty=parseInt($(this).closest('tr').find('td').eq(6).find('input').val());
+                if(qty>=Appqty){
+                    item = {}
+                    item["DisposeRequestID"] = $(this).context.dataset["recordKey"];
+                    item["Qty"] =qty ;
+                    item["ApprovedQty"] = Appqty;
+                    jsonObj.push(item);
+                }
+                else{
+                    $.alert.open("Error", "Quantity Check");
+                    jsonObj=[];
+                    return
+                }
+                    
+            });
+            
+            if(jsonObj.length>0){
+                var data = GenerateAjaxRequist('/Requisition/ConsulateDisposeRequest', JSON.stringify({ obj: jsonObj }), "POST")
+                $.alert.open("Info", data.Message);
+                $("#btnSearch").click();
+            }
+        });
+    });
+</script>
+<div class="row">
+    <div class="col-md-12">
+        <div class="pull-left">
+            <h2 class="page-title">Dispose Send</h2>
+        </div>
+        <div class="pull-right">
+            @Html.ActionLink("Back", "DisposeRequisitionList", "Requisition", null, new { @class = "btn btn-warning btn-sm pull-right" })
+        </div>
+    </div>
+</div>
+<div class="form-horizontal">
+    <table>
+        <tr>
+            <td>From</td>
+            <td><input type="text" class="form-control" autocomplete="off" id="txtFrom" /></td>
+            <td>To</td>
+            <td><input type="text" class="form-control" autocomplete="off" id="txtTo" /></td>
+            <td><button type="button" id="btnSearch" class="btn btn-info">Search</button></td>
+        </tr>
+    </table>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-7"></div>
+        <div class="col-md-5">
+            <button class="btn btn-info" id="btnSend">Send</button>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

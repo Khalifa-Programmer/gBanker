@@ -1,0 +1,509 @@
+﻿@model gBanker.Web.ViewModels.BatchPostingProcessViewModel
+@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+
+<link href="~/Content/css/kendo/kendo.blueopal.min.css" rel="stylesheet" />
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+<script type="text/javascript">
+
+    function getBatchFileData(BatchFileNo) {
+
+        var dataSource = new kendo.data.DataSource({
+
+            type: "aspnetmvc-ajax",
+            pageSize:350 ,
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    //url: baseURL + '/ProcessCategory/GetProcessCategoryList?QueryOption=' + 1,
+                    url: '@Url.Action("getBatchFileDetailsData", "BatchPostingProcess", "http")',
+                    dataType: 'json',
+                    cache: false,
+                 //   data: { BatchFileNo: BatchFileNo }
+                    data: function () {
+                        return {
+                            BatchFileNo: BatchFileNo
+                        };
+                    }
+                },
+                update: {
+
+                    url: '@Url.Action("UpdateBatchData", "BatchPostingProcess", "http")',
+                    dataType: 'json',
+                },
+                destroy:  {
+
+                    url: '@Url.Action("DeleteBatchData", "BatchPostingProcess")',
+                    type: "post",
+                    dataType: "json"
+                },
+                create: {
+                    url: '@Url.Action("CreateNewBatchData", "BatchPostingProcess", "http")',
+                    dataType: "json"
+                },
+                parameterMap: function (options, operation) {
+
+                    if (operation !== "read" && options.models) {
+                        return { models: kendo.stringify(options.models) };
+                    }
+                }
+                },
+                batch: true
+                ,
+                schema: {
+
+                  data: "data", // records are returned in the "data" field of the response
+                   total: "total", // total number of records is in the "total" field of the response
+                    model: {
+                        id: "BatchId",
+                        fields: {
+                            RowSl: { editable: false, nullable: true },
+                            BatchId: { editable: false, nullable: true },
+                            BatchFileNo: { editable: false, nullable: false },
+                            TransactionDate: {type:"date", validation: { required: true } },
+                            OfficeCode: { validation: { required: true } },
+                            OfficeName: { editable: false, nullable: true },
+                            AccountCode: { validation: { required: true } },
+                            AccountName: { editable: false, validation: { required: true } },
+                            VoucherType: { validation: { required: true } },
+                            Narration: { validation: { required: true } },
+                            Credit: { type: "number", validation: { min: 0, required: true } },
+                            Debit: { type: "number", validation: { min: 0, required: true } },
+
+                        }
+                    }
+                },
+                aggregate: [
+           { field: "Credit", aggregate: "sum" },
+           { field: "Debit", aggregate: "sum" },
+           { field: "AccountCode", aggregate: "count" }
+                ],
+
+            /*BatchId TransactionDate	OfficeCode	AccountCode	AccountName	VoucherType	Narration	Credit	Debit*/
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 590,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            selectable: false,
+            resizable: true,
+            pagging:true,
+            pageable: {
+                refresh: true,
+                pageSizes: [350, 500, 700],
+                buttonCount: 5
+            },
+            toolbar: ["save", "cancel"],
+            //toolbar: ["create", "save", "cancel"],
+            columns: [
+                {
+                    field: "BatchId",
+                    hidden: true,
+                    filterable: false
+                },
+               {
+                    field: "RowSl",
+                    title: "SL",
+                    width: "5%",
+                    filterable: false,
+                    columnMenu: false,
+                    groupable: false,
+                    reorderable: false,
+                    sortable: false
+                },
+                {
+                    field: "BatchFileNo",
+                    //hidden: true,
+                    filterable: true,
+                    title: "BatchFileNo",
+                    width: 90,
+                    editable: false
+
+                },
+                {
+                    field: "TransactionDate",
+                    //hidden: true,
+                    filterable: true,
+                    title: "TRDate",
+                   template: "#= kendo.toString(kendo.parseDate(TransactionDate, 'yyyy-MM-dd'), 'dd-MMM-yyyy') #",
+                   //  format: "{0:yyyy-MM-dd}",
+                     editor: dateTimeEditor
+                },
+                {
+                    field: "OfficeCode",
+                   // hidden: true,
+                    filterable: true,
+                    title: "OfficeCode"
+                },
+                 {
+                     field: "OfficeName",
+                    // hidden: true,
+                    filterable: true,
+                    title: "UnitName",
+                    editable: false
+                },
+
+                {
+                    field: "AccountCode",
+                    title: "AccountHead",
+                    footerTemplate: "TV : #= count # "
+                },
+                {
+                    field: "AccountName",
+                    title: "AccountName"
+                },
+                 {
+                    field: "VoucherType",
+                    title: "VoucherType"
+                 },
+                     {
+                         field: "Narration",
+                         title: "Narration"
+                     },
+                {
+                    field: "Credit",
+                    title: "Credit",
+                    footerTemplate: "TC: #= sum # "
+                },
+                {
+                    field: "Debit",
+                    title: "Debit",
+                    footerTemplate: "TD: #= sum # "
+                },
+                {
+
+                    title: "Delete",
+                    template: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="Delete(' + data.BatchId + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                },
+                //{
+                //    command: "destroy",
+                //    title: "Action",
+                //    width: 150
+                //}
+            ],
+            editable: true
+        });
+    }
+
+
+    function Delete(id) {
+
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                DeleteBatch(id);
+                return true;
+            }
+            else {
+
+                return false;
+            }
+        });
+
+    }
+
+    function DeleteBatch(BatchID) {
+         
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DeleteBatch", "BatchPostingProcess", "http")', //CreateWorkArea(string WorkAreaName)
+            data: { BatchID: BatchID },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $.alert.open("Message", "Data Delete Successfully");
+
+                var BatchFileNo = $("#BatchFileNo").val();
+                if (BatchFileNo != '') {
+                    getBatchFileData(BatchFileNo);
+                } else {
+                    getBatchFileData(BatchFileNo);
+                }
+
+
+               // clear();
+              //  $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Message", "Data Not Delete. ");
+               // clear();
+              //  $('#grid2').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            }
+
+        });
+
+
+
+    }// End of Function
+
+    $(document).ready(function () {
+
+      getBatchFileData("");
+      $("#BatchFileDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+      $("#BatchFileDate").on('change', function () {
+          debugger;
+          var fileDate = $("#BatchFileDate").val();
+          if (fileDate != '') {
+              $("#BatchFileDate").html("");
+              var data = { 'BatchFileDate': fileDate };
+              loadBatchLineNo(data);
+              getBatchFileData("");
+          } else {
+              getBatchFileData("");
+          }
+      });
+
+      $("#btnSearch").click(function () {
+          var BatchFileNo = $("#BatchFileNo").val();
+          if (BatchFileNo != '') {
+              getBatchFileData(BatchFileNo);
+          } else {
+              getBatchFileData(BatchFileNo);
+          }
+
+      });
+      $("#btnPost").click(function () {
+
+          var BatchFileNo = $("#BatchFileNo").val();
+          var BatchFileDate = $("#BatchFileDate").val();
+          if (BatchFileNo !='') {
+              $.ajax({
+                  type: "POST",
+                  url: '/BatchPostingProcess/PostBatchFileToVoucher',
+                   data: { 'BatchFileNo': BatchFileNo },
+                  dataType: 'json',
+                  success: function (Result) {
+                      debugger;
+                      //ApproveDetail: ApproveDetail
+                      $('#AjaxLoader').hide();
+                      if (Result.Result == 1) {
+                          $.alert.open('alert', Result.Message);
+                          getBatchFileData("");
+                          loadBatchLineNo(BatchFileDate);
+                      } else {
+                          $.alert.open('error', Result.Message);
+                      }
+                  },
+                  error: function () {
+                      $('#AjaxLoader').hide();
+                      $.alert.open('error', 'Server Error');
+                  }
+              });
+          }
+
+      })
+    });
+
+    function loadBatchLineNo(data) {
+      //  LoadDropDown('/BatchPostingProcess/getDateBatchFileNoList', data, 'POST', '#BatchFileNo', '');
+
+        var ddlCenter = $("#BatchFileNo");
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("getDateBatchFileNoList", "BatchPostingProcess", "http")',
+                data: data,
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    ddlCenter.html('');
+                    $.each(data.Data, function (id, option) {
+                        ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+
+    }
+
+    function dateTimeEditor(container, options) {
+        $('<input data-text-field="' + options.field + '" data-value-field="' + options.field + '" data-bind="value:' + options.field + '" data-format="dd-MMM-yyyy"/>')
+                .appendTo(container)
+                .kendoDatePicker({});
+    }
+
+
+</script>
+<style type="text/css">
+    .k-grid-Edit-Small {
+        min-width: 30px !important;
+        padding: 6px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12 col-sm-12">
+        <div class="box col-md-12">
+            <div class="box-inner">
+
+                <div class="box-header well" data-original-title="">
+                    <h2><i class="glyphicon glyphicon-edit"></i> BatchFileList</h2> @*Bank Info List*@
+                    <div class="box-icon">
+                        @Html.ActionLink("AddNew", "/AddBatchFile", null, new { @class = "btn btn-primary btn-sm" })
+                        <a href="#" class="btn btn-minimize btn-round btn-default pull-right">
+                            <i class="glyphicon glyphicon-chevron-up"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="box-content">
+                    @*<div class="row">
+                            <div class="col-md-4 col-sm-3">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.ProdCatId, new { @class = "control-label col-md-12" })
+                                    <div class="col-md-12">
+                                        @Html.DropDownListFor(model => model.ProdCatId, Model.ProdCatList, new { @id = "filterColumn", @class = "form-control", @required = "required" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>*@
+                    <div class="row frmRow">
+                        <div class="col-md-4 col-sm-4">
+                            <div class="item form-group">
+                                @Html.LabelFor(model => model.BatchFileDate, new { @class = "control-label col-md-12 input-sm" })
+                                <div class=" col-md-12 col-sm-12">
+                                    @Html.TextBoxFor(model => model.BatchFileDate, new { @class = "form-control input-sm dateField" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-4">
+                            <div class="item form-group">
+                                @Html.LabelFor(model => model.BatchFileNo, new { @class = "control-label col-md-12 input-sm" })
+                                <div class="col-md-12">
+                                    <select name="BatchFileNo" id="BatchFileNo" class="form-control input-sm"></select>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-4">
+                            <div class="item form-group">
+                                <label class="control-label col-md-12 input-sm">&nbsp;</label>
+                                <div class="col-md-12">
+                                    <button type="button" class="btn btn-sm btn-success" id="btnSearch">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="table-responsive">
+                        <div id="grid"></div>
+                    </div>
+                    <br />
+                    <div class="row frmRow">
+                        @*<div class="col-md-4 col-sm-4" style="display:none">
+                                <div class="item form-group">
+                                    @Html.LabelFor(model => model.PostedDate, new { @class = "control-label col-md-12 input-sm" })
+                                    <div class=" col-md-12 col-sm-12">
+                                        @Html.TextBoxFor(model => model.PostedDate, new { @class = "form-control input-sm dateField" })
+                                    </div>
+                                </div>
+                            </div>*@
+                        <div class="col-md-4 col-sm-4">
+                            <div class="item form-group">
+                                <label class="control-label col-md-12 input-sm">&nbsp;</label>
+                                <div class="col-md-12">
+                                    <button type="button" class="btn btn-sm btn-success" id="btnPost">TransferToVoucher</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="example">
+    <div id="grid"></div>
+
+    <script>
+        $(document).ready(function () {
+
+            @*var crudServiceBaseUrl = "https://demos.telerik.com/kendo-ui/service",
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        type: "aspnetmvc-ajax",
+                        pageSize: 50,
+                        serverPaging: true,   // enable server paging
+                        serverSorting: true,
+                        serverFiltering: true,
+                        read: {
+                            url: '@Url.Action("getBatchFileDetailsData", "BatchPostingProcess", "http")',
+                            dataType: "json"
+                        },
+                        update: {
+                            url: crudServiceBaseUrl + "/Products/Update",
+                            dataType: "jsonp"
+                        },
+                        destroy: {
+                            url: crudServiceBaseUrl + "/Products/Destroy",
+                            dataType: "jsonp"
+                        },
+                        create: {
+                            url: crudServiceBaseUrl + "/Products/Create",
+                            dataType: "jsonp"
+                        },
+                        parameterMap: function (options, operation) {
+                            if (operation !== "read" && options.models) {
+                                return { models: kendo.stringify(options.models) };
+                            }
+                        }
+                    },
+                    batch: true,
+                    pageSize: 20,
+                    schema: {
+                        model: {
+                            id: "BatchId",
+                            fields: {
+                                BatchId: { editable: false, nullable: true },
+                                TransactionDate: { validation: { required: true } },
+                                OfficeCode: {validation: { required: true, min: 1 } },
+                                AccountCode: {},
+                                Credit: { type: "number", validation: { min: 0, required: true } }
+                            }
+                        }
+                    }
+                });
+            /*BatchId TransactionDate	OfficeCode	AccountCode	AccountName	VoucherType	Narration	Credit	Debit*/
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                pageable: true,
+                height: 550,
+                toolbar: ["create"],
+                columns: [
+                    "TransactionDate",
+                    { field: "OfficeCode", title: "Unit Price", width: "120px" },
+                    { field: "AccountCode", title: "Units In Stock", width: "120px" },
+                    { field: "Credit", width: "120px" },
+                    { command: ["edit", "destroy"], title: "&nbsp;", width: "250px" }],
+                editable: "inline"
+            });*@
+            });
+
+        //function customBoolEditor(container, options) {
+        //    $('<input class="k-checkbox" type="checkbox" name="Discontinued" data-type="boolean" data-bind="checked:Discontinued">').appendTo(container);
+        //    $('<label class="k-checkbox-label">&#8203;</label>').appendTo(container);
+        //}
+    </script>
+</div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

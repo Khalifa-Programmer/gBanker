@@ -1,0 +1,344 @@
+﻿@model gBanker.Web.ViewModels.ProdAccMappingViewModel
+@{
+    ViewBag.Title = "SET Product";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var offc = Model == null ? null : Model.OfficeList;
+
+}
+ 
+
+
+<script type="text/javascript" >
+
+    function AvailableProductList() {
+        var dtTable = $('#tblAvailableProduct');
+        var OfficeID = $("#OfficeID Option:Selected").val();       
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAvailableProductList", "ProductMapping", "http")',
+            data: { OfficeID: OfficeID},
+            dataType: 'json',
+            async: true,
+            success: function (List_ProductInfoViewModel) {
+              //  $('#AjaxLoader').hide();
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                $.each(List_ProductInfoViewModel, function (index, Prod) {
+                    var sl = index + 1;
+
+                    tableBody.append('<tr>' +
+                                 '<td><input type="checkbox" style="width:18px;height:18px" id="txtCheckId' + sl + '"/></td>' +
+                                 '<td>' + sl + '</td>' +
+                                 '<td>' + Prod.ProductCode + '<input type="text"  value="' + Prod.MyProductID + '" style="display:none;" name="ProductId" id="txtProductId' + sl + '" />' +
+                                 '<td>' + Prod.ProductName + '</td>' +
+                                 '</tr>')
+                })
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function SelectedProductList() {
+        var dtTable = $('#tblSelectedProduct');
+        var OfficeID = $("#OfficeID Option:Selected").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSelectedProductList", "ProductMapping", "http")',
+            data: { OfficeID: OfficeID },
+            dataType: 'json',
+            async: true,
+            success: function (List_ProductInfoViewModel) {
+
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                $.each(List_ProductInfoViewModel, function (index, off) {
+                    var sl = index + 1;
+                    tableBody.append('<tr>' +
+                                 '<td><input type="checkbox" style="width:18px;height:18px" id="txtSelectedCheck' + sl + '"/></td>' +
+                                 '<td>' + sl + '</td>' +
+                                 '<td>' + off.ProductCode + '<input type="text"  value="' + off.MyProductID + '" style="display:none;" name="ProductId" id="txtSelectedProductId' + sl + '" />' +
+                                 '<td>' + off.ProductName + '</td>' +
+                                 '</tr>')
+                })
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);//tblSelectedCourse
+            }
+        });
+    }
+
+    function SaveProductList() {
+        var dtTable = document.getElementById("tblAvailableProduct").rows.length;
+        var allProductId = new Array();
+        for (i = 1; i < dtTable; i++) {
+            var value = $('#txtProductId' + i).val();
+            var chkResult = $('#txtCheckId' + i).is(":checked");
+            if (chkResult == true) {
+                allProductId[allProductId.length] = value;
+            }
+        }
+
+        if (allProductId.length == 0) {
+            $.alert.open("Message", "Please Select From List.")
+            return;
+        }
+
+        var OfficeID = $("#OfficeID Option:Selected").val();
+
+        var allTrx = new Object();
+        allTrx.allProductIds = allProductId;
+        allTrx.OfficeID = OfficeID;
+
+        var json = JSON.stringify(allTrx);
+        $('#AjaxLoader').show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+
+            url: '@Url.Action("OfficeWiseProductSave", "ProductMapping", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+            success: function (data) {
+                if (data != 0) {
+                    $('#AjaxLoader').hide();
+                    AvailableProductList();
+                    SelectedProductList();
+                    $(".success").show(800).fadeToggle(3000);
+                    $.alert.open("info", "Saved Sucessfully");
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("error", "Fail to Save");
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function EditProductList() {
+        var dtTable = document.getElementById("tblSelectedProduct").rows.length;
+        var allProductId = new Array();
+        for (i = 1; i < dtTable; i++) {
+            var value = $('#txtSelectedProductId' + i).val();
+            var chkResult = $('#txtSelectedCheck' + i).is(":checked");
+            if (chkResult == true) {
+                allProductId[allProductId.length] = value;
+                //alert(value);
+            }
+        }
+
+        if (allProductId.length == 0) {
+            $.alert.open("Message", "Please Select From List.")
+            return;
+        }
+
+        var OfficeID = $("#OfficeID Option:Selected").val();
+        var allTrx = new Object();
+        allTrx.ProductIds = allProductId;
+        allTrx.OfficeID = OfficeID;
+
+        var json = JSON.stringify(allTrx);
+        $('#AjaxLoader').show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("OfficeWiseProductDelete", "ProductMapping", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (data) {
+                if (data != 0) {
+                    
+                    AvailableProductList();
+                    SelectedProductList();
+
+                    $(".success").show(800).fadeToggle(3000);
+                    $.alert.open("info", "Update Sucessfully");
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("error", "Fail to Update");
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+        $("#ProductList").hide();
+
+        $("#check_all").click(function () {
+            $("#tblAvailableProduct tbody input:checkbox").prop('checked', $(this).is(':checked'));
+        })
+        $("#check_allSelected").click(function () {
+            $("#tblSelectedProduct tbody input:checkbox").prop('checked', $(this).is(':checked'));
+        })
+
+
+        $("#OfficeID").change(function () {
+            $("#ProductList").show();
+            AvailableProductList();
+            SelectedProductList();
+
+        });
+
+        $('#btnSelect').click(function (e) {
+            e.preventDefault();
+            SaveProductList();
+        });
+        $("#btnCancel").click(function (e) {
+
+            e.preventDefault();
+            EditProductList();
+        });
+
+
+    });
+
+
+
+
+
+
+</script>
+
+<style>
+    .table .thead-dark th {
+        color: #fff;
+        background-color: #620000;
+        border-color: #FF8888;
+    }
+</style>
+
+
+
+
+
+
+
+@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })
+
+<h2 class="page-title">Set Product</h2>
+
+@using (Html.BeginForm("Create", "Member", FormMethod.Post, new { enctype = "multipart/form-data", id = "MemProfile" }))
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+            
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                    @Html.DropDownListFor(model => model.OfficeID, offc, new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.SelectedOfficeID)
+                    @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+           
+        </div>
+
+        <br />
+        <table id="ProductList">
+            <tr class="row">
+                <td class="col-sm-5" style="vertical-align:top;">
+                    <table cellpadding="5" cellspacing="0">
+                        <tr>
+                            <td align="center">
+                                <label style="font-weight: 700; font-size: 20px; text-align: center;">Available Product List</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <table class="table table-hover" id="tblAvailableProduct" style="width:100%">
+                                    <thead class="thead-dark">
+                                        <tr class="headings">
+                                            <th>
+                                                <input type="checkbox" style="width:18px;height:18px" id="check_all" />
+                                            </th>
+                                            <th class="column-title">SL</th>
+                                            <th class="column-title">Code</th>
+                                            <th class="column-title">Product Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="col-sm-2" style="vertical-align:top; width:8%; padding-top:30%; text-align:center;">
+                    <button style="width:90px" type="submit" id="btnSelect" class="btn btn-success"> Add >> </button>
+                    <br />
+                    <button style="width:90px" type="submit" id="btnCancel" class="btn btn-warning"> << Remove</button>
+                </td>
+                <td class="col-sm-5" style="vertical-align:top;">
+                    <table cellpadding="5" cellspacing="0">
+                        <tr>
+                            <td align="center">
+                                <label style="font-weight: 700; font-size: 20px; text-align: center;">Assigned Product List</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <table class="table table-hover" id="tblSelectedProduct" style="width:100%">
+                                    <thead class="thead-dark">
+                                        <tr class="headings">
+                                            <th>
+                                                <input type="checkbox" style="width:18px;height:18px" id="check_allSelected" />
+                                            </th>
+                                            <th class="column-title">SL</th>
+                                            <th class="column-title">Code</th>
+                                            <th class="column-title">Office Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

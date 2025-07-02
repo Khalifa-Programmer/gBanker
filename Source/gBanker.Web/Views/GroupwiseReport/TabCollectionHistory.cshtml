@@ -1,0 +1,376 @@
+﻿@model gBanker.Web.ViewModels.TransferCollectionViewModel
+
+@{
+    ViewBag.Title = "Tab Collection History";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo/kendo.bootstrap.min.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    .ui-autocomplete {
+        overflow: auto;
+        max-height: 100px;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#CollectionDate").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1950:2050"
+        });
+
+        //var OfficeID = $('#lblOfficeID').html();
+        //var EmployeeID = 0;
+        //var CenterID = 0;
+        //var CollectionDate = $("#CollectionDate").val();
+        //loadTransfercollectionHistory(OfficeID, EmployeeID, CenterID, CollectionDate);
+
+        $("#btnSearch").click(function () {
+            var OfficeID = $('#lblOfficeID').html();
+            var EmployeeID = $("#hiddenEmployeeId").val();
+            if (EmployeeID == "") { EmployeeID = 0 } else { EmployeeID = EmployeeID };
+            var CenterID = $("#hiddenCenterId").val();
+            if (CenterID == "") { CenterID = 0 } else { CenterID = CenterID };
+            var CollectionDate = $("#CollectionDate").val();
+            if (CollectionDate == "" || CollectionDate == null) {
+                $.alert.open('Info', "Please Select Collection Date");
+            } else {
+                loadTransfercollectionHistory(OfficeID, EmployeeID, CenterID, CollectionDate);
+            }
+        });
+        $("#btnReset").click(function () {
+            var OfficeID = $('#lblOfficeID').html();
+            var EmployeeID = 0;
+            var CenterID = 0;
+            //$("#CollectionDate").val('');
+            //var CollectionDate = null;
+            var CollectionDate = $("#CollectionDate").val();
+            if (CollectionDate == "" || CollectionDate == null) {
+                $.alert.open('Info', "Please Select Collection Date");
+            } else {
+                loadTransfercollectionHistory(OfficeID, EmployeeID, CenterID, CollectionDate);
+            }
+        });
+        // Employee Autocompate
+        $("#EntEmployeeCode").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: '/GroupwiseReport/getEmployeeCodeAutoComplete',
+                    type: 'POST',
+                    data: { 'Prefix': request.term, OfficeId: 0 },
+                    dataType: 'json',
+                    success: function (data) {
+                        response($.map(data.Data, function (item) {
+                            return { label: item.EmployeeCode + ' - ' + item.EmployeeName, value: item.EmployeeID };
+                        }));
+                    }
+                });
+            }
+        });
+
+        $("#EntEmployeeCode").on("autocompleteselect", function (event, ui) {
+            debugger;
+            event.preventDefault();
+            var entEmployeeCodelabel = ui.item.label;
+            var entEmployeeId = ui.item.value;
+            if (entEmployeeId != 0) {
+                $("#EntEmployeeCode").val(entEmployeeCodelabel);
+                $("#hiddenEmployeeId").val(entEmployeeId);
+            }
+        });
+
+        $("#EntEmployeeCode").focusout(function () {
+            if ($(this).val() == '') {
+                $("#hiddenEmployeeId").val(0);
+            }
+        });
+
+        // Center Autocompate
+        $("#EntCenterCode").autocomplete({
+            source: function (request, response) {
+
+                var EmployeeID = $("#hiddenEmployeeId").val();
+                if (EmployeeID == "") { EmployeeID = 0 } else { EmployeeID = EmployeeID };
+
+                $.ajax({
+                    url: '/GroupwiseReport/getCenterCodeAutoComplete',
+                    type: 'POST',
+                    data: { 'Prefix': request.term, OfficeId: 0, EmployeeID: EmployeeID },
+                    dataType: 'json',
+                    success: function (data) {
+                        response($.map(data.Data, function (item) {
+                            return { label: item.CenterCode + ' - ' + item.CenterName, value: item.CenterID };
+                        }));
+                    }
+                });
+            }
+        });
+        $("#EntEmployeeCode").focusout(function () {
+            if ($(this).val() == '') {
+                $("#hiddenEmployeeId").val(0);
+            }
+        });
+
+        $("#EntCenterCode").on("autocompleteselect", function (event, ui) {
+            debugger;
+            event.preventDefault();
+            var entCenterCodelabel = ui.item.label;
+            var entCenterId = ui.item.value;
+            if (entCenterId != 0) {
+                $("#EntCenterCode").val(entCenterCodelabel);
+                $("#hiddenCenterId").val(entCenterId);
+            }
+        });
+
+
+    });
+
+    //var rowNumber = 0;
+    function loadTransfercollectionHistory(OfficeID, EmployeeID, CenterID, CollectionDate) {
+        debugger;
+        var OfficeID = OfficeID;
+        var EmployeeID = EmployeeID;
+        var CenterID = CenterID;
+        var CollectionDate = CollectionDate;
+        $('#AjaxLoader').show();
+        var dataSource = new kendo.data.DataSource({
+            type: "aspnetmvc-ajax",
+            pageSizes: ['All'],
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverPaging: true,   // enable server paging
+            serverSorting: true,
+            serverFiltering: true,
+            transport: {
+                read: {
+                    url: '@Url.Action("loadTransferCollectionHistory", "GroupwiseReport", "http")',
+                    dataType: 'json',
+                    data: { OfficeID: OfficeID, EmployeeID: EmployeeID, CenterID: CenterID, CollectionDate: CollectionDate }
+                }
+            },
+            aggregate: [
+                        { field: "LoanPaid", aggregate: "sum" },
+                        { field: "IntPaid", aggregate: "sum" },
+                        { field: "Deposit", aggregate: "sum" }
+            ]
+        });
+        $('#AjaxLoader').hide();
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+
+            selectable: false,
+            resizable: true,
+
+            pageable: {
+                pageSizes: ['All'],
+                refresh: true,
+                buttonCount: 0
+            },
+
+            //pageable: {
+            //    refresh: true,
+            //    pageSizes: true,
+            //    buttonCount: 5
+            //},
+            //dataBinding: function () {
+            //    record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            //},
+            columns: [
+                 //{
+                 //    title: "SL",
+                 //    template: "#= ++record #",
+                 //    width: 40
+                 //},
+                 {
+                     width: 40,
+                     field: "RowSl",
+                     filterable: true,
+                     title: "SL"
+                 },
+                 {
+                     width: "100px",
+                     field: "EmployeeCode",
+                     filterable: true,
+                     title: "Employee Code"
+                 },
+                 {
+                     width: "150px",
+                     field: "SamityCode",
+                     filterable: true,
+                     title: "Center"
+                 },
+                 //{
+                 //    width: "150px",
+                 //    field: "SamityName",
+                 //    filterable: true,
+                 //    title: "S Name"
+                 //},
+                 {
+                     width: "180px",
+                     field: "MemberCode",
+                     filterable: true,
+                     title: "Member"
+                 },
+                 //{
+                 //    width: "150px",
+                 //    field: "MemberName",
+                 //    filterable: true,
+                 //    title: "M Name"
+                 //},
+                 {
+                     width: "150px",
+                     field: "ProductCode",
+                     filterable: true,
+                     title: "Product Code"
+                 },
+
+                 {
+                     width: "100px",
+                     field: "LoanPaid",
+                     filterable: true,
+                     title: "LoanPaid",
+                     aggregates: ["sum"], footerTemplate: "Total: #=sum#",
+                     filterable: false
+
+                 },
+                 {
+                     width: "100px",
+                     field: "IntPaid",
+                     filterable: true,
+                     aggregates: ["sum"], footerTemplate: "Total: #=sum#",
+                     title: "Interest Paid"
+                 },
+                 {
+                     width: "100px",
+                     field: "Deposit",
+                     filterable: true,
+                     aggregates: ["sum"], footerTemplate: "Total: #=sum#",
+                     title: "Deposit"
+                 },
+                 //{
+                 //    width: "50px",
+                 //    title: 'Edit',
+                 //    template: function (dataItem) {
+                 //        return "<a href='#' OnClick='EditDivision(" + dataItem.DivisionID + ",\"" + dataItem.DivisionCode + "\",\"" + dataItem.DivisionName + "\",\"" + dataItem.DivisionAddress + "\",\"" + dataItem.ContactNo + "\");'><i class='fa fa-pencil-square-o'></i></a>";
+                 //    }
+                 //},
+                 //{
+                 //    width: "50px",
+                 //    title: 'Delete (বাদ)',
+                 //    template: function (dataItem) {
+                 //        return "<a href='#' OnClick='InformationDelete(" + dataItem.DivisionID + ");'><i class='fa fa-trash-o'></i></a>";
+                 //    }
+                 //}
+                 //{
+                 //    width: "80px",
+                 //    field: "LoanPaid",
+                 //    title: "Total",
+                 //    aggregates: ["sum"], footerTemplate: "Total: #=sum#",
+                 //    filterable: false
+
+                 //},
+
+            ]
+        });
+
+    }
+
+</script>
+
+
+<h2 class="page-title">Tab Collection History</h2>
+@using (Html.BeginForm("SearchDivision", "GroupwiseReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <br /><br />
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4">Employee Code</label>
+                <div class="col-md-8">
+                    @Html.TextBoxFor(model => model.EntEmployeeCode, new { @class = "form-control" })
+                    @Html.Label(ViewData["OfficeID"].ToString(), new { @ID = "lblOfficeID", style = "display:none;" })
+                    <input type="hidden" name="name" id="hiddenEmployeeId" value="" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4">Center Code</label>
+                <div class="col-md-8">
+                    @Html.TextBoxFor(model => model.EntCenterCode, new { @class = "form-control" })
+                    @Html.Label(ViewData["OfficeID"].ToString(), new { @ID = "lblOfficeID", style = "display:none;" })
+                    <input type="hidden" name="name" id="hiddenCenterId" value="" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-md-4 required"> Collection Date </label>
+                <div class="col-md-8">
+                    @Html.EditorFor(model => model.CollectionDate, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <input type="button" value="Search" id="btnSearch" class="btn btn-success" />
+                    <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<br />
+<h2 class="page-title">Tab Collection History List</h2>
+<div id="grid"></div>
+<input type="button" value="Transfer" id="btnTransfer" class="btn btn-success" />
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+<script src="~/Content/js/KendoJs/kendo.all.min.js"></script>
+<script src="~/Content/js/KendoJs/kendo.aspnetmvc.min.js"></script>
+
+
+
+
+
+
+
+
+

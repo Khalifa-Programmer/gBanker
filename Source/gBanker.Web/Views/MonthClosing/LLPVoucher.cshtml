@@ -1,0 +1,187 @@
+﻿@model gBanker.Web.ViewModels.MonthClosingViewModel
+
+@{
+    ViewBag.Title = "LLP Voucher Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+}
+
+<style type="text/css">
+    .summaryTitle {
+        color: yellow !important;
+        padding-left: 5px !important;
+    }
+
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+       the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;
+    }
+
+        /* Anytime the body has the loading class, our
+       modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
+
+    .findElement {
+        background-color: yellow;
+    }
+
+    .hidemsg {
+        display: none;
+    }
+   
+</style>
+<script type="text/javascript">
+     
+    function LLPVoucherProcess() {
+        var officeId = $("#OfficeId").val();
+        var businessDate = $("#ProcessDate").val();
+
+        $("#loading").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LLPVoucherProcess", "MonthClosing", "http")',
+            data: { officeId: officeId, businessDate: businessDate },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                var msg = "LLP Voucher Process Completed Successfully.";
+                var css = "success";
+                if (data.Message != null) {
+                    msg = data.Message;
+                    css = "failed"
+                }
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (data.Message == null)
+                    $("#dvMessage").toggle('fade', 1500);
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#confirmDlg").dialog({
+            autoOpen: false,
+            height: 150,
+            width: 400,
+            modal: true,
+            title: 'Confirmation',
+            buttons: {
+                "Yes": function () {
+                    LLPVoucherProcess();
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+ 
+        $('#btnProcess').click(function (e) {
+            $("#confirmDlg").dialog('open');
+        });
+
+        $('#btnPreview').click(function (e) {
+            var ProcessDate = $("#ProcessDate").val();
+            if (ProcessDate != "") {
+                var url = '/MonthClosing/GenerateLLPVoucherReport?ProcessDate=' + ProcessDate;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            } else
+                $.alert.open("Error", "Please select process date")
+            
+        });
+
+
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        gBankerDatePicker("ProcessDate");
+    });
+
+
+</script>
+<h2 class="page-title">LLP Voucher Process</h2>
+
+
+<div id="confirmDlg" style="display:none">
+    <div class="form-group">
+        Do you want to run the LLP Voucher Process?
+    </div>
+
+</div>
+
+<div>
+    <br />
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="row" style="display:none">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OfficeId, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.OfficeId, office, new { @class = "form-control" })
+                    @Html.Hidden("hfOfficeId")
+                    @Html.ValidationMessageFor(model => model.OfficeId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @*@Html.LabelFor(model => model.ProcessDate, htmlAttributes: new { @class = "control-label" })*@
+                    @Html.Label("Process Date", htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.ProcessDate, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.ProcessDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+    }
+<div class="col-md-6">
+    <input id="btnProcess" type="button" value="Process" class="btn btn-primary" />
+    <input id="btnPreview" type="button" value="Preview" class="btn btn-primary" />
+</div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+}

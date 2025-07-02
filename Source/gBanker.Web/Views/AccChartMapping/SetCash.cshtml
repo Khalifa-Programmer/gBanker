@@ -1,0 +1,520 @@
+﻿@model gBanker.Web.ViewModels.ProdAccMappingViewModel
+@{
+    ViewBag.Title = "SET Cash/ Non-Cash";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+
+    var offc = Model == null ? null : Model.OfficeList;
+
+}
+
+
+
+<script type="text/javascript">
+
+    function AvailableAccChartList() {
+        var dtTable = $('#tblAvailableAccChart');
+        var OfficeID = $("#OfficeID Option:Selected").val();
+
+
+
+
+       // alert(OfficeID);btnCancelis
+       /// $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAvailableAccChartListCash", "AccChartMapping", "http")',
+            data: { OfficeID: OfficeID, FirstLevel: $("#ddlFirstLevel option:selected").val(), SecondLevel: $("#ddlSecondLevel option:selected").val(), ThirdLevel: $("#ddlThirdLevel option:selected").val() },   //FirstLevel, string SecondLevel, string ThirdLevel
+            dataType: 'json',
+            async: true,
+            success: function (List_AccChartInfoViewModel) {
+              //  $('#AjaxLoader').hide();
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                $.each(List_AccChartInfoViewModel, function (index, AccChart) {
+                    var sl = index + 1;
+
+                    tableBody.append('<tr>' +
+                                 '<td><input type="checkbox" style="width:18px;height:18px" id="txtCheckId' + sl + '"/></td>' +
+                                 '<td>' + sl + '</td>' +
+                                 '<td>' + AccChart.AccCode + '<input type="text"  value="' + AccChart.AccID + '" style="display:none;" name="AccChartID" id="txtAccChartId' + sl + '" />' +
+                                 '<td>' + AccChart.AccName + '</td>' +
+                                 '</tr>')
+                })
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function SelectedAccChartList() {
+        var dtTable = $('#tblSelectedAccChart');
+        var OfficeID = $("#OfficeID Option:Selected").val();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSelectedAccChartListCash", "AccChartMapping", "http")',
+            data: { OfficeID: OfficeID },
+            dataType: 'json',
+            async: true,
+            success: function (List_AccChartInfoViewModel) {
+
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                $.each(List_AccChartInfoViewModel, function (index, off) {
+                    var sl = index + 1;
+                    tableBody.append('<tr>' +
+                                 '<td><input type="checkbox" style="width:18px;height:18px" id="txtSelectedCheck' + sl + '"/></td>' +
+                                 '<td>' + sl + '</td>' +
+                                 '<td>' + off.AccCode + '<input type = "text"  value="' + off.AccID + '" style="display:none;" name="AccChartID" id="txtSelectedAccChartID' + sl + '" />' +
+                                 '<td>' + off.AccName + '</td>' +
+                                 '</tr>')
+                })
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);//tblSelectedCourse
+            }
+        });
+    }
+
+    function SaveAccChartList() {
+        var dtTable = document.getElementById("tblAvailableAccChart").rows.length;
+        var allAccChartId = new Array();
+        for (i = 1; i < dtTable; i++) {
+            var value = $('#txtAccChartId' + i).val();
+            var chkResult = $('#txtCheckId' + i).is(":checked");
+            if (chkResult == true) {
+                allAccChartId[allAccChartId.length] = value;
+                //alert(value);
+            }
+        }
+        var OfficeID = $("#OfficeID Option:Selected").val();
+
+        var allTrx = new Object();
+
+
+        if (allAccChartId.length == 0)
+        {
+            $.alert.open("Message","Please Select From List.");
+            return;
+        }
+
+
+        allTrx.allAccChartIds = allAccChartId;
+        allTrx.OfficeID = OfficeID;
+
+        var json = JSON.stringify(allTrx);
+        $('#AjaxLoader').show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("OfficeWiseAccChartSaveCash", "AccChartMapping", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+            success: function (data) {
+                if (data != 0) {
+                    $('#AjaxLoader').hide();
+                    AvailableAccChartList();
+                    SelectedAccChartList();
+                    $(".success").show(800).fadeToggle(3000);
+                    $.alert.open("info", "Saved Sucessfully");
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("error", "Fail to Save");
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function EditAccChartList() {
+        var dtTable = document.getElementById("tblSelectedAccChart").rows.length;
+        var allAccChartId = new Array();
+        for (i = 1; i < dtTable; i++) {
+            var value = $('#txtSelectedAccChartID' + i).val();
+            var chkResult = $('#txtSelectedCheck' + i).is(":checked");
+            if (chkResult == true) {
+                allAccChartId[allAccChartId.length] = value;
+                //alert(value);
+            }
+        }
+
+        var OfficeID = $("#OfficeID Option:Selected").val();
+        var allTrx = new Object();
+       // alert(allAccChartId.length);
+        allTrx.AccChartIds = allAccChartId;
+        allTrx.OfficeID = OfficeID;
+
+        if (allAccChartId.length == 0) {
+            $.alert.open("Message", "Please Select From List.");
+            return;
+        }
+
+
+        var json = JSON.stringify(allTrx);
+        $('#AjaxLoader').show();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("v", "AccChartMapping", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (data) {
+                if (data != 0) {
+
+                    AvailableAccChartList();
+                    SelectedAccChartList();
+
+                    $(".success").show(800).fadeToggle(3000);
+                    $.alert.open("info", "Update Sucessfully");
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("error", "Fail to Update");
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+
+    function LoadFirstLevel() {
+        var ddlZOOffice = $("#ddlFirstLevel");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeByLevelCash", "AccChartMapping", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZOOffice.html('');
+                var Offi = "";
+                $.each(data, function (id, option) {
+                    ddlZOOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }// End Load Zone
+
+    function LoadSecondLevel() {
+        var ddlZOOffice = $("#ddlSecondLevel");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeByLevelCash", "AccChartMapping", "http")',
+            data: { Qtype: 2, FirstLevel: $("#ddlFirstLevel option:selected").val() }, //string Qtype = "1" , string FirstLevel = "0", string SecondLevel = "0"
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZOOffice.html('');
+                var Offi = "";
+                $.each(data, function (id, option) {
+                    ddlZOOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }// End Load Zone
+
+    function LoadThirdLevel() {
+        var ddlZOOffice = $("#ddlThirdLevel");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeByLevelCash", "AccChartMapping", "http")',
+            data: { Qtype: 3, FirstLevel: $("#ddlFirstLevel option:selected").val(), SecondLevel: $("#ddlSecondLevel option:selected").val() }, //string Qtype = "1" , string FirstLevel = "0", string SecondLevel = "0"
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZOOffice.html('');
+                var Offi = "";
+                $.each(data, function (id, option) {
+                    ddlZOOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }// End Load Zone
+
+
+
+
+
+
+
+
+    $(document).ready(function () {
+        LoadFirstLevel();
+        $("#AccChartList").hide();
+
+        $("#check_all").click(function () {
+            $("#tblAvailableAccChart tbody input:checkbox").prop('checked', $(this).is(':checked'));
+        })
+        $("#check_allSelected").click(function () {
+            $("#tblSelectedAccChart tbody input:checkbox").prop('checked', $(this).is(':checked'));
+        })
+
+
+        $("#ddlFirstLevel").change(function () {
+            $("#AccChartList").hide();
+            var ddlZOOffice = $("#ddlSecondLevel");
+            ddlZOOffice.html('');
+
+
+            var ddlZOOffice = $("#ddlThirdLevel");
+            ddlZOOffice.html('');
+
+            LoadSecondLevel();
+
+
+
+        });
+
+        $("#ddlSecondLevel").change(function () {
+            $("#AccChartList").hide();
+            LoadThirdLevel();
+
+        });
+
+        $("#ddlThirdLevel").change(function () {
+            $("#AccChartList").hide();
+
+
+        });
+
+
+        //$("#OfficeID").change(function () {
+        //    $("#AccChartList").show();
+        //    AvailableAccChartList();
+        //    SelectedAccChartList();
+
+        //});
+
+        $('#btnViewList').click(function (e) {
+            e.preventDefault();
+            $("#AccChartList").show();
+            AvailableAccChartList();
+            SelectedAccChartList();
+
+        });
+
+
+        $('#btnSelect').click(function (e) {
+            e.preventDefault();
+            SaveAccChartList();
+        });
+        $("#btnCancel").click(function (e) {
+
+            e.preventDefault();
+            EditAccChartList();
+        });
+
+
+    });
+
+</script>
+
+<style>
+    .table .thead-dark th {
+        color: #fff;
+        background-color: #620000;
+        border-color: #FF8888;
+    }
+</style>
+
+@*@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })*@
+
+<h2 class="page-title">Set AccChart</h2>
+
+@using (Html.BeginForm("Create", "Member", FormMethod.Post, new { enctype = "multipart/form-data", id = "MemProfile" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="row">
+
+
+
+
+            <div class="col-sm-12">
+                <div class="form-group">
+
+                    <div class="col-md-9">
+                        @Html.LabelFor(model => model.OfficeID, htmlAttributes: new { @class = "control-label" })<span style="color:red; font-size:15px;"> * </span>
+
+                        @Html.DropDownListFor(model => model.OfficeID, offc, new { @class = "form-control" })
+
+                        @Html.HiddenFor(model => model.SelectedOfficeID)
+                        @Html.ValidationMessageFor(model => model.OfficeID, "", new { @class = "text-danger" })
+
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    @Html.Label("First Level ", new { @class = "control-label col-md-4" })
+                    <div class="col-md-9">
+
+                        @Html.DropDownList("KOfficeList", null, new { @ID = "ddlFirstLevel", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+
+
+
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    @Html.Label("Second Level ", new { @class = "control-label col-md-4" })
+                    <div class="col-md-9">
+                        @Html.DropDownList("KOfficeList", null, new { @ID = "ddlSecondLevel", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="row">
+
+            <div class="col-sm-12">
+                <div class="form-group">
+                    @Html.Label("Third Level ", new { @class = "control-label col-md-4" })
+                    <div class="col-md-9">
+                        @Html.DropDownList("KOfficeList", null, new { @ID = "ddlThirdLevel", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="row">
+            <button style="width:90px" type="submit" id="btnViewList" class="btn btn-warning"> View List </button>
+        </div>
+
+        <br />
+        <table id="AccChartList">
+            <tr class="row">
+                <td class="col-sm-5" style="vertical-align:top;">
+                    <table cellpadding="5" cellspacing="0">
+                        <tr>
+                            <td align="center">
+                                <label style="font-weight: 700; font-size: 20px; text-align: center;">Available AccChart List</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <table class="table table-hover" id="tblAvailableAccChart" style="width:100%">
+                                    <thead class="thead-dark">
+                                        <tr class="headings">
+                                            <th>
+                                                <input type="checkbox" style="width:18px;height:18px" id="check_all" />
+                                            </th>
+                                            <th class="column-title">SL</th>
+                                            <th class="column-title">Code</th>
+                                            <th class="column-title">AccChart Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="col-sm-2" style="vertical-align:top; width:8%; padding-top:30%; text-align:center;">
+                    <button style="width:90px" type="submit" id="btnSelect" class="btn btn-success"> Add >> </button>
+                    <br />
+                    <button style="width:90px" type="submit" id="btnCancel" class="btn btn-warning"> << Remove</button>
+                </td>
+                <td class="col-sm-5" style="vertical-align:top;">
+                    <table cellpadding="5" cellspacing="0">
+                        <tr>
+                            <td align="center">
+                                <label style="font-weight: 700; font-size: 20px; text-align: center;">Assigned AccChart List</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <table class="table table-hover" id="tblSelectedAccChart" style="width:100%">
+                                    <thead class="thead-dark">
+                                        <tr class="headings">
+                                            <th>
+                                                <input type="checkbox" style="width:18px;height:18px" id="check_allSelected" />
+                                            </th>
+                                            <th class="column-title">SL</th>
+                                            <th class="column-title">Code</th>
+                                            <th class="column-title">AccChart Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+
+
+
+
+
+
+
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

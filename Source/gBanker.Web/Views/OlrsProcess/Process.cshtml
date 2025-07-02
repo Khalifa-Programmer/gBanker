@@ -1,0 +1,148 @@
+﻿
+@model OlrsProcessViewModel
+
+@{
+    ViewBag.Title = "Process";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<h2 class="page-title">Process</h2>
+
+<ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#process">Process</a></li>
+    <li><a data-toggle="tab" href="#synctopksf">Sync to PKSF</a></li>
+    <li><a data-toggle="tab" href="#notsynctopksf">Not Sync to PKSF</a></li>
+</ul>
+
+<div class="tab-content">
+    <div id="process" class="tab-pane fade in active" style="margin-top:10px">
+
+        @*@using (Html.BeginForm("Process", "OlrsProcess", FormMethod.Post))
+            {*@
+        @*@Html.AntiForgeryToken()*@
+
+        <div class="">
+            <div class="raw">
+                <div class="col-md-12">
+                    <div class="raw">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ProcessType, htmlAttributes: new { @class = "control-label required" })
+                                @Html.DropDownListFor(model => model.ProcessType, DropdownListHelper.GetDropdownList(DropdownListTypes.ProcessType, Model.ProcessType), new { @multiple = "multiple", @class = "selectpicker form-control" })
+                                @Html.ValidationMessageFor(model => model.ProcessType)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="raw">
+                <div class="col-md-12">
+                    <div class="raw">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ProcessMonth, htmlAttributes: new { @class = "control-label required" })
+                                @Html.EditorFor(model => model.ProcessMonth, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.ProcessMonth)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="raw">
+                <div class="col-md-12">
+                    <div class="raw">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <div class="form-group form-action">
+                                    <button type="button" id="btnProcess" class="btn btn-sm btn-primary btn-process"> Process </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*}*@
+        <section-process-response></section-process-response>
+    </div>
+    <div id="synctopksf" class="tab-pane fade" style="margin-top:10px">
+        <div class="raw">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SyncToPKSFType, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.SyncToPKSFType, DropdownListHelper.GetDropdownList(DropdownListTypes.SyncToPKSFType, Model.SyncToPKSFType), new { @multiple = "multiple", @class = "selectpicker form-control" })
+                    @Html.ValidationMessageFor(model => model.SyncToPKSFType)
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.SyncMonth, htmlAttributes: new { @class = "control-label required" })
+                            @Html.EditorFor(model => model.SyncMonth, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.SyncMonth)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="form-group form-action">
+                        <button type="button" id="btnSyncToPKSF" class="btn btn-sm btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Sync to PKSF</button>
+                        <button type="button" id="btnReset" class="btn btn-sm btn-info"><i class="fa fa-refresh" aria-hidden="true"></i> Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <section-sync-response></section-sync-response>
+    </div>
+
+    <div id="notsynctopksf" class="tab-pane fade" style="margin-top:10px">
+        <div class="raw">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NotSyncToPKSFType, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.NotSyncToPKSFType, DropdownListHelper.GetDropdownList(DropdownListTypes.NotSyncToPKSFType, Model.NotSyncToPKSFType), new { @multiple = "multiple", @class = "selectpicker form-control" })
+                    @Html.ValidationMessageFor(model => model.NotSyncToPKSFType)
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.NotSyncMonth, htmlAttributes: new { @class = "control-label required" })
+                            @Html.EditorFor(model => model.NotSyncMonth, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.NotSyncMonth)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="form-group form-action">
+                        <button type="button" id="btnNotSyncToPKSF" class="btn btn-sm btn-danger"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Not Sync to PKSF</button>
+                        <button type="button" id="btnResetNotSync" class="btn btn-sm btn-info"><i class="fa fa-refresh" aria-hidden="true"></i> Reset </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <section-not-sync-response></section-not-sync-response>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+    <script src="~/Assets/js/olrs/olrsProcessManager.js"></script>
+}
+ 

@@ -1,0 +1,179 @@
+﻿
+
+@model gBanker.Web.ViewModels.MamlaListViewModel
+
+@{
+    ViewBag.Title = "Mamla View";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+    var center = Model == null ? null : Model.centerListItems;
+    var product = Model == null ? null : Model.productListItems;
+
+}
+
+@*@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })*@
+<h2 class="page-title">MRA Error Check List</h2>
+<div class="row">
+    <div class="col-md-1 text-right">
+        <label class="control-label" style="padding-top:8px;">Filter By:</label>
+    </div>
+    <div class="col-md-3">
+
+        <select id="filterColumn" class="form-control">
+            <option value="">View All</option>
+            <option value="CenterCode">Center Code</option>
+            <option value="BranchCode">Office Code</option>
+            <option value="MemberCode">Member Code</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+    </div>
+    <div class="col-md-5">
+        <input type="button" id="btnSearch" value="Search" onclick="reloadGrid();" class="btn btn-primary" />
+    </div>
+</div>
+<div id="grid"></div>
+
+<script type="text/javascript">
+    debugger;
+    $(document).ready(function () {
+
+        $('#grid').jtable({
+            //  title: 'Group List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/MRA/MRAErrorCheckListInfo?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                RowSl: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+
+
+                RowSl: {
+                    title: 'SL No.',
+                    width: '5%'
+
+                },
+                ZoneCode: {
+                    title: 'Zone Code',
+                    width: '8%'
+
+                },
+                OfficeCode: {
+                    title: 'Office Code',
+                    width: '8%'
+                },
+                OfficeName: {
+                    title: 'Office Name',
+                    width: '9%'
+                },
+                CenterCode: {
+                    title: 'Center Code',
+                    width: '9%'
+                },
+                CenterName: {
+                    title: 'Center Name',
+                    width: '9%'
+                },
+                //Branchwise_sl: {
+                //    title: 'Serial No',
+                //    width: '7%'
+                //},
+                BranchCode: {
+                    title: 'Branch Code',
+                    width: '9%'
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    width: '10%'
+                },
+                Name: {
+                    title: 'Name',
+                    width: '9%'
+                },
+                //ErrorColumnName: {
+                //    title: 'ErrorColumn Name',
+                //    width: '7%'
+                //},
+
+                ErrorCode: {
+                    title: 'Error Code',
+                    width: '9%'
+                },
+
+                ErrorDescription: {
+                    title: 'Error Description',
+                    width: '15%'
+                }
+
+
+
+                //EditLink: {
+                //    title: "Edit",
+                //    display: function (data) {
+                //        ////return '<a href="/Purpose/Edit/' + data.record.PurposeID + '">Edit</a>';
+                //        //return "<div class='text-center'><a href='/Mamla/Edit/" + data.record.OfficeID + data.record.CenterID + data.record.MemberID +data.record.ProductID+ data.record.LoanTerm +"'><i class='fa fa-pencil-square-o'></i></a></div>";
+
+                //        var $editButton = $('<button>Edit</button>');
+                //        $editButton.click(function () {
+                //            var url = '/Mamla/Edit?OfficeId=' + data.record.OfficeID +
+                //                '&CenterID=' + data.record.CenterID +
+                //                '&ProductID=' + data.record.ProductID +
+                //                '&MemberID=' + data.record.MemberID +
+                //                '&LoanTerm=' + data.record.LoanTerm;
+                //            window.location.href = url;
+                //        });
+                //        return $editButton;
+                //    }
+                //},
+                //DeleteLink: {
+                //    title: "Delete",
+                //    display: function (data) {
+                //        return '<div  class="text-center delete-link"><a href="/Group/Delete/' + data.record.mam + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + "'><i class='fa fa-trash-o'></i></a></div>";
+
+                //        // return '<a href="/Group/Delete/' + data.record.GroupID + '"' + " onclick='return confirm(" + '"Are you sure you want to delete this item?");' + "'" + '>Delete</a>';
+                //    }
+                //}
+            }
+        });
+
+        reloadGrid();
+    });
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+
+</script>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+

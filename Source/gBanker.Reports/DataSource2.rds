@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RptDataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="DataSource2">
+  <ConnectionProperties>
+    <Extension>SQL</Extension>
+    <ConnectString>Data Source=192.192.192.171\MFI;Initial Catalog=gBankerBURO</ConnectString>
+    <Prompt>Specify a user name and password for data source DataSource2:</Prompt>
+  </ConnectionProperties>
+  <DataSourceID>bdbe9918-81fc-48b2-8744-1f987938ebfa</DataSourceID>
+</RptDataSource>

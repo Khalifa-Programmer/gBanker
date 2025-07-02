@@ -1,0 +1,379 @@
+﻿@model gBanker.Web.ViewModels.MemberViewModel
+@{
+    ViewBag.Title = "Member's Profile";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var mem_cat = Model == null ? null : Model.MemberCategoryList;
+    var genderList = Model == null ? null : Model.GenderList;
+}
+<script type="text/javascript">
+
+    function CategoryDropdown() {
+        var data = {
+            '6': 'Get All',
+            '1': 'Active',
+            '2': 'Drop',
+            '0': 'Inactive',
+            '3': 'Dead',
+            '4': 'Black List',
+            '5': 'Rejected',
+
+        }
+
+
+        var s = $('<select class="form-control" id="ddMemberStatus" />');
+        var id = 0;
+        for (var val in data) {
+            id = id + 1;
+            $('<option></option>', { value: val, text: data[val] }).appendTo(s);
+        }
+
+        s.appendTo('#ddMemberStatusList');
+        $("#ddMemberStatus").val("6");
+    }
+
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+
+        GetCenter();
+        CategoryDropdown();
+        /////////
+        $("#txtFromDt").val("");
+        $("#txtToDt").val("");
+        $("#chUpdatetoDate").prop('checked', true);
+        $("#chJoinDate").prop('checked', true);
+        $("#txtFromDt").attr("readonly", true);
+        $("#txtToDt").attr("readonly", true);
+
+        $("#chUpdatetoDate").click(function () {
+            var checkUpToDate = $("#chUpdatetoDate").is(":checked");
+            if (checkUpToDate == true)
+            {
+                $("#txtFromDt").attr("readonly",true);
+                $("#txtToDt").attr("readonly", true);
+                $("#txtFromDt").val("");
+                $("#txtToDt").val("");
+            }
+            else
+            {
+                $('#txtFromDt').attr('readonly', false);
+                $("#txtToDt").attr("readonly", false);
+            }
+        });
+        $("#chJoinDate").click(function () {
+            $("#chJoinDate").prop('checked', true);
+            $("#chDropDate").prop('checked', false);
+        });
+        $("#chDropDate").click(function () {
+            $("#chJoinDate").prop('checked', false);
+            $("#chDropDate").prop('checked', true);
+        });
+        ///////
+
+        /////////
+        $("#txtFromDt").datepicker(
+        {
+            dateFormat: "dd-M-yy",
+            showAnim: "scale"
+        });
+        $("#txtToDt").datepicker(
+                {
+                    dateFormat: "dd-M-yy",
+                    showAnim: "scale"
+                });
+
+        //////////
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+
+            ////
+            var url;
+            var checkUpToDate = $("#chUpdatetoDate").is(":checked");
+            var FromDate = $("#txtFromDt").val();
+            var ToDate = $("#txtToDt").val();
+            var exportType = $("#ddlExportType").find(":selected").val();
+
+            if (checkUpToDate == false && FromDate == "" || checkUpToDate == false && ToDate == "") {
+                alert("Insert Date");
+            }
+            else {
+                var center = $("#ddlCenter").val();
+                var memberSt = $("#ddMemberStatus").find(":selected").val();
+                var memcat = $("#MemberCategoryID").val();
+                var gender = $("#Gender").val();
+
+                //1
+                if (center == 0 && checkUpToDate == true && memberSt == 6 && memcat == 0)//1
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=1&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //2
+                else if (center != 0 && checkUpToDate == true && memberSt == 6 && memcat == 0)//2
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=2&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //3
+                else if (center != 0 && checkUpToDate == true && memberSt != 6 && memcat == 0)//3
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=3&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    // 4
+                else if (center != 0 && checkUpToDate == false && memberSt == 6 && memcat == 0)//4
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=4&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    // 5
+                else if (center != 0 && checkUpToDate == true && memberSt == 6 && memcat != 0)//5
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=5&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    // 6
+                else if (center != 0 && checkUpToDate == false && memberSt != 6 && memcat == 0)//6
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=6&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    // 7
+                else if (center != 0 && checkUpToDate == false && memberSt == 6 && memcat != 0)//7
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=7&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //8
+                else if (center == 0 && checkUpToDate == true && memberSt != 6 && memcat == 0)//8
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=8&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    // 9
+                else if (center == 0 && checkUpToDate == false && memberSt != 6 && memcat == 0)//9
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=9&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //10
+                else if (center == 0 && checkUpToDate == true && memberSt != 6 && memcat != 0)//10
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=10&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //11
+                else if (center == 0 && checkUpToDate == false && memberSt != 6 && memcat != 0)//11
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=11&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //12
+                else if (center == 0 && checkUpToDate == false && memberSt == 6 && memcat == 0)//12
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=12&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //13
+                else if (center == 0 && checkUpToDate == false && memberSt == 6 && memcat != 0)//13
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=13&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //14
+                else if (center == 0 && checkUpToDate == true && memberSt == 6 && memcat != 0)//14
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=14&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //15
+                else if (center != 0 && checkUpToDate == false && memberSt != 6 && memcat != 0)//15
+                {
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=15&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+                    //16
+                else if (center != 0 && checkUpToDate == true && memberSt != 6 && memcat != 0)//16
+                {
+                    FromDate = "01-Feb-1900";
+                    ToDate = "01-Feb-1900";
+                    url = '/LoanSavingLedger/GenerateMemberlistReport?Qtype=16&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate + '&memberStatus=' + memberSt + '&memberCategory=' + memcat + '&gender=' + gender + '&ExportType=' + exportType;
+                }
+
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+
+
+
+
+
+            ////
+            //var url;
+            //var checkUpToDate = $("#chUpdatetoDate").is(":checked");
+            //if (checkUpToDate == true)
+            //{
+            //    var checkV = $("#chDropDate").is(":checked");
+            //    var chackValue;
+            //    if (checkV == true) {
+            //        chackValue = 'D';
+            //    }
+            //    else {
+            //        chackValue = 'J';
+            //    }
+            //    var center = $("#ddlCenter").val();
+            //    var FromDate = "01-Feb-1900";//$("#txtFromDt").val();
+            //    var ToDate = "01-Feb-1900";//$("#txtToDt").val();
+            //    if (center > 0) {
+            //        url = '/LoanSavingLedger/GenerateMemberlistReport?Stype=' + chackValue + '&Qtype=4&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate;
+            //    }
+            //    else if (center == 0) {
+            //        url = '/LoanSavingLedger/GenerateMemberlistReport?Stype=' + chackValue + '&Qtype=3&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate;
+            //    }
+            //    window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            //}
+            //else
+            //{
+            //    var checkV = $("#chDropDate").is(":checked");
+            //    var chackValue;
+            //    if (checkV == true) {
+            //        chackValue = 'D';
+            //    }
+            //    else {
+            //        chackValue = 'J';
+            //    }
+            //    var center = $("#ddlCenter").val();
+            //    var FromDate = $("#txtFromDt").val();
+            //    var ToDate = $("#txtToDt").val();
+            //    alert(FromDate);
+            //    if (center > 0) {
+            //        url = '/LoanSavingLedger/GenerateMemberlistReport?Stype=' + chackValue + '&Qtype=2&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate;
+            //    }
+            //    else if (center == 0) {
+            //        url = '/LoanSavingLedger/GenerateMemberlistReport?Stype=' + chackValue + '&Qtype=1&Center=' + center + '&DateFrom=' + FromDate + '&DateTo=' + ToDate;
+            //    }
+            //    window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            //}
+
+        });
+    });
+</script>
+<h2 class="page-title">Members Profile (By Option)</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Member Status", htmlAttributes: new { @class = "control-label" })
+                    <div id="ddMemberStatusList">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MemberCategoryID, htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.MemberCategoryID, mem_cat, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MemberCategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Gender", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownListFor(model => model.Gender, genderList, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <div>
+                        @*<input type="checkbox" id="chJoinDate" name="sDate" style="width:15px;height:15px"/>&nbsp;&nbsp;&nbsp;<label style="font-size:small">Join Date wise</label><br />*@
+                        @*<input type="checkbox" id="chDropDate" name="sDate" style="width:15px;height:15px" />&nbsp;&nbsp;&nbsp;<label style="font-size: small; ">Drop Date wise</label><br /><br />*@
+                        <input type="checkbox" id="chUpdatetoDate" name="uDate" style="width:15px;height:15px" />&nbsp;&nbsp;&nbsp;<label style="font-size:small">Upto Date</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDateFrom"], new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDateTo"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    @Html.Label("Export Type", htmlAttributes: new { @class = "control-label" })
+
+                    @Html.DropDownList("ddlExportType", new List<SelectListItem> {
+                    new SelectListItem { Text = "PDF", Value = "pdf", Selected = true },
+                    new SelectListItem { Text = "Excel", Value = "excel" }
+                }, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}

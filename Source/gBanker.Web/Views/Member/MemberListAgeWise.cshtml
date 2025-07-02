@@ -1,0 +1,292 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.MemberViewModel>
+@{
+    ViewBag.Title = "Age Wise Member List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+<link href="~/Content/jtable-custom.css" rel="stylesheet" />
+
+<script type="text/javascript">
+    function GetCenter() {
+        var ddlCenter = $("#ddlCenter");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCenterList", "LoanSavingLedger", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlCenter.html('');
+                $.each(data, function (id, option) {
+                    ddlCenter.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+
+    
+
+    $(document).ready(function () {
+        GetCenter();
+
+        $("#btnViewReport").click(function (e) {
+            e.preventDefault();
+            var url;
+            var center = $("#ddlCenter").val();
+            var ageFrom = $("#ageFrom").val();
+            var ageTo = $("#ageTo").val();
+
+            if (ageFrom == null || ageTo == null) {
+                $.alert.open("Age from & Age To cannot be Empty.");
+            }
+            else if (ageFrom <= 0 || ageTo <= 0) {
+                $.alert.open("Age from & Age To cannot be Zero (0).");
+            }
+            else {
+                url = '/Member/GenerateMemberListAgeWiseReport?center=' + center + '&ageFrom=' + ageFrom + '&ageTo=' + ageTo;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+
+        });
+
+
+        var SrNo = 1;
+        $('#grid').jtable({
+            //title: 'Member List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'MemberCode ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Member/GetMemberListAgeWise?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                SrNo: {
+                    title: 'SL',
+                    width: '5%',
+                    list: true
+                },
+                MemberID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                OfficeName: {
+                    title: 'Office Name',
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Center Name',
+                    create: false,
+                    edit: true
+                },
+                GroupCode: {
+                    title: 'Group',
+                    create: false,
+                    edit: false
+                },
+                MemberCode: {
+                    title: 'Member Code',
+                    create: false,
+                    edit: false
+                },
+                FullName: {
+                    title: 'Member Name',
+                    create: false,
+                    edit: false
+                },
+                SpouseName: {
+                    title: 'Spouse',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                JoinDate: {
+                    title: 'Joining Date',
+                    type: 'date',
+                    displayFormat: 'dd-M-yy',
+                    create: false,
+                    edit: false
+                },
+                Gender: {
+                    title: 'Gender',
+                    create: false,
+                    edit: false
+                },
+                CategoryName: {
+                    title: 'Category',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                NidSmartOther: {
+                    title: 'NID/SmartCard/Other ID',
+                    width: '15%',
+                    create: false,
+                    edit: false
+                },
+                PhoneNo: {
+                    title: 'Phone',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                MemberStatus: {
+                    title: 'Status',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        if (data.record.MemberStatus == '0')
+                            return "In Active";
+                        else if (data.record.MemberStatus == '1')
+                            return "Active";
+                        else if (data.record.MemberStatus == '2')
+                            return "Drop";
+                        else if (data.record.MemberStatus == '3')
+                            return "Dead";
+                        else if (data.record.MemberStatus == '4')
+                            return "Black List";
+                        else if (data.record.MemberStatus == '5')
+                            return "Rejected";
+                        else
+                            return null;
+                    }
+                },
+                FatherName: {
+                    title: 'Father',
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                MotherName: {
+                    title: 'Mother',
+                    create: false,
+                    edit: false,
+                    list: true
+                }
+            },
+            recordsLoaded: function (event, data) {
+                var pagenumber = $('.jtable-goto-page select option:selected').val();
+                var pagesize = $('.jtable-page-size-change select option:selected').val();
+                var SrNo = pagesize * pagenumber - pagesize;
+                if (data.records) {
+                    $.each(data.records, function (index, record) {
+                        var row = $('#grid').jtable('getRowByKey', record.MemberID);
+                        SrNo++;
+                        row.find('td:eq(0)').text(SrNo);
+                    });
+                }
+            }
+        });
+
+        //reloadGrid();
+    });
+
+    function reloadGridSubmit() {
+
+        if ($("#ddlCenter").val() == "") {
+            $.alert.open("Please Select Center");
+            return false;
+        }
+        if ($("#ageFrom").val() == "") {
+            $.alert.open("Please Give Age From");
+            return false;
+        }
+
+        else if ($('#ageTo').val() == "") {
+            $.alert.open("Please Give Age To.");
+            return false;
+        }
+        else {
+            reloadGrid();
+        }
+
+
+    }
+    function reloadGrid() {
+        $("#loading").show();
+        $('#grid').jtable('load', { centerID: $('#ddlCenter').val(), ageFrom: $('#ageFrom').val(), ageTo: $('#ageTo').val() });
+        $("#loading").hide();
+    }
+</script>
+
+<h2 class="page-title">Member List Age Wise</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Center", new { @class = "control-label" })
+                    @Html.DropDownList("CenterList", null, new { @ID = "ddlCenter", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        @Html.Label("Age From", new { @class = "control-label" })
+                        <input class="form-control" id="ageFrom" type="number" placeholder="Age from" onkeydown="if(event.key==='.'){event.preventDefault();}" oninput="event.target.value = event.target.value.replace(/[^0-9]*/g,'')" ; />
+                    </div>
+                    <div class="col-md-6">
+                        @Html.Label("Age To", new { @class = "control-label" })
+                        <input class="form-control" id="ageTo" type="number" placeholder="Age To" onkeydown="if(event.key==='.'){event.preventDefault();}" oninput="event.target.value = event.target.value.replace(/[^0-9]*/g,'')" ; />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 pt-1">
+                <p style="font-size:8px;">&nbsp;</p>
+                <input type="button" value="Search" class="btn btn-primary" id="btnView" onclick="reloadGridSubmit();" /> &nbsp;
+                <input type="submit" value="View Report" class="btn btn-primary" id="btnViewReport" />
+            </div>
+        </div>
+    </div>
+}
+
+<div class="">
+    <div id="grid"></div>
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

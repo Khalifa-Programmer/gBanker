@@ -1,0 +1,132 @@
+﻿
+@model ImputedCost_INFEquityInfoViewModel
+
+@{
+    ViewBag.Title = "Inf Equity Information";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+@Html.ActionLink("Back to List", "InfEquities", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">@ViewBag.Title</h2>
+
+@using (Html.BeginForm("INFEquityInformation", "ImputedCost", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MNYR, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.MNYR, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.MNYR)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.NPK_LAST_YR, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.NPK_LAST_YR, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.NPK_LAST_YR)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PK_LAST_YR, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.PK_LAST_YR, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.PK_LAST_YR)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.NPK_THIS_MONTH, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.NPK_THIS_MONTH, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.NPK_THIS_MONTH)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PK_THIS_MONTH, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.PK_THIS_MONTH, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.PK_THIS_MONTH)
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.NPK_AVG, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.NPK_AVG, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.NPK_AVG)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PK_AVG, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.PK_AVG, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.PK_AVG)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.NPK_INF_ADJ, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.NPK_INF_ADJ, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.NPK_INF_ADJ)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PK_INF_ADJ, htmlAttributes: new { @class = "control-label required" })
+                            @Html.TextBoxFor(model => model.PK_INF_ADJ, new { @class = "form-control CheckNumeric", @autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.PK_INF_ADJ)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="raw">
+            <div class="col-md-12">
+                <div class="raw">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <div class="form-group form-action">
+                                <button type="submit" class="btn btn-sm btn-primary"> Submit </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    <script src="~/Assets/js/olrs/infEquityInformationManager.js"></script>
+}

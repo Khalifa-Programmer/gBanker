@@ -1,0 +1,176 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Fixed Asset Reports";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+
+    function PrintFixedAssetLedgerReport() {
+        url = '/FixedAsset/FixedAssetLedgerReportPrint?';
+        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    }
+    function PrintFixedAssetDepriciationRegisterReport(year, month) {
+        url = '/FixedAsset/FixAssetDepriciationRegisterReportPrint?Year=' + year + '&Month=' + month;
+        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    }
+    function PrintDailyTransactionReport() {
+        url = '/FixedAsset/PrintDailyTransactionReport?';
+        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    }
+    function AssetCodeWiseFixedAssetScheduleReportPrint(year) {
+        url = '/FixedAsset/AssetCodeWiseFixedAssetScheduleReportPrint?Year=' + year;
+        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    }
+    function TopSheetFixedAssetScheduleReportPrint(IsForAllBranch, date) {
+        url = '/FixedAsset/TopSheetFixedAssetScheduleReportPrint?Date=' + date + '&IsForAllBranch=' + IsForAllBranch;
+        window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    }
+
+    $(document).ready(function () {
+        $(".Date").datepicker(
+       {
+           dateFormat: "dd-M-yy",
+           showAnim: "scale",
+       });
+
+        $("#btnPrint").click(function () {
+            let reportType = $('input[name=reportRadio]:checked').val();
+            if (reportType == '1') {
+                PrintFixedAssetLedgerReport();
+            }
+            if (reportType == '2') {
+                var year = $("#year2").val();
+                AssetCodeWiseFixedAssetScheduleReportPrint(year);
+            }
+            if (reportType == '3') {
+                debugger;
+                var branch = $('#AssetTopSheetAllBranch').val();
+                var date = $(".Date").val();
+                if ($('#AssetTopSheetAllBranch').is(":checked")) {
+                    TopSheetFixedAssetScheduleReportPrint(1, date);
+                }
+                else {
+                    TopSheetFixedAssetScheduleReportPrint(0, date);
+                }
+
+            }
+            if (reportType == '5') {
+                var year = $("#Year").val();
+                var month = $("#Month").val();
+                PrintFixedAssetDepriciationRegisterReport(year, month);
+            }
+            if (reportType == '6') {
+                PrintDailyTransactionReport();
+            }
+        });
+    });
+
+</script>
+
+
+<h2 class="page-title">Fixed Asset Reports</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label><input type="radio" id="FixedAssetLedger" name="reportRadio" value="1">Fixed Asset ledger</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label><input type="radio" id="FixedAssetScheduleYearAssetWise" name="reportRadio" value="2">Fixed Asset Schedule For Year (Asset Code Wise)</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Year</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.Year, Model.YearList, new { @class = "form-control", @id = "year2" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label><input type="radio" id="FixedAssetScheduleYearGroundWise" name="reportRadio" value="3">Fixed Asset Schedule (Top Sheet)</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Date</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control Date">
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label><input type="checkbox" id="AssetTopSheetAllBranch" name="checkBranch">All Office</label>
+            </div>
+        </div>
+    </div>
+   
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label><input type="radio" id="FixedAssetDepreciationRegister" name="reportRadio" value="5">Fixed Asset Depreciation Register</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Year</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.Year, Model.YearList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Month</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.Month, Model.MonthList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*<div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label><input type="radio" id="FixedAssetDailyTransaction" name="reportRadio" value="6">Fixed Asset Daily Transaction</label>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Show" id="btnPrint" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RptDataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="JCF">
+  <ConnectionProperties>
+    <Extension>SQL</Extension>
+    <ConnectString>Data Source=192.192.192.171\MFI;Initial Catalog=gBankerBURO</ConnectString>
+    <Prompt>Specify a user name and password for data source JCF:</Prompt>
+  </ConnectionProperties>
+  <DataSourceID>50acd5d3-679b-4f94-b4e5-ef29782e0651</DataSourceID>
+</RptDataSource>

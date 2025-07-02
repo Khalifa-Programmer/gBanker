@@ -1,0 +1,170 @@
+﻿
+@{
+    ViewBag.Title = "Account Mapping For Fund Transfer";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<h2 class="page-title">Account Mapping for Fund Transfer</h2>
+<div class="">
+    <input type="hidden" id="id" value="0" />
+    <div class="row">
+        <div class="col-md-8">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Head office Fund</label>
+                    @Html.DropDownList("HOAccCode", new SelectList(ViewBag.HOAccounts, "Value", "Text"), new { @class = "form-control" })
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Branch office Fund</label>
+                    @Html.DropDownList("BrAccCode", new SelectList(ViewBag.BRAccounts, "Value", "Text"), new { @class = "form-control" })
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-md-7"></div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-primary" id="btnCreate">Save</button>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-d-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+
+    function Edit(id, HOFundAccCode, BRFundAccCode) {
+        $("#HOAccCode").val(HOFundAccCode), $("#BrAccCode").val(BRFundAccCode), $("#id").val(id)
+    }
+    function Delete(id) {
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: '/FundTransfer/DeleteAccountMapping',
+            data: JSON.stringify({ id: id }),
+            dataType: 'json',
+            cache: false,
+            async: false,
+            success: function (data) {
+                $.alert.open(data.status == 1 ? "Success" : "Warning", data.msg);
+                reloadGrid();
+            },
+            error: function (request, status, error) {
+                console.log(status.statusText);
+                objData = {};
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+        reloadGrid();
+    }
+    $(document).ready(function () {
+
+        $("#btnCreate").click(function (e) {
+            e.preventDefault();
+            if (!$("#HOAccCode").val() || !$("#BrAccCode").val() || $("#HOAccCode").val() == "Select" || $("#BrAccCode").val() == "Select")
+                $.alert.open("Warning", "Select Please");
+            else {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: '/FundTransfer/PostAccountMapping',
+                    data: JSON.stringify({ HOAccCode: $("#HOAccCode").val(), BrAccCode: $("#BrAccCode").val(), id: $("#id").val() }),
+                    dataType: 'json',
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        $.alert.open(data.status == 1 ? "Success" : "Warning", data.msg);
+                        reloadGrid();
+                    },
+                    error: function (request, status, error) {
+                        console.log(status.statusText);
+                        objData = {};
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+        });
+
+        $('#grid').jtable({
+            // title: 'Approved  List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: { /*{
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FundTransfer/GetAccountMapping?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'GET',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },*/
+                listAction: '/FundTransfer/GetAccountMapping'
+
+            },
+            fields: {
+
+                HOFundAccCode: {
+                    title: 'Ho Acc. Code',
+                    width: '10%'
+
+                },
+                HOFundAccName: {
+                    title: 'HO Fund Acc Name',
+                    width: '30%'
+                },
+                BRFundAccCode: {
+                    title: 'BR. Acc. Code',
+                    width: '10%'
+
+                },
+                BRFundAccName: {
+                    title: 'BR. Fund Acc Name',
+                    width: '30%'
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return `<div class="text-center"><a href="#" OnClick="Edit(${data.record.ID},'${data.record.HOFundAccCode}','${data.record.BRFundAccCode}')"><i class="fa fa-pencil-square-o"></i></a></div>`;
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return `<div class="text-center delete-link"><a href="#" OnClick="Delete(${data.record.ID})" ><i class="fa fa-trash-o"></i></a></div>`;
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

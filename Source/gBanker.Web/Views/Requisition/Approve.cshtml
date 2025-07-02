@@ -1,0 +1,525 @@
+﻿@{
+    ViewBag.Title = "Items Setup";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+    var OfficeLevel =@ViewBag.OfficeLevel
+    function GetByID(rID, commandStatus, rowStatus) {
+        $("#btnApproved").hide()
+        /*Send & Cancel*/
+        //debugger
+        var data = {};
+        if (commandStatus == 'a' || commandStatus == 'r') {
+            data = GenerateAjaxRequist('/Requisition/UpdateRequsitionMaster', JSON.stringify({ ids: rID, status: commandStatus }), 'POST');
+            if (data.Result == 0)
+                $.alert.open("warining", data.message);
+            else if (data.Result == 1) {
+                $.alert.open("Success", data.message);
+                reloadGrid();
+            }
+            else if (data.Result == 2) {
+                $.alert.open("Error", data.message);
+                location.reload(true);
+            }
+            //$.ajax({
+            //    contentType: "application/json; charset=utf-8",
+            //    url: '/Requisition/UpdateRequsitionMaster?ids=' + rID + '&status=' + commandStatus,
+            //    type: "POST",
+            //    dataType: 'json',
+            //    success: function (data) {
+            //        if (data.Result == 0)
+            //            $.alert.open("warining", data.message);
+            //        else if (data.Result == 1) {
+            //            $.alert.open("Success", data.message);
+            //            reloadGrid();
+            //        }
+            //        else if (data.Result == 2) {
+            //            $.alert.open("Error", data.message);
+            //            location.reload(true);
+            //        }
+            //    },
+            //    error: function (data) {
+            //        $.alert.open("Error", data.message);
+            //    }
+            //});
+        }
+        else if (commandStatus == 'f') {
+            data = GenerateAjaxRequist('/Requisition/GetStoreOfficeXMapping', null, 'POST');
+            $("#hdnForwardMID").val(rID)
+            for (var i = 0; i < data.Records.length; i++) {
+                //alert(data.Records.length)
+                $("#ddlForwardStore").append('<option value=' + data.Records[i].WarehouseID + '>'
+                    + data.Records[i].WarehouseName + '</option>')
+            }
+            $('#dvModel2').modal('show');
+            //$.ajax({
+            //    contentType: "application/json; charset=utf-8",
+            //    url: '/Requisition/GetStoreOfficeXMapping',
+            //    type: "Get",
+            //    dataType: 'json',
+            //    async: true,
+            //    success: function (data) {
+            //        $("#hdnForwardMID").val(rID)
+            //        for (var i = 0; i < data.Records.length; i++) {
+            //            //alert(data.Records.length)
+            //            $("#ddlForwardStore").append('<option value=' + data.Records[i].WarehouseID + '>'
+            //                + data.Records[i].WarehouseName + '</option>')
+            //        }
+            //        $('#dvModel2').modal('show');
+            //    },
+            //    error: function (data) {
+            //        $.alert.open("Error", data.message);
+            //    }
+            //});
+        }
+            /* Store in*/
+        else if (commandStatus == 'an') {
+            $("#spnViewType").text(
+                ((rowStatus == 'a' || rowStatus == 'A') ? "Approved" :
+                 (rowStatus == 'c' || rowStatus == 'C') ? "Canceled" :
+                 (rowStatus == 'p' || rowStatus == 'P') ? "Pending" :
+                 (rowStatus == 'r' || rowStatus == 'R') ? "Rejected" :
+                 (rowStatus == 's' || rowStatus == 'S') ? "Posted" : ""));
+            ////debugger
+            $('#gridDetails').css('display', 'none');
+            $('#gridAnalysis').removeAttr("style");
+
+            $("#hdnMID").val(rID)
+            $('#gridAnalysis').jtable({
+                // title: 'Product List',
+                paging: false,
+                //pageSize: ,
+                sorting: true,
+                defaultSorting: 'RequsitionDetailsID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+                            //debugger
+                            console.log($dfd)
+                            console.log($("#hdnMID").val())
+
+                            data = GenerateAjaxRequist('/Requisition/GetAllRequsitionDetails', JSON.stringify({ requsitionMasterID: $("#hdnMID").val(), status: 'an' }), 'POST');
+                            $dfd.resolve(data);
+                            //$.ajax({
+                            //    url: "/Requisition/GetAllRequsitionDetails?requsitionMasterID=" + rID + "&status=an",
+                            //    type: 'POST',
+                            //    dataType: 'json',
+                            //    data: postData,
+                            //    success: function (data) {
+                            //        $dfd.resolve(data);
+                            //    },
+                            //    error: function () {
+                            //        $dfd.reject();
+                            //    }
+                            //});
+                        });
+                    },
+                },
+                fields: {
+                    ItemID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    ItemCode: {
+                        title: 'Code',
+                        width: '15%'
+                    },
+                    ItemName: {
+                        title: 'Item Name',
+                        width: '40%'
+                    },
+                    ApprovedQty: {
+                        title: 'Req. Qty.',
+                        width: '15%'
+                    },
+                    ModifyQty: {
+                        title: 'Modify Qty.',
+                        display: function (data) {
+                            return '<div class="text-center view-link">' +
+                                    '<input type="number" value="' + data.record.ApprovedQty + '" style="width:80px"/>'
+                            '</div>';
+                        }
+                    },
+                    StockBalance: {
+                        title: 'Stock Balance',
+                        width: '15%'
+                    },
+                    MinStockLevel: {
+                        title: 'Min. Stock',
+                        width: '15%'
+                    },
+
+                }
+            });
+            $('#gridAnalysis').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            $('#dvModel').modal('show');
+            $("#btnApproved").show();
+        }
+        else if (commandStatus == 'v') {
+            $("#spnViewType").text(
+                ((rowStatus == 'a' || rowStatus == 'A') ? "Approved" :
+                 (rowStatus == 'c' || rowStatus == 'C') ? "Canceled" :
+                 (rowStatus == 'p' || rowStatus == 'P') ? "Pending" :
+                 (rowStatus == 'r' || rowStatus == 'R') ? "Rejected" :
+                 (rowStatus == 's' || rowStatus == 'S') ? "Posted" : ""));
+            //debugger
+            $('#gridAnalysis').css('display', 'none');
+            $('#gridDetails').removeAttr("style");
+            $('#gridDetails').jtable({
+                // title: 'Product List',
+                paging: false,
+                //pageSize: ,
+                sorting: true,
+                defaultSorting: 'RequsitionDetailsID ASC',
+                actions: {
+                    listAction: function (postData, jtParams) {
+                        console.log("Loading from custom function...");
+                        return $.Deferred(function ($dfd) {
+
+                            $.ajax({
+                                url: "/Requisition/GetAllRequsitionDetails?requsitionMasterID=" + rID + "&status=" + rowStatus,
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                },
+                fields: {
+                    RequsitionDetailsID: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false
+                    },
+                    RequsitionMasterID: {
+                        title: 'RequsitionMasterID',
+                        list: false
+                    },
+                    ItemID: {
+                        title: 'ItemID',
+                        list: false
+                    },
+
+                    ItemName: {
+                        title: 'Item Name',
+                        width: '30%'
+                    },
+                    Qty: {
+                        title: 'Qty',
+                        width: '15%'
+                    },
+                    ApprovedQty: {
+                        title: 'App. Qty',
+                        width: '20%',
+                        display: function (data) {
+                            return (data.record.AprovedStatus == 's' || data.record.AprovedStatus == 'S')
+                            ? "<input type='number' id='txtApv" + data.record.RequsitionDetailsID + "' value='" + data.record.ApprovedQty + "' style='padding:4px;width:100%'/>" : data.record.ApprovedQty
+                        }
+                    },
+                    Remarks: {
+                        title: 'Remarks',
+                        width: '20%'
+                    },
+                    AprovedStatus: {
+                        title: 'Status',
+                        display: function (data) {
+                            return ((data.record.AprovedStatus == 'a' || data.record.AprovedStatus == 'A') ? "Approved" :
+                                (data.record.AprovedStatus == 'c' || data.record.AprovedStatus == 'C') ? "Canceled" :
+                                (data.record.AprovedStatus == 'p' || data.record.AprovedStatus == 'P') ? "Pending" :
+                                (data.record.AprovedStatus == 'r' || data.record.AprovedStatus == 'R') ? "Rejected" :
+                                (data.record.AprovedStatus == 's' || data.record.AprovedStatus == 'S') ? "Posted" : "")
+                        },
+                        width: '20%'
+                    },
+                    CommandLink: {
+                        title: "Command",
+                        display: function (data) {
+                            return '<div class="text-center view-link">' +
+                                ((rowStatus == 's' || rowStatus == 'S') ?
+                                ('<a href="#" title="Update Approve Quantity" onclick="GetDetailUpdate(' + data.record.RequsitionDetailsID + ",'in','" + data.record.AprovedStatus + "'," + data.record.ItemID + ')"><i class="fa fa-plus"></i></a>&nbsp;&nbsp;&nbsp;' +
+                                '<a href="#" title="Rejected Item" onclick="GetDetailUpdate(' + data.record.RequsitionDetailsID + ",'rin','" + data.record.AprovedStatus + "'," + data.record.ItemID + ')"><i class="fa fa-times"></i></a>') :
+                                "")
+                            '</div>';
+                        }
+                    }
+                }
+            });
+            $('#gridDetails').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+            $('#dvModel').modal('show');
+        }
+    }
+
+    function GetDetailUpdate(detailID, commandStatus, rowStatus, ItemID) {
+        //if()
+        var apvQty = $.isNumeric($('#txtApv' + detailID).val()) ? $('#txtApv' + detailID).val() : '0';
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '/Requisition/UpdateRequsitionDetails?reDId=' +
+                detailID + '&status=' + commandStatus + '&rowStatus=' + rowStatus + '&apvQty=' + apvQty + '&ItemID=' + ItemID,
+            type: "POST",
+            dataType: 'json',
+            success: function (data) {
+                if (data.Result == 1)
+                    $.alert.open("Success", data.message);
+                else if (data.Result == 0)
+                    $.alert.open("Error", data.message);
+                else if (data.Result == 2) {
+                    $.alert.open("Error", data.message);
+                    location.reload(true);
+                }
+                GetByID(detailID, 'v', rowStatus);
+            },
+            error: function (data) {
+                $.alert.open("Error", data.message);
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#btnForward").on("click", function () {
+            //
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '/Requisition/ForwardRequsition?mid=' + $("#hdnForwardMID").val() + '&forwordStoreID=' + $("#ddlForwardStore").val(),
+                type: "POST",
+                dataType: 'json',
+                success: function (data) {
+                    if (data.Result == 1)
+                        $.alert.open("Success", data.message);
+                    $('#dvModel2').modal('hide');
+                },
+                error: function (data) {
+                    $.alert.open("Error", data.message);
+                }
+            });
+        });
+
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: true,
+            pageSize: 20,
+            sorting: true,
+            defaultSorting: 'RequsitionDate ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Requisition/GetAllRequsition?reqType=s&isSelfStore=false&jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                RequsitionID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                RequsitionNo: {
+                    title: 'Requisition No',
+                    width: '10%'
+
+                },
+                RequsitionDate: {
+                    title: 'RequisitionDate',
+                    type: 'date',
+                    displayFormat: 'dd-mm-yy',
+                    width: '10%'
+                },
+
+                FromStoreName: {
+                    title: 'Store(From)',
+                    width: '25%'
+                },
+                ToStoreName: {
+                    title: 'Store(To)',
+                    width: '25%'
+                },
+                RequsitionStatus: {
+                    title: 'Status',
+                    display: function (data) {
+                        return ((data.record.RequsitionStatus == 's' || data.record.RequsitionStatus == 'S') ? "Posted" : "")
+                    },
+                    width: '10%'
+                },
+
+                ViewLink: {
+                    title: "Command",
+                    width: '20%',
+                    display: function (data) {
+                        return '<div class="text-center view-link">' + ((data.record.RequsitionStatus == 's' || data.record.RequsitionStatus == 'S') ?
+                            (/*'<a href="#" title="View" onclick="GetByID(' + data.record.RequsitionID + ",'v','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-book"></i></a>&nbsp;&nbsp;&nbsp;' +*/
+                            '<a href="#" title="Analize" onclick="GetByID(' + data.record.RequsitionID + ",'an','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-binoculars"></i></a>&nbsp;&nbsp;&nbsp;' +
+                            //'<a href="#" title="Approved" onclick="GetByID(' + data.record.RequsitionID + ",'a','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-check"></i></a>&nbsp;&nbsp;&nbsp;' +
+                            //'<a href="#" title="Forward" onclick="GetByID(' + data.record.RequsitionID + ",'f','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-paper-plane"></i></a>&nbsp;&nbsp;&nbsp;' +
+                            '<a href="#" title="Reject" onclick="GetByID(' + data.record.RequsitionID + ",'r','" + data.record.RequsitionStatus + "'" + ')"><i class="fa fa-times"></i></a>'
+                            ) : "")
+                        + '</div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+
+        $("#btnApproved").click(function () {
+            var i = 0, msg = "";
+            jsonObj = [];
+            $("#ifrReport").attr('src', '')
+            //$("#ifrReportv").attr('src', '')
+            $('#gridAnalysis').find('table tbody tr').each(function () {
+                //debugger
+                var modifyQty = parseInt($(this).find('td').eq(3).find('input').val());
+                var StockBalance = parseInt($(this).find('td').eq(4).text());
+                var minQty = parseInt($(this).find('td').eq(5).text());
+                if (StockBalance - modifyQty >= minQty) {
+                    item = {};
+                    item["ItemID"] = $('#gridAnalysis').find('table tbody tr')[i].dataset["recordKey"];
+                    item["ApprovedQty"] = $(this).find('td').eq(1).text();
+                    item["ModifyQty"] = modifyQty;
+                    item["StockBalance"] = StockBalance;
+                    item["MinStockLevel"] = minQty;
+                    i++;
+                    jsonObj.push(item);
+                }
+                else {
+                    //$.alert.open("Error", "Stock Balance Check");
+                    msg = "Stock Balance Check";
+                    jsonObj = [];
+                    return false;
+                }
+
+            });
+            if (msg)
+                $.alert.open("Message", msg);
+            else {
+                if (jsonObj.length > 0) {
+                    var data = GenerateAjaxRequist('/Requisition/RequisitionApproved', JSON.stringify({ requisitionID: $("#hdnMID").val(), objlst: jsonObj }), 'POST');
+                    $.alert.open("Message", data.Message);
+                    if (data.Result == 1) {
+                        if (OfficeLevel != 3) {
+                            $("#ifrReport").attr('src', "http://" + window.location.host + "/InventoryReport/ItemXStoreDetailsReport?masterID=" + data.VID + "&type=O")
+                           // $("#ifrReportv").attr('src', "http://" + window.location.host + "/InventoryReport/VoucherReport?masterID=" + data.VID + "")
+                        }
+                        reloadGrid();
+                        $('#dvModel').modal('hide');
+                    }
+                    else if (data.Message == "Re-Login") {
+                        location.reload(true);
+                    }
+                    else {
+                        $.alert.open("Message", data.Message);
+                    }
+                }
+                else
+                    $.alert.open("Error", 'Now Data Found');
+            }
+
+        });
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+    reloadGrid();
+</script>
+<h2 class="page-title">Requisition Approved</h2>
+<br />
+
+<br />
+<div id="grid"></div>
+@*Pop Up*@
+<div class="modal fade" id="dvModel" tabindex="-1" role="dialog" aria-labelledby="dvModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 id="hdItem">Details (<span id="spnViewType"></span>)</h4>
+            </div>
+            <div class="modal-body">
+                <div id="dvmessage"></div>
+                <input type="hidden" id="hdnMID" />
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <div id="gridDetails"></div>
+                        <div id="gridAnalysis"></div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button id="btnApproved" class="btn btn-success" style="display:none">Approved</button>
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+@*Popup 2*@
+<div class="modal fade" id="dvModel2" tabindex="-1" role="dialog" aria-labelledby="dvModel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4>Requisition Forward</h4>
+            </div>
+            <div class="modal-body">
+                <div id="dvmessage"></div>
+                <input type="hidden" id="hdnForwardMID" />
+                <fieldset>
+                    <div class="col-md-12 col-sm-12">
+                        <select class="form-control" id="ddlForwardStore"></select>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <button class="btn btn-success" id="btnForward">Forward</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <iframe id="ifrReport" width="520" height="300" frameBorder="0"></iframe>
+    </div>
+    @*<div class="col-md-6">
+        <iframe id="ifrReportv" width="520" height="300" frameBorder="0"></iframe>
+    </div>*@
+</div>
+@*Pop Up Close*@
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}

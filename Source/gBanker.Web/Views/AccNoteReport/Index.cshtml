@@ -1,0 +1,91 @@
+﻿
+@{
+    ViewBag.Title = "Note Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#loading").hide();
+        var ddlNote = $("#ddlNote");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetNoteList", "AccNoteReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlNote.html('');
+                $.each(data, function (id, option) {
+                    ddlNote.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            $("#loading").show();
+            var note_id = $("#ddlNote").val();
+            var curr_year = $("#txtYear").val();
+            var test = Number.isInteger(curr_year);
+            if (note_id > 0 && curr_year != "") {
+                if ($.isNumeric(curr_year) && curr_year.length == 4 && curr_year.indexOf('.') == -1) {
+                    var url = '/AccNoteReport/GenerateNoteReport?NoteID=' + note_id + '&CurYear=' + curr_year;
+                    $("#loading").hide();
+                    //$("#divLoading").hide();
+                    window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+                }
+                else {
+                    $("#loading").hide();
+                    $("#dvMessage").attr('class', 'failed');
+                    $("#dvMessage").html('Please insert a valid year.');
+                    $("#dvMessage").show();
+                }
+                
+            }
+            else
+            {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html('Please select a note.');
+                $("#dvMessage").show();
+            }
+        });
+    });
+</script>
+<h2 class="page-title">Note wise Accounting Report</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Note", new { @class = "control-label" })
+                @Html.DropDownList("NoteList", null, new { @ID = "ddlNote", @class = "form-control" })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Year", new { @class = "control-label" })
+                @Html.TextBox("txtYear", "", new { @class = "form-control", @Placeholder="YYYY" })
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group form-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

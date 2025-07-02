@@ -1,0 +1,102 @@
+﻿@model gBanker.Web.ViewModels.CollectionSheetViewModel
+
+@{
+    ViewBag.Title = "Collection Sheet";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    var center = Model.CenterListItems == null ? new List<SelectListItem>() { new SelectListItem() { Text = "Select Center", Value = "0" } } : Model.CenterListItems;
+}
+
+<style>
+    .table .thead-dark th {
+        color: #495057;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+</style>
+
+<h2 class="page-title">Collection</h2>
+@Html.HiddenFor(f=>f.LoggedInOrganizationID)
+@using (Html.BeginForm("Collect", "CollectionSheet", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Samity", htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownListFor(model => model.CenterID, center, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.CenterID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Filter By", htmlAttributes: new { @class = "control-label" })
+                    <div class="row">
+                        <div class="col-md-5">
+                            <select id="filterColumn" class="form-control">
+                                <option value="">View All</option>
+                                <option value="MemberCode">Member Code</option>                               
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+                        </div>
+                        <div class="col-md-1" style="padding-top:1px; padding-left:0;" align="left">
+                            <input type="button" id="btnView" value="Search" class="btn btn-primary" />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="jtable-main-container table-responsive">
+            <table class="jtable table">
+                <tbody>
+                    <tr class="jtable-data-row jtable-row-even" data-record-key="150250590">
+                        <td>
+                            <div class="jtable-title" style="display: block;">
+                                <div class="jtable-title-text">
+
+                                    <span class="summaryTitle">Total Loan Paid:</span>
+                                    <input disabled="disabled" type="text" style="width:40px; color:black;" id="totalLoanPaid" value="0">
+
+                                    <span class="summaryTitle">Total Principla Paid:</span>
+                                    <input disabled="disabled" type="text" style="width: 60px; color: black;" id="totalPrincipalPaid" value="0">
+
+                                    <span class="summaryTitle">Total Sc.Paid:</span>
+                                    <input disabled="disabled" type="text" style="width:60px; color:black;" id="totalScPaid" value="0">
+
+                                    <span class="summaryTitle">Total G.Savings:</span>
+                                    <input disabled="disabled" type="text" style="width:40px; color:black;" id="totalGSavings" value="0">
+
+
+                                    <span class="summaryTitle">Total SSP:</span>
+                                    <input disabled="disabled" type="text" style="width:40px; color:black;" id="totalCS" value="0">
+
+
+                                    <span class="summaryTitle">Grand Total:</span>
+                                    <input disabled="disabled" type="text" style="width:40px; color:black;" id="grandTotal" value="0">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="grid"></div>
+        <button class="hidden" type="button" id="TriggerFormAction"></button>
+    </div>
+}
+
+@Html.Partial("_GlobalModalPartial")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+
+    <script src="~/Assets/js/collection-sheets/CollectionSheetManager.js"></script>
+}
+

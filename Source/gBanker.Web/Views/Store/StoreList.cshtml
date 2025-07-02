@@ -1,0 +1,130 @@
+﻿@{
+    ViewBag.Title = "Store Details";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+<style type="text/css">
+    .lblradio {
+        clear: none;
+        float: left;
+        display: block;
+        padding: 0px 1px 0px 10px;
+    }
+
+    input[type=radio],
+    input.radio {
+        float: left;
+        clear: none;
+        margin: 2px 0 0 2px;
+    }
+
+    .lblpopup {
+        margin-top: 9px;
+    }
+</style>
+<script type="text/javascript">
+    var isZone=@ViewBag.isZone;
+    window.onload = function () {
+
+        if (isZone == 1) {
+            $("#btnConsulted").removeAttr("style");
+        }
+        $("#btnReport").on("click", function () {
+            window.open("/InventoryReport/StoreRreport", 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+        $("#btnConsulted").on("click", function () {
+            window.open("/InventoryReport/StoreRreport?type=Consulted", 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/Store/GetStoreDetailXGrid?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                ItemID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                Category: {
+                    title: 'Category',
+                    width: '35%'
+
+                },
+                ItemName: {
+                    title: 'Item Name',
+                    width: '35%'
+
+                },
+                Qty: {
+                    title: 'Quantity',
+                    width: '20%'
+                }
+                //,Action: {
+                //    title: 'Action',
+                //    width: '10%',
+                //    display: function (data) {
+                //        return '<div class="text-center view-link">' +
+                //            '<a href="#" title="Item Update" onclick="UpdateStore(' + data.record.ItemID+ ",'"+data.record.ItemName+"'"+')"><i class="fa fa-tachometer"></i></a>'
+                //        '</div>';
+                //    }
+                //}
+            }
+        });
+        $('#grid').jtable('load');
+    }
+
+</script>
+@if (ViewBag.OfficeLevel == 3)
+{
+    <h2> Your Office is not Authorized </h2>
+}
+else
+{
+    <div class="pull-left">
+        <h2 class="page-title">Store Details</h2>
+    </div>
+    <div class="pull-right">
+        @Html.ActionLink("Store In", "StoreIn", "Store", null, new { @class = "btn btn-info  btn-sm" })        
+        @Html.ActionLink("Store Out", "StoreOut", "Store", null, new { @class = "btn btn-warning btn-sm" })
+        @if(@ViewBag.allowMultipleoffice==1){
+        @Html.ActionLink("Store Update", "UpdateStore", "Store", null, new { @class = "btn btn-danger  btn-sm" })
+        }
+       
+        <button type="button" class="btn btn-primary btn-sm" id="btnReport">Report</button>
+        <button type="button" class="btn btn-success btn-sm" id="btnConsulted" style="display:none">Consulted Report</button>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <div id="grid"></div>
+        </div>
+    </div>
+    
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}

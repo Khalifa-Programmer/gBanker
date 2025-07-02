@@ -1,0 +1,699 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Asset Parial Disposal";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>    
+    $(document).ready(function () {       
+        //confirmDayInitiated();
+        //GetPartialAssetOutList();
+        $("#btnUpdate").hide();
+        $("#btnReset").hide();
+
+        $("#EffectiveDate").datepicker(
+           {
+               dateFormat: "dd-M-yy",
+               showAnim: "scale",
+               changeMonth: true,
+               changeYear: true,
+               yearRange: '-10:+0'
+           });
+
+        $("#EffectiveDate").change(function () {
+            GetOfficeWiseAssetGroup();
+        });
+        $("#AssetGroupID").change(function () {
+            var office_id = WorkingOfficeID();
+            var assetOutDate = $("#EffectiveDate").val();
+            var groupId = $("#AssetGroupID").val();
+            var ddlAssetName = $("#AssetCode");
+            if (office_id != "" && groupId != "" && assetOutDate != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetGroupWiseAssetName", "FixedAsset", "http")',
+                    data: { office_id: office_id, groupId: groupId, assetOutDate: assetOutDate },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data.length > 0) {
+                            ddlAssetName.empty('');
+                            $.each(data, function (id, option) {
+                                ddlAssetName.append($('<option></option>').val(option.Value).html(option.Text));
+                            });
+                        } else {
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                        }
+                    }
+                });
+            }
+            else {
+                $("#AssetCode").html("<option value=''>Please Select</option>")
+            }
+        });
+        $("#AssetCode").change(function () {
+            var office_id = WorkingOfficeID();
+            var assetOutDate = $("#EffectiveDate").val();
+            var assetCode = $("#AssetCode").val();
+            var ddlAssetSerial = $("#AssetSerial");
+            if (office_id != "" && assetOutDate != "" && assetCode != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetWiseAssetSerial", "FixedAsset", "http")',
+                    data: { office_id: office_id, assetOutDate: assetOutDate, assetCode: assetCode },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlAssetSerial.html('');
+                        $.each(data, function (id, option) {
+                            ddlAssetSerial.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    }
+                });
+            }
+        })
+
+
+        @*$("#AssetGroupID").change(function () {
+            var groupId = $("#AssetGroupID").val();
+            var ddlAssetName = $("#AssetCode");
+            var depRate = $("#Deprate");
+            if (groupId != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetGroupWiseAssetInfo", "FixedAsset", "http")',
+                    data: { GroupId: groupId },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+
+                        if (data.viewAssetNameList.length > 0) {
+                            ddlAssetName.empty('');
+                            depRate.empty('');
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                            $.each(data.viewAssetNameList, function (id, option) {
+                                ddlAssetName.append($('<option></option>').val(option.Value).html(option.Text));
+                            });
+                        } else {
+                            ddlAssetName.html("<option value=''>Please Select</option>");
+                        }
+                        $("#Deprate").val(data.depRate).attr('readonly', true);
+                    }
+                });
+            }
+            else {
+                $("#AssetCode").html("<option value=''>Please Select</option>")
+            }
+        });
+        $("#AssetCode").change(function () {
+            var assetCode = $("#AssetCode").val();
+            var ddlAssetSerial = $("#AssetSerial");
+            if (assetCode != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("LoadAssetCodeWiseAssetSerial", "FixedAsset", "http")',
+                    data: { assetCode: assetCode },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        ddlAssetSerial.html('');
+                        $.each(data, function (id, option) {
+                            ddlAssetSerial.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    }
+                });
+            }
+        })*@
+        @*$("#AssetSerial").change(function () {
+            var assetSerial = $("#AssetSerial").val();
+            if (assetSerial != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("LoadAssetSerialWiseAssetInfo", "FixedAsset", "http")',
+                    data: { assetSerial: assetSerial },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data.length > 0) {
+                            $("#CurrAssetCost").val(data[0].UnitPrice).attr('readonly', true);
+                            $("#PreviousBookValue").val(data[0].BookValue).attr('readonly', true);
+                            $("#AccuDeprWholeAsset").val(data[0].AccumulatedDepri).attr('readonly', true);
+                        } else {
+                            $("#CurrAssetCost").val('');
+                            $("#PreviousBookValue").val('');
+                            $("#AccuDeprWholeAsset").val('');
+                        }
+                    }
+                });
+            }
+        })*@
+
+        $("#AssetSerial").click(function () {
+            var office_id = WorkingOfficeID();
+            var assetOutDate = $("#EffectiveDate").val();
+            var assetSerial = $("#AssetSerial").val();
+            if (office_id != "" && assetOutDate != "" && assetSerial != "") {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAssetSerialWiseAssetInfo", "FixedAsset", "http")',
+                    data: { office_id: office_id, assetOutDate: assetOutDate, assetSerial: assetSerial },
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        debugger;
+                        if (data.length > 0) {
+                            var sellingPrice = $("#SellingPrice").val();
+                            $("#AssetCost").val(data[0].TotalCost);
+                            var totalCost = parseFloat(data[0].TotalCost);
+                            $("#AccumulatedDepriciation").val(data[0].AccumulatedDepriciation);
+                            $("#CurrentDepri").val(data[0].CurrentDepriciation);
+                            $("#BookValue").val(data[0].BookValue);
+                            var bookValue = parseFloat(data[0].BookValue);
+                            $("#TotalProfitLoss").val(parseFloat(bookValue) - parseFloat(sellingPrice));
+                            $("#CapitalGain").val(parseFloat(sellingPrice) - parseFloat(totalCost));
+                            $("#BusinessGain").val(parseFloat(totalCost) - parseFloat(bookValue));
+                            $("#DailyTransactionId").val(data[0].DailyTransactionId);
+                        } else {
+                            $("#AssetCost").val('');
+                            $("#AccumulatedDepriciation").val('');
+                            $("#CurrentDepri").val('');
+                            $("#TotalProfitLoss").val('');
+                            $("#CapitalGain").val('');
+                            $("#BusinessGain").val('');
+                        }
+                    }
+                });
+            }
+        })
+
+
+
+
+
+        $("#DisposalAmount").blur(function () {
+            var currAssetCost = $("#CurrAssetCost").val();
+            var disposalAmount = $("#DisposalAmount").val();
+            var currCostAfterDisposal = currAssetCost - disposalAmount;
+            $("#CurrCostAfterDisposal").val(currCostAfterDisposal).attr('readonly', true);
+        });
+        $("#AccuDeprDisposedAsset").blur(function () {
+            var currCostAfterDis = $("#CurrCostAfterDisposal").val();
+            var accuDeprWholeAsset = $("#AccuDeprWholeAsset").val();
+            var accuDeprDisposedAsset = $("#AccuDeprDisposedAsset").val();
+            var newBookValue = currCostAfterDis - (accuDeprWholeAsset - accuDeprDisposedAsset);
+            $("#NewBookValue").val(newBookValue).attr('readonly', true);
+        });
+        $("#btnReset").click(function () {
+            $("#btnUpdate").hide();
+            $("#btnReset").hide();
+            $("#btnSave").show();
+            ClearForm();
+        });
+
+    })
+    function WorkingOfficeID(){
+         if ($("#ddlHO").val() > 0) {
+             var office_id;
+             if ($("#ddlZone").val() > 0) {
+                 if ($("#ddlArea").val() > 0) {
+                     if ($("#ddlOffice").val() > 0) {
+                         office_id = $("#ddlOffice").val();
+                     }
+                     else {
+                         office_id = $("#ddlArea").val();
+                     }
+                 }
+                 else {
+                     office_id = $("#ddlZone").val();
+                 }
+             }
+             else {
+                 office_id = $("#ddlHO").val();
+             }
+         }
+         return office_id;
+    }
+
+    function GetOfficeWiseAssetGroup() {
+        var office_id = WorkingOfficeID();
+        var assetOutDate = $("#EffectiveDate").val();
+        var ddlAssetGroup = $("#AssetGroupID");
+        if (office_id != "" && assetOutDate != "") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetOfficeWiseAssetGroup", "FixedAsset", "http")',
+                data: { officeID: office_id, assetOutDate: assetOutDate },
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        ddlAssetGroup.empty('');
+                        $.each(data, function (id, option) {
+                            ddlAssetGroup.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    } else {
+                        ddlAssetGroup.html("<option value=''>Please Select</option>");
+                    }
+                }
+            });
+        } else {
+            $.alert.open('Please Select Any office and Date of Disposal/Sale');
+        }
+    }
+
+
+    function SaveAssetPartialOutInfo() {
+        debugger;
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetID = $("#AssetCode").val();
+        var assetSerial = $("#AssetSerial").val();
+        var deprate = $("#Deprate").val();
+        var currAssetCost = $("#CurrAssetCost").val();
+        var disposalAmount = $("#DisposalAmount").val();
+        var effectiveDate = $("#EffectiveDate").val();
+        var currCostAfterDisposal = $("#CurrCostAfterDisposal").val();
+        var previousBookValue = $("#PreviousBookValue").val();
+        var accuDeprWholeAsset = $("#AccuDeprWholeAsset").val();
+        var accuDeprDisposedAsset = $("#AccuDeprDisposedAsset").val();
+        var newBookValue = $("#NewBookValue").val();
+
+        if (assetGroupID != "" && assetID != "" && assetSerial != "" && deprate != "" && currAssetCost != "" && disposalAmount != "" && effectiveDate != "" && currCostAfterDisposal != "" && previousBookValue != "" && accuDeprWholeAsset != "" && accuDeprDisposedAsset != "" && newBookValue != "") {
+            var assetPartialOutInfo = {
+                AssetGroupID: assetGroupID,
+                AssetID: assetID,
+                AssetSerial: assetSerial,
+                DepriciationRate: deprate,
+                CurrAssetCost: currAssetCost,
+                DisposalAmount: disposalAmount,
+                EffectiveDate: effectiveDate,
+                CurrCostAfterDisposal: currCostAfterDisposal,
+                PreviousBookValue: previousBookValue,
+                AccuDeprWholeAsset: accuDeprWholeAsset,
+                AccuDeprDisposedAsset: accuDeprDisposedAsset,
+                NewBookValue: newBookValue
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveAssetPartialOutInfo", "FixedAsset", "http")',
+                data: JSON.stringify({ assetPartialOutInfo: assetPartialOutInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetPartialAssetOutList();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        } else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+    function ClearForm() {
+        $("#AssetGroupID").val('');
+        $("#AssetCode").val('');
+        $("#AssetSerial").val('');
+        $("#Deprate").val('');
+        $("#CurrAssetCost").val('');
+        $("#DisposalAmount").val('');
+        $("#EffectiveDate").val('');
+        $("#CurrCostAfterDisposal").val('');
+        $("#PreviousBookValue").val('');
+        $("#AccuDeprWholeAsset").val('');
+        $("#AccuDeprDisposedAsset").val('');
+        $("#NewBookValue").val('');
+    }
+    function GetPartialAssetOutList() {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/FixedAsset/GetPartialAssetOutList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+
+            },
+            fields: {
+                AssetPartialOutID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetGroupID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                GroupName: {
+                    width: '10%',
+                    title: 'GroupName'
+                },
+                AssetID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                AssetName: {
+                    width: '10%',
+                    title: 'AssetName'
+                },
+                AssetSerial: {
+                    width: '10%',
+                    title: 'AssetSerial',
+                },
+                Deprate: {
+                    width: '10%',
+                    title: 'Deprate',
+                },
+                CurrAssetCost: {
+                    width: '10%',
+                    title: 'CurrAssetCost'
+                },
+                DisposalAmount: {
+                    width: '10%',
+                    title: 'DisposalAmount',
+                },
+                CurrCostAfterDisposal: {
+                    width: '10%',
+                    title: 'CurrCostAfterDisposal',
+                },
+                EffectiveDate: {
+                    width: '10%',
+                    title: 'EffectiveDate',
+                },
+                PreviousBookValue: {
+                    width: '10%',
+                    title: 'PreviousBookValue',
+                },
+                AccuDeprWholeAsset: {
+                    width: '10%',
+                    title: 'AccuDeprWholeAsset',
+                },
+                AccuDeprDisposedAsset: {
+                    width: '10%',
+                    title: 'AccuDeprDisposedAsset',
+                },
+                NewBookValue: {
+                    width: '10%',
+                    title: 'NewBookValue',
+                },
+                EditLink: {
+                    title: "Edit",
+                    width: '5%',
+                    sorting: false,
+                    display: function (data) {
+
+                        return '<div class="text-center"><a href="#" OnClick="EditAssetPartialOut( ' + data.record.AssetPartialOutID + ',' + "'" + data.record.AssetGroupID + "'" + ',' + "'" + data.record.AssetID + "'" + ',' + "'" + data.record.AssetSerial + "'" + ',' + "'" + data.record.Deprate + "'" + ',' + "'" + data.record.CurrAssetCost + "'" + ',' + "'" + data.record.DisposalAmount + "'" + ',' + data.record.CurrCostAfterDisposal +
+                            ',' + "'" + data.record.EffectiveDate + "'" + ',' + "'" + data.record.PreviousBookValue + "'" + ',' + "'" + data.record.AccuDeprWholeAsset + "'" + ',' + "'" + data.record.AccuDeprDisposedAsset + "'" + ',' + "'" + data.record.NewBookValue + "'" + ');"><i class="fa fa-pencil-square-o"></i></a></div>';
+                    }
+                },
+                Delete: {
+                    title: "Delete",
+                    width: '5%',
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="DeleteAssetPartialOut(' + data.record.AssetPartialOutID + ');"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+
+        });
+        $('#grid').jtable('load');
+    }
+
+    function EditAssetPartialOut(AssetPartialOutID, AssetGroupID, AssetID, AssetSerial, Deprate, CurrAssetCost, DisposalAmount, CurrCostAfterDisposal, EffectiveDate, PreviousBookValue, AccuDeprWholeAsset, AccuDeprDisposedAsset, NewBookValue) {
+
+        $("#AssetPartialOutID").val(AssetPartialOutID);
+        $("#AssetGroupID").val(AssetGroupID).trigger('change');
+        $("#AssetID").val(AssetID).trigger('change');
+        $("#AssetSerial").val(AssetSerial).trigger('change');
+        $("#Deprate").val(Deprate);
+        $("#CurrAssetCost").val(CurrAssetCost);
+        $("#DisposalAmount").val(DisposalAmount);
+        $("#CurrCostAfterDisposal").val(CurrCostAfterDisposal);
+        $("#EffectiveDate").val(EffectiveDate);
+        $("#PreviousBookValue").val(PreviousBookValue);
+        $("#AccuDeprWholeAsset").val(AccuDeprWholeAsset);
+        $("#AccuDeprDisposedAsset").val(AccuDeprDisposedAsset);
+        $("#NewBookValue").val(NewBookValue);
+
+        $("#btnUpdate").show();
+        $("#btnReset").show();
+        $("#btnSave").hide();
+    }
+    function UpdateAssetPartialOutInfo() {
+        var assetPartialOutID = $("#AssetPartialOutID").val();
+        var assetGroupID = $("#AssetGroupID").val();
+        var assetID = $("#AssetCode").val();
+        var assetSerial = $("#AssetSerial").val();
+        var deprate = $("#Deprate").val();
+        var currAssetCost = $("#CurrAssetCost").val();
+        var disposalAmount = $("#DisposalAmount").val();
+        var effectiveDate = $("#EffectiveDate").val();
+        var currCostAfterDisposal = $("#CurrCostAfterDisposal").val();
+        var previousBookValue = $("#PreviousBookValue").val();
+        var accuDeprWholeAsset = $("#AccuDeprWholeAsset").val();
+        var accuDeprDisposedAsset = $("#AccuDeprDisposedAsset").val();
+        var newBookValue = $("#NewBookValue").val();
+
+        if (assetGroupID != "" && assetID != "" && assetSerial != "" && deprate != "" && currAssetCost != "" && disposalAmount != "" && effectiveDate != "" && currCostAfterDisposal != "" && previousBookValue != "" && accuDeprWholeAsset != "" && accuDeprDisposedAsset != "" && newBookValue != "") {
+            var assetPartialOutInfo = {
+                AssetGroupID: assetGroupID,
+                AssetID: assetID,
+                AssetSerial: assetSerial,
+                DepriciationRate: deprate,
+                CurrAssetCost: currAssetCost,
+                DisposalAmount: disposalAmount,
+                EffectiveDate: effectiveDate,
+                CurrCostAfterDisposal: currCostAfterDisposal,
+                PreviousBookValue: previousBookValue,
+                AccuDeprWholeAsset: accuDeprWholeAsset,
+                AccuDeprDisposedAsset: accuDeprDisposedAsset,
+                NewBookValue: newBookValue
+            }
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("UpdateAssetPartialOutInfo", "FixedAsset", "http")',
+                data: JSON.stringify({ assetPartialOutInfo: assetPartialOutInfo }),
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.result == 1) {
+                        $.alert.open("Success", data.message);
+                        GetPartialAssetOutList();
+                        ClearForm();
+                    } else {
+                        $.alert.open("Error", data.message);
+                        ClearForm();
+                    }
+                }
+
+            });
+        } else {
+            $.alert.open("Error", "Please fill up required fields");
+        }
+    }
+
+    function DeleteAssetPartialOut(AssetPartialOutID) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteAssetPartialOut", "FixedAsset", "http")',
+                    data: { AssetPartialOutID: AssetPartialOutID },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.result == 1) {
+                            $.alert.open("Success", data.message);
+                            $('#grid').jtable('load');
+                        } else {
+                            $.alert.open("Error", data.message);
+                        }
+                    },
+                });
+                return true;
+            }
+            else {
+                hiddenField.value = 'false';
+                return false;
+            }
+        });
+    }
+</script>
+
+
+<h2 class="page-title">Asset Partial Disposal</h2>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.AssetPartialOutID)
+    @Html.Partial("~/Views/Shared/_OfficeNavigationPane.cshtml")
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Date of Partial Disposal</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.EffectiveDate, new { @class = "form-control", @autocomplete="off" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Group</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetGroupID, Model.AssetGroupIdList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Code</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetCode, Model.AssetCodeList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Asset Serial</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.AssetSerial, Model.AssetSerialList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 hidden" >
+            <div class="form-group">
+                <label class="control-label col-sm-4">Rate of Depriciation</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.Deprate, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Current Cost of the Asset</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CurrAssetCost, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Disposal Amount</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.DisposalAmount, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Curr Cost After Disposal (C)</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.CurrCostAfterDisposal, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Previous Book Value</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.PreviousBookValue, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Accumulated Depriciation (AD1)</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AccuDeprWholeAsset, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Accu Depr Disposed Asset (AD2)</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.AccuDeprDisposedAsset, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">New Book Value(C-(AD1-AD2))</label>
+                <div class="col-sm-7">
+                    @Html.TextBoxFor(model => model.NewBookValue, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="row">
+        <div class="col-sm-offset-4">
+            <input type="button" value="Save" id="btnSave" onclick="SaveAssetPartialOutInfo()" class="btn btn-primary" />
+            <input type="button" value="Update" id="btnUpdate" onclick="UpdateAssetPartialOutInfo()" class="btn btn-primary" />
+            <input type="button" value="Reset" id="btnReset" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div id="grid"></div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/gbUtility")
+    @Scripts.Render("~/bundles/jtable")
+}

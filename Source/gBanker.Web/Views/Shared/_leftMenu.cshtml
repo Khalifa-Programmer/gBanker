@@ -1,0 +1,367 @@
+﻿@{
+    var parentModules = gBanker.Web.Helpers.SessionHelper.AllPrentModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+    var userModules = gBanker.Web.Helpers.SessionHelper.UserSecurityModules ?? new List<gBanker.Data.CodeFirstMigration.Db.AspNetSecurityModule>();
+}
+<!-- left menu starts -->
+<div class="col-sm-2 col-lg-2" id="cusWrapper">
+    <div class="sidebar-nav">
+        <div class="nav-canvas">
+            <div class="nav-sm nav nav-stacked"></div>
+            <ul class="nav nav-pills nav-stacked main-menu">
+                @foreach (var module in parentModules)
+                {
+                    var securityModules = userModules.Where(w => w.ParentModuleId == module.AspNetSecurityModuleId && w.IsActive == true && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+
+                    if (securityModules.Count > 0)
+                    {
+                        <li class="accordion" id="menu_@module.AspNetSecurityModuleId">
+                            <a href="#@module.AspNetSecurityModuleId">
+                                <i class="fa fa-plus-circle"></i>
+                                <span> @module.LinkText</span>
+                            </a>
+                            <ul class="nav nav-pills nav-stacked">
+                                @foreach (var childModule in securityModules)
+                                {
+                                    var level3 = userModules.Where(w => w.ParentModuleId == childModule.AspNetSecurityModuleId && w.IsActive == true && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+                                    if (level3.Count > 0)
+                                    {
+                                        <li class="accordion">
+                                            <a href="#@childModule.AspNetSecurityModuleId">
+                                                <i class="fa fa-plus-circle"></i>
+                                                <span> @childModule.LinkText</span>
+                                            </a>
+                                            <ul class="nav nav-pills nav-stacked">
+                                                @foreach (var lblLevel3 in level3)
+                                                {
+
+                                                    if (lblLevel3.SecurityModuleCode == "RWT")
+                                                            {
+                                                                <li> <a href="#" onclick="window.open('http://103.26.136.46:8070/nextreports-server/app/login', '_blank');">@lblLevel3.LinkText </a></li>
+                                                            }
+                                                    else if (lblLevel3.SecurityModuleCode == "MP")
+                                                            {
+                                                                <li> <a href="#" onclick="window.open('http://103.26.136.46:8080/gBankerClientPortal/', '_blank');">@lblLevel3.LinkText </a></li>
+                                                        }
+                                                        else
+                                                     { 
+                                                        <li><a href="~/@lblLevel3.ControllerName/@lblLevel3.ActionName"><span> @lblLevel3.LinkText</span> </a></li>
+                                                }
+                                                    
+                                                   
+                                        }
+                                            </ul>
+                                        </li>
+                                    }
+                                    else
+                                    {
+
+
+                                        if (childModule.SecurityModuleCode == "RWT")
+                                                            {
+                                                                <li> <a href="#" onclick="window.open('http://103.26.136.46:8070/nextreports-server/app/login', '_blank');">@childModule.LinkText </a></li>
+                                }
+                                        else if (childModule.SecurityModuleCode == "MP")
+                                                            {
+                                                                <li> <a href="#" onclick="window.open('http://103.26.136.46:8080/gBankerClientPortal/', '_blank');">@childModule.LinkText </a></li>
+                                }
+                                                            else
+                                        { 
+                                        <li><a href="~/@childModule.ControllerName/@childModule.ActionName"><span> @childModule.LinkText</span> </a></li>
+                                }
+                                        
+                                    }
+                                    }
+                            </ul>
+                        </li>
+                }
+                    else if (module.ControllerName != "#" && module.ControllerName != "Home")
+                    {
+                        
+                         if (module.SecurityModuleCode == "RWT")
+                                                            {
+                                                               
+                                                                <li> <a href="#" onclick="window.open('http://103.26.136.46:8070/nextreports-server/app/login', '_blank');">@module.LinkText </a>
+                                                                </li>
+                                                            }
+                                                            else if (module.SecurityModuleCode == "MP")
+                                                            {
+                                                                <li> <a href="#" onclick="window.open('http://103.26.136.46:8080/gBankerClientPortal/', '_blank');">@module.LinkText </a></li>
+                                                            }
+                                                            else
+                         { 
+                            <li><a href="~/@module.ControllerName/@module.ActionName"><span> @module.LinkText</span></a></li>
+                         }
+                        
+                    }
+                    else if (module.ControllerName == "Home")
+                    {
+                        <li><a href="~/"><i class="fa fa-home" style="font-size:14px;"></i><span> @module.LinkText</span></a></li>
+                    }
+                }
+
+
+
+            </ul>
+        </div>
+        
+    </div>
+    <!--custom link-->
+ 
+    <div class="megaMenu-content">
+    <a href="#" class="close" id="closeMegaMenu" aria-label="close" title="close">×</a>
+
+    @foreach (var module in parentModules)
+    {
+
+        var count = 0;
+        var securityModules = userModules.Where(w => w.ParentModuleId == module.AspNetSecurityModuleId && w.IsActive == true && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+
+        if (securityModules.Count > 0 && (module.AspNetSecurityModuleId == 46 || module.AspNetSecurityModuleId == 1467)) // Only Report
+        {
+            @*<div class="row">*@
+                <h5><b> @module.LinkText </b></h5>
+
+
+                @*<ul class="nav nav-pills nav-stacked">*@
+                if (module.AspNetSecurityModuleId == 46 || module.AspNetSecurityModuleId == 1467)
+                {
+                <div class="row">
+                @foreach (var childModule in securityModules)
+                {
+                    count = count + 1;
+                    if (count > 3) //Check is column is 3
+                    {
+                        count = 0; // set 0
+                    }
+
+                    var level3 = userModules.Where(w => w.ParentModuleId == childModule.AspNetSecurityModuleId && w.IsActive == true && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+
+                    if (level3.Count > 0)
+                    {
+                        <div class="col-md-4">
+                            <ol class="list-unstyled mx-4 dark-grey-text">
+                                <h5>@childModule.LinkText</h5>
+
+                                @*<ul class="nav nav-pills nav-stacked">*@
+
+                                @*<div class="col-md-4">*@
+
+                                @foreach (var lblLevel3 in level3)
+                                {
+                                    if (lblLevel3.SecurityModuleCode == "RWT")
+                                    {
+                                        <li> <a href="#" onclick="window.open('http://103.26.136.46:8070/nextreports-server/app/login', '_blank');">@lblLevel3.LinkText </a></li>
+                                    }
+                                    else if (lblLevel3.SecurityModuleCode == "MP")
+                                    {
+                                        <li> <a href="#" onclick="window.open('http://103.26.136.46:8080/gBankerClientPortal/', '_blank');">@lblLevel3.LinkText </a></li>
+                                    }
+                                    else
+                                    {
+                                        <li><a href="~/@lblLevel3.ControllerName/@lblLevel3.ActionName"><span> @lblLevel3.LinkText</span> </a></li>
+                                    }
+                                }
+
+                                @*</ul>*@
+                            </ol>
+                        </div>
+                    }
+                    else
+                    {
+                        if (childModule.SecurityModuleCode == "RWT")
+                        {
+                            <div class="col-md-4">
+                                <ol class="list-unstyled mx-4 dark-grey-text">
+                                    <li> <a href="#" onclick="window.open('http://103.26.136.46:8070/nextreports-server/app/login', '_blank');">@childModule.LinkText </a></li>
+                                </ol>
+                            </div>
+                        }
+                        else if (childModule.SecurityModuleCode == "MP")
+                        {
+                            <div class="col-md-4">
+                                <ol class="list-unstyled mx-4 dark-grey-text">
+                                    <li> <a href="#" onclick="window.open('http://103.26.136.46:8080/gBankerClientPortal/', '_blank');">@childModule.LinkText </a></li>
+                                </ol>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-4">
+                                <ol class="list-unstyled mx-4 dark-grey-text">
+                                    <li><a href="~/@childModule.ControllerName/@childModule.ActionName"><span> @childModule.LinkText</span> </a></li>
+                                </ol>
+                            </div>
+                        }
+                    }
+                }
+
+                </div>
+
+                }
+               @*</ul>*@
+
+                }
+                else if (module.ControllerName != "#" && module.ControllerName != "Home")
+                {
+
+                if (module.SecurityModuleCode == "RWT")
+                {
+                @*<div class="col-md-4">
+                        <ol class="list-unstyled mx-4 dark-grey-text">
+                            <li>
+                                <a href="#" onclick="window.open('http://103.26.136.46:8070/nextreports-server/app/login', '_blank');">@module.LinkText </a>
+                            </li>
+                        </ol>
+                    </div>*@
+                }
+                else if (module.SecurityModuleCode == "MP")
+                {
+                @*<div class="col-md-4">
+                        <ol class="list-unstyled mx-4 dark-grey-text">
+                            <li> <a href="#" onclick="window.open('http://103.26.136.46:8080/gBankerClientPortal/', '_blank');">@module.LinkText </a></li>
+                        </ol>
+                    </div>*@
+                }
+                else
+                {
+                @*<div class="col-md-4">
+                        <ol class="list-unstyled mx-4 dark-grey-text">
+                            <li><a href="~/@module.ControllerName/@module.ActionName"><span> @module.LinkText</span></a></li>
+                        </ol>
+                    </div>*@
+                }
+
+                }
+                else if (module.ControllerName == "Home")
+                {
+                @*<div class="col-md-4">
+                        <ol class="list-unstyled mx-4 dark-grey-text">
+                            <li><a href="~/"><i class="fa fa-home" style="font-size:14px;"></i><span> @module.LinkText</span></a></li>
+                        </ol>
+                    </div>*@
+                }
+
+                }
+
+                <!-- End of Main Foreach-->
+                @*<div class="row">
+                        <div class="col-md-12">
+                            <div class="col-md-4">
+                                <h5>Daily</h5>
+                                <ol class="list-unstyled mx-4 dark-grey-text">
+                                    <li><a href="/LoanSavingLedger/TodaysSummary"><span> Daily Transaction Summary</span> </a></li>
+                                    <li><a href="/KhatwaryReport/DailyRecoverableAndRecoveryRegisterCenterDateWise"><span> Daily Recoverable And Recovery</span> </a></li>
+                                    <li><a href="/GroupwiseReport/DailyRecoverableRecipt"><span> DailyRecoverableReceipt</span> </a></li>
+                                    <li><a href="/RepaymentSchedule/Index"><span> Repayment Schedule</span> </a></li>
+                                    <li><a href="/WeeklyCollectionSheet/RecoveryRegisterReport_Aday"><span> Loan &amp; Savings Collection(Samity Wise-Staff)</span> </a></li>
+                                    <li><a href="/GroupwiseReport/DailySavingCollectionReport"><span> Daily Saving Collection</span> </a></li>
+                                    <li><a href="/FullyRepaid/FRDateRange"><span> Paid Off  List</span> </a></li>
+                                    <li><a href="/GroupwiseReport/MemberBalanceInfoReport"><span> Member Loan &amp; Savings Balance</span> </a></li>
+                                    <li><a href="/GroupwiseReport/MemberAllLoanInformationReport"><span> Member All Loan Information Report</span> </a></li>
+                                    <li><a href="/GroupwiseReport/DailyLoanCollectionNewReport"><span> Daily Loan Collection</span> </a></li>
+                                    <li><a href="/GroupwiseReport/AdvanceAdjustmentDateRangeReport"><span> Advance Adjustment List (Daily)</span> </a></li>
+                                    <li><a href="/GroupwiseReport/MemberListReportDependsOnCollection"><span> Member List on Loan Collection</span> </a></li>
+                                    <li><a href="/GroupwiseReport/InactiveMemberListReport"><span> InActive Member List</span> </a></li>
+                                </ol>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>MRA</h5>
+                                <ol class="list-unstyled mx-4 dark-grey-text">
+                                    <li><a href="/MRA/MRA"><span> MRA Report</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS3A"><span> Half Yearly Savings Statement (MRA MIS-3A)</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS3B"><span> MRAMIS3B Report</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS4A"><span> Half Yearly Savings Statement (MRA MIS-3B)</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS4B"><span> Half Yearly Loan Statement (MRA MIS-4A)</span> </a></li>
+                                    <li><a href="/MraCdb/mra"><span> Half Yearly Loan Statement(MRA MIS-4B)</span> </a></li>
+                                    <li><a href="/MraCdb/mracdb03"><span> MRACDB 03 Report</span> </a></li>
+                                </ol>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>MRA</h5>
+                                <ol class="list-unstyled mx-4 dark-grey-text">
+                                    <li><a href="/MRA/MRA"><span> MRA Report</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS3A"><span> Half Yearly Savings Statement (MRA MIS-3A)</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS3B"><span> MRAMIS3B Report</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS4A"><span> Half Yearly Savings Statement (MRA MIS-3B)</span> </a></li>
+                                    <li><a href="/MRAMIS/MRAMIS4B"><span> Half Yearly Loan Statement (MRA MIS-4A)</span> </a></li>
+                                    <li><a href="/MraCdb/mra"><span> Half Yearly Loan Statement(MRA MIS-4B)</span> </a></li>
+                                    <li><a href="/MraCdb/mracdb03"><span> MRACDB 03 Report</span> </a></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>*@
+
+
+            </div>
+
+
+
+
+
+
+
+    <!--end custom link-->
+                </div>
+<!--/span-->
+<!-- left menu ends -->
+
+<script>
+    $('.megaMenu-content').hide();
+
+    $("#menu_46").click(function () {
+        $('.megaMenu-content').show();
+    }),
+
+    $('#closeMegaMenu').click(function () {
+        $('.megaMenu-content').hide();
+    });
+
+    //$("#cusWrapper #menu_46").hover(function () {
+    //    $('#cusWrapper .megaMenu-content').show();
+    //}),
+    //$("#cusWrapper #menu_46").mouseout(function () {
+    //    $('#cusWrapper .megaMenu-content').hide();
+    //}),
+    //$("#menu_46").mouseout(function () {
+    //    $('.megaMenu-content').hide();
+    //}),
+
+    //$("#cusWrapper #menu_46").hover(
+    //  function () {
+    //      $('#cusWrapper .megaMenu-content').show();
+    //  },
+    //  function () {
+    //      $('#cusWrapper .megaMenu-content').hide();
+    //});
+
+</script>
+
+<style>
+    .megaMenu-content {
+        position: absolute;
+        width: 1000px;
+        height: 450px;
+        background: #ffffff;
+        overflow-y: scroll;
+        z-index: 10000;
+        top:0;
+        left:220px;
+        /*left:205px;*/
+        box-shadow:0 0 10px #BDBDBD;
+        padding:10px 20px 30px 20px;
+        border-radius:10px;
+    }
+
+    .megaMenu-content ol li {
+        line-height:22px;
+    }
+    #closeMegaMenu {
+        color:red;
+        opacity:.8;
+    }
+
+    /*ol {
+        margin-bottom: -10px;
+    }*/
+  
+</style>

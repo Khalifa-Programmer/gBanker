@@ -1,0 +1,141 @@
+﻿@model IEnumerable<gBanker.Web.ViewModels.LegalInfoViewModel>
+
+@{
+    ViewBag.Title = "Legal Info List";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+    <link href="~/Content/jtable-custom.css" rel="stylesheet" />
+}
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#grid').jtable({
+            // title: 'Special Saving Collection List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/LegalInfo/GetLegalInfoList?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+                //updateAction: '/AccountClose/Edit',
+                //deleteAction: '/AccountClose/Delete'
+            },
+            fields: {
+                Id: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },                
+                OfficeName: {
+                    title: 'Office',
+                    width: '5%',
+                    create: false,
+                    edit: false
+                },
+                CenterName: {
+                    title: 'Center',
+                    width: '10%',
+                    create: false,
+                    edit: false
+                },
+                MemberName: {
+                    title: 'Member',
+                    width: '7%',
+                    create: false,
+                    edit: false
+                },
+                ProductName: {
+                    title: 'Product',
+                    width: '8%',
+                    create: false,
+                    edit: false
+                },
+                CaseNo: {
+                    title: 'Case No',
+                    width: '2%',
+                    create: false,
+                    edit: false
+                },
+                CaseDateS: {
+                    title: 'Case Date',
+                    width: '4%',
+                    list: true,
+                    create: false,
+                    edit: false
+                },
+                Remarks: {
+                    title: 'Remarks',
+                    width: '8%',
+                    list: true,
+                    create: false,
+                    edit: false
+                }, 
+                EditLink: {
+                    title: "Edit",
+                    width: '2%',
+                    sorting: false,
+                    display: function (data) {
+                        return "<div class='text-center'><a href='/LegalInfo/Edit/" + data.record.Id + "'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                //Delete: {
+                //    title: "Delete",
+                //    width: '2%',
+                //    display: function (data) {
+                //        return '<div class="text-center"><a href="#" OnClick="DeleteLegalInfo(' + data.record.Id + ');"><i class="fa fa-trash-o"></i></a></div>';
+                //    }
+                //}
+            }
+        });
+       
+        $('#grid').jtable('load');
+        $('#EditDialogSaveButton').click(function () {
+            $("#Edit-DisburseStatus").val('Disbursed');
+        });
+    });
+
+</script>
+
+
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-info btn-sm pull-right" })
+<h2 class="page-title">Legal Info List</h2>
+
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+    @Scripts.Render("~/bundles/gbUtility")
+}
+
+

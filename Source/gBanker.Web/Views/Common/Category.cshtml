@@ -1,0 +1,189 @@
+﻿
+@{
+    ViewBag.Title = "Category Setup";
+    Layout = "~/Views/Shared/_LayoutMasterForInv.cshtml";
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+</style>
+
+
+<script type="text/javascript">
+    function GetByID(ids, status) {
+
+        var data = GenerateAjaxRequist('/Common/GetByCategoryID?ids=' + ids + '&status=' + (status == 1 ? 'u' : 'd'), null, "POST")
+        if (status == 1) {
+            $("#hdnCategoryID").val(data.Records.CategorySubCategoryID);
+            $("#txtCateName").val(data.Records.CategorySubCategoryName);
+            $("#txtCategoryInBangle").val(data.Records.NameInBangla);
+            $("#txtCateCode").val(data.Records.CateorSubCateCode);
+            $("#txtCateCode").prop("disabled", true)
+            $("#chkAutoGenerate").prop("disabled", true)
+            $("#btnSave").val("Update");
+        }
+        else if (status == 2) {
+            $.alert.open("Success", data.message);
+            reloadGrid();
+        }
+        
+    }
+    $(document).ready(function () {
+        NumericTextboxOnly("#txtCateCode");
+        $("#hdnCategoryID").val(0);
+        $("#chkAutoGenerate").on('click', function () {
+            var bool = false;
+            if ($(this).is(':checked'))
+                bool = true;
+            $("#txtCateCode").prop("disabled", bool);
+            if (true) $("#txtCateCode").val('');
+        });
+        $("#btnSave").on('click', function () {
+            //debugger
+            var status = "";
+            if ($("#hdnCategoryID").val() == "0") status = "I";
+            else
+                status = "U";
+            if ($("#txtCateName").val()) {
+                var dataObject = {
+                    CategorySubCategoryID: $("#hdnCategoryID").val(),
+                    CategorySubCategoryName: $("#txtCateName").val(),
+                    NameInBangla: $("#txtCategoryInBangle").val(),
+                    CateorSubCateCode: $("#txtCateCode").val(),
+                    ParentCategoryID: 0,
+                    IsActive: true,
+                };
+                var data = GenerateAjaxRequist('/Common/CategorySetup?status=' + status + '&isAutoGenerate=' + $("#chkAutoGenerate").is(':checked'), JSON.stringify({ obj: dataObject }), "POST")
+                $.alert.open("Success", data.message);
+                ClearFields();
+                $("#hdnCategoryID").val(0);
+                $("#btnSave").val("Save")
+                $("#chkAutoGenerate").prop("disabled", false)
+                if ($("#chkAutoGenerate").is(':checked'))
+                    $("#txtCateCode").prop("disabled", true);
+                else
+                    $("#txtCateCode").prop("disabled", false);
+                reloadGrid();
+                
+            }
+            else $.alert.open("Error", "Category name Required");
+        });
+        $('#grid').jtable({
+            // title: 'Product List',
+            paging: true,
+            pageSize: 10,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    console.log("Loading from custom function...");
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            //url: '/Product/GetProducts?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting,
+                            url: '/Common/GetAllCategory',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                },
+            },
+            fields: {
+                CategorySubCategoryID: {
+                    key: true,
+                    list: false,
+                    create: false,
+                    edit: false
+                },
+                CateorSubCateCode: {
+                    title: 'Category Code',
+                    width: '10%'
+
+                },
+                CategorySubCategoryName: {
+                    title: 'Category Name',
+                    width: '30%'
+
+                },
+                NameInBangla: {
+                    title: 'Name In Bangla',
+                    width: '30%'
+                },
+
+                EditLink: {
+                    title: "Edit",
+                    display: function (data) {
+                        return "<div class='text-center'><a href='#' onclick='GetByID(" + data.record.CategorySubCategoryID + ",1)'><i class='fa fa-pencil-square-o'></i></a></div>";
+                    }
+                },
+                DeleteLink: {
+                    title: "Delete",
+                    display: function (data) {
+                        return '<div class="text-center delete-link"><a href="#" onclick="GetByID(' + data.record.CategorySubCategoryID + ',2)"><i class="fa fa-trash-o"></i></a></div>';
+                    }
+                }
+            }
+        });
+        reloadGrid();
+    });
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+</script>
+
+
+<h2 class="page-title">Category Info</h2>
+<input type="hidden" id="hdnCategoryID" />
+<table>
+    <tr>
+        <td>Category code</td>
+        <td>:</td>
+        <td>
+            <table>
+                <tr>
+                    <td><input type="text" class="form-control" id="txtCateCode" placeholder="Category Code" /></td>
+                    <td><input type="checkbox" id="chkAutoGenerate" /><label for="chkAutoGenerate"> Auto Generate</label></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>Category name</td>
+        <td>:</td>
+        <td><input type="text" class="form-control" id="txtCateName" placeholder="Category name" /></td>
+    </tr>
+    <tr>
+        <td>Category name(in Bangla)</td>
+        <td>:</td>
+        <td><input type="text" id="txtCategoryInBangle" placeholder="Category name In Bangle" class="form-control" /></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td><input type="button" id="btnSave" value="Save" class="btn btn-primary" /></td>
+    </tr>
+</table>
+<br />
+<div id="grid"></div>
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}
+
+

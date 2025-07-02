@@ -1,0 +1,190 @@
+﻿
+@{
+    ViewBag.Title = "OverdueMemberListAllReport";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+
+<script type="text/javascript">
+    function GetProduct() {
+        var ddlProd = $("#ddlProd");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetProductList", "OverdueMemberList", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlProd.html('');
+                $.each(data, function (id, option) {
+                    ddlProd.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#ddlProd").prop("disabled", true);
+        GetProduct();
+        $("#chkProd").change(function () {
+            if (this.checked) {
+                
+                $("#ddlProd").prop("disabled", false);
+                $("#chkOverall").prop("checked", false);
+
+              
+            }
+            else {
+               
+                $("#ddlProd").prop("disabled", true);
+               
+            }
+        });
+        $("#chkOverall").change(function () {
+            if (this.checked) {
+                
+                $("#ddlProd").prop("disabled", true);
+              
+
+                $("#chkProd").prop("checked", false);
+               
+            }
+            else {
+             
+                $("#ddlProd").prop("disabled", true);
+              
+
+               
+                $("#chkProd").prop("checked", false);
+               
+            }
+        });
+        $("#txtFromDt").datepicker(
+               {
+                   dateFormat: "dd-M-yy",
+                   showAnim: "scale"
+               });
+
+        $("#txtToDt").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale"
+            });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            //var DateFrom = $("#txtFromDt").val();
+            var DateTo = $("#txtToDt").val();
+            var prod = $("#ddlProd").val();
+            var qType;
+
+            if ($('#chkProd').is(":checked") == true)
+                qType = 1;
+
+            else if ($('#chkOverall').is(":checked") == true)
+                qType = 2;
+
+            else
+                qType = 0;
+
+            var url = '/OverdueMemberList/GenerateOverdueMemberListAllReport?DateTo=' + DateTo + '&qType=' + qType + '&prod=' + prod
+
+
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+        $('#btnExport').click(function () {
+            var qType;
+
+            if ($('#chkProd').is(":checked") == true)
+                qType = 1;
+           
+            else if ($('#chkOverall').is(":checked") == true)
+                qType = 2;
+
+            else
+                qType = 0;
+
+            var url;
+            var prod = $("#ddlProd").val();
+
+            //var center = $("#ddlCenter").val();
+            var DateTo = $("#txtToDt").val();
+            //if (center > 0) {
+            window.location = '/OverdueMemberList/GenerateOverdueMemberListAllReportExport?DateTo=' + DateTo + '&qType=' + qType + '&prod=' + prod
+            //}
+            //else if (center == 0) {
+            //    window.location = '/GroupwiseReport/GenerateDailySavingCollectionReportExport?Qtype=1&Center=0';
+            //}
+
+        });
+    });
+</script>
+<h2 class="page-title">Overdue Borrower List(All)</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+    
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkProd" style="margin-left:50px; margin-top:30px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Product", new { @class = "control-label" })
+                    @Html.DropDownList("ProductList", null, new { @ID = "ddlProd", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1">
+                <input type="checkbox" id="chkOverall" style="margin-left:50px; margin-top:20px;" />
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    @Html.Label("Overall", new { @Style = "margin-top:20px;" })
+
+                </div>
+            </div>
+            <div class="col-md-4">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["Trxdate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                    @*@Html.TextBox(" ", "", new { @ID = "txtToDt", @class = "form-control" })*@
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="form-group from-action">
+                    <input type="button" id="btnExport" value="Export" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}
+

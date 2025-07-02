@@ -1,0 +1,46 @@
+﻿@model gBanker.Web.ViewModels.FixedAssetViewModel
+
+@{
+    ViewBag.Title = "Fixed Asset Depriciation Register Report";
+    Layout = "~/Views/Shared/_LayoutMaster.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $("#btnPrint").click(function () {
+            debugger;
+            var year = $("#Year").val();
+            var month = $("#Month").val();
+            if (year != "" && month!="") {
+                url = '/FixedAsset/FixAssetDepriciationRegisterReportPrint?Year=' + year + '&Month=' + month;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+        })
+    });
+
+</script>
+
+<h2 class="page-title">Fixed Asset Depriciation Register Report</h2>
+<div class="form-horizontal">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Year</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.Year, Model.YearList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Month</label>
+                <div class="col-sm-7">
+                    @Html.DropDownListFor(model => model.Month, Model.MonthList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row col-sm-offset-2">
+        <input type="button" value="Print" id="btnPrint" class="btn btn-primary" />
+    </div>
+</div>
