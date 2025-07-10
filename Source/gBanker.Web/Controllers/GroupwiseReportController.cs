@@ -10947,12 +10947,21 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
             return View();
         }
 
-        public JsonResult GenerateMRASubjectDetails(int jtStartIndex, int jtPageSize, string jtSorting, string officeId, string dateTo)
-        {           
+        public JsonResult GenerateMRASubjectDetails(int jtStartIndex, int jtPageSize, string jtSorting, string officeId, string dateTo, string callType, string filterColumn, string filterValue)
+        {
             try
             {
-                var param = new { OfficeID = officeId, DateTo = dateTo };
-                
+                var param = new object();
+
+                if (callType == "generate_MRASubjectDetails")
+                {
+                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo };
+                }
+                if (callType == "get_MRASubjectDetails")
+                {
+                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo, param1 = filterColumn, param2 = filterValue };
+                }
+
                 var queryResponse = ultimateReportService.GetDataWithParameter(param, "usp_Generate_MRASubjectDetails");
 
                 var assignSpToVM = queryResponse.Tables[0].AsEnumerable()
@@ -11003,11 +11012,20 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
             }
         }
 
-        public JsonResult GenerateMRAContractDetails(int jtStartIndex, int jtPageSize, string jtSorting, string officeId, string dateTo)
+        public JsonResult GenerateMRAContractDetails(int jtStartIndex, int jtPageSize, string jtSorting, string officeId, string dateTo, string callType, string filterColumn, string filterValue)
         {
             try
             {
-                var param = new { OfficeID = officeId, DateTo = dateTo };
+                var param = new object();
+
+                if (callType == "generate_MRAContractDetails")
+                {
+                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo };
+                }
+                if (callType == "get_MRAContractDetails")
+                {
+                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo, param1 = filterColumn, param2 = filterValue };
+                }
 
                 var queryResponse = ultimateReportService.GetDataWithParameter(param, "usp_Generate_MRAContractDetails");
 
@@ -11063,6 +11081,44 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
             catch (Exception ex)
             {
                 throw;
+            }
+        }
+
+        [HttpPost]
+        public JsonResult DeleteMRASubjectDetails(string memberid)
+        {
+            try
+            {
+                var param = new { @param0 = "delete_MRASubjectDetails", @param1 = memberid };
+                int isInserted = ultimateReportService.DeleteMRASubjectDetails(param);
+
+                if (isInserted > 0)
+                    return Json(new { success = true, message = "Delete Successful" }, JsonRequestBehavior.AllowGet);
+                else
+                    return Json(new { success = false, message = "Delete Failed" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult DeleteMRAContractDetails(string memberid)
+        {
+            try
+            {
+                var param = new { @param0 = "delete_MRAContractDetails", @param1 = memberid };
+                int isInserted = ultimateReportService.DeleteMRAContractDetails(param);
+
+                if (isInserted > 0)
+                    return Json(new { success = true, message = "Delete Successful" }, JsonRequestBehavior.AllowGet);
+                else
+                    return Json(new { success = false, message = "Delete Failed" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 

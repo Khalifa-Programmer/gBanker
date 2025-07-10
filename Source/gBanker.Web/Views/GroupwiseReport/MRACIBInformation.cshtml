@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewBag.Title = "Generate MRA CIB Information";
     Layout = "~/Views/Shared/_LayoutMaster.cshtml";
 }
@@ -17,7 +16,142 @@
     }
 </style>
 
-<script type="text/javascript">
+
+<h2 class="page-title">Generate MRA CIB Information</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Head Office", new { @class = "control-label" })
+                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control", @readonly = "true" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group" style="margin-top:27px">
+                    <input type="radio" id="rdZone" name="under" checked="checked">
+                    <label for="under">Zone Wise</label>
+                    <br>
+                </div>
+            </div>
+        </div>
+        <!--<div id="dv">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">Program/Project</label>
+                        <select class="form-control" id="ddlDivision"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">Division/Region</label>
+                        <select class="form-control" id="ddlProgram"></select>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <div id="dvZone">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Zone Office", new { @class = "control-label" })
+                        @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Area Office", new { @class = "control-label" })
+                        @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Office", new { @class = "control-label" })
+                        @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @multiple = "multiple", @class = "ddl-select-picker form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" align="left">
+                <div class="form-group form-action" style="margin-top:10px">
+                    <input type="button" value="CIB_Subject_Details" class="btn btn-primary" id="btnViewSubDetails" />
+                    &nbsp;
+                    <input type="button" value="CIB_Contract_Details" class="btn btn-primary" id="btnViewConDetails" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!--Add filtering section-->
+<div id="divFilter" class="row" style="display: none;">
+    <div class="col-md-3">
+        <label class="control-label" style="padding-top:0px;">Date From</label>
+        <input type="text" id="DateFromValue" placeholder="Type Search Text" autocomplete="off" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="control-label" style="padding-top:0px;">Date To</label>
+        <input type="text" id="DateToValue" placeholder="Type Search Text" autocomplete="off" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <label class="control-label">Filter By:</label>
+        <select id="filterColumn" class="form-control">
+            <option value="">All</option>
+            <option value="branch">Branch Code</option>
+            <option value="member">Member Code</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <div class="row" style="margin-top: 21px;">
+            <div class="col-md-9">
+                <input type="text" id="filterValue" placeholder="Type Search Text" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <input type="button" id="btnSearch" value="Search" class="btn btn-primary" onclick="reloadGridSubmit();" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        &nbsp;
+    </div>
+</div>
+
+
+<div class="">
+    <div id="grid"></div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+
+    <link href="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.css" rel="stylesheet" />
+    <script src="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.js"></script>
+
+    <script type="text/javascript">
+
+    var isGridInitialized = false;
+    var isContractDetailsClicked = false;
 
     function GetZoneOffice() {
         var HO_val = $("#ddlHO").val();
@@ -187,574 +321,659 @@
         });
 
 
-        $("#txtToDt").datepicker(
-        {
+        $("#txtToDt").datepicker({
             dateFormat: "dd-M-yy",
             showAnim: "scale",
             changeMonth: true,
             changeYear: true
-            });
-
-        $(document).ready(function () {
-            $('.ddl-select-picker').selectpicker();
-            let isGridInitialized = false;
-            $("#btnView").click(function (e) {
-                e.preventDefault();
-
-                var office_id;
-                var DateTo = $("#txtToDt").val();
-
-                if ($("#ddlHO").val() > 0) {
-                    office_id = $("#ddlHO").val();
-
-                    if ($("#rdDivision").prop('checked')) {
-                        if ($("#ddlProgram").val()) {
-                            Qtype = 7;
-                            office_id = $("#ddlProgram").val();
-                        }
-                        else if ($("#ddlDivision").val()) {
-                            Qtype = 6;
-                            office_id = $("#ddlDivision").val();
-                        }
-                    }
-                    else {
-                        if ($("#ddlZone").val() > 0) {
-                            if ($("#ddlArea").val() > 0) {
-                                var officeVal = $("#ddlOffice").val();
-                                if (officeVal && officeVal.length > 0) {
-                                    office_id = officeVal;
-                                }
-                                else {
-                                    office_id = $("#ddlArea").val();
-                                }
-                            }
-                            else {
-                                office_id = $("#ddlZone").val();
-                            }
-                        }
-                        else {
-                            office_id = $("#ddlHO").val();
-                        }
-                    }
-                }
-
-                // 💥 Destroy the existing jTable grid
-                if (isGridInitialized) {
-                    $('#grid').jtable('destroy');
-                }
-
-                // 🔁 Initialize with new action
-                $('#grid').jtable({
-                    paging: true,
-                    pageSize: 50,
-                    sorting: true,
-                    defaultSorting: 'OfficeId',
-                    actions: {
-                        listAction: function (postData, jtParams) {
-                            return $.Deferred(function ($dfd) {
-                                $.ajax({
-                                    url: '/GroupWiseReport/GenerateMRASubjectDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&officeId=' + office_id + '&dateTo=' + DateTo,
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: postData,
-                                    success: function (data) {
-                                        $dfd.resolve(data);
-                                    },
-                                    error: function () {
-                                        $dfd.reject();
-                                    }
-                                });
-                            });
-                        }
-                    },
-                    fields: {
-                        ACCOUNTINGDATE: {
-                            title: 'ACCOUNTINGDATE',
-                            width: '5%'
-                        },
-                        PRODUCTIONDATE: {
-                            title: 'PRODUCTIONDATE',
-                            width: '5%'
-                        },
-                        MFICODE: {
-                            title: 'MFICODE',
-                            width: '5%'
-                        },
-                        BRANCH_CODE: {
-                            title: 'BRANCH_CODE',
-                            width: '15%'
-                        },
-                        MEMBERID: {
-                            title: 'MEMBERID',
-                            width: '5%'
-                        },
-                        Name: {
-                            title: 'Name',
-                            width: '5%'
-                        },
-                        Occupation: {
-                            title: 'Occupation',
-                            width: '5%'
-                        },
-                        FATHERS_NAME: {
-                            title: 'FATHERS_NAME',
-                            width: '5%'
-                        },
-                        MOTHERS_NAME: {
-                            title: 'MOTHERS_NAME',
-                            width: '5%'
-                        },
-                        MARITAL_STATUS: {
-                            title: 'MARITAL_STATUS',
-                            width: '5%'
-                        },
-                        SPOUSE_NAME: {
-                            title: 'SPOUSE_NAME',
-                            width: '5%'
-                        },
-                        Gender: {
-                            title: 'Gender',
-                            width: '5%'
-                        },
-                        DOB: {
-                            title: 'DOB',
-                            width: '5%'
-                        },
-                        NID: {
-                            title: 'NID',
-                            width: '5%'
-                        },
-                        SMARTCARD_NO: {
-                            title: 'SMARTCARD_NO',
-                            width: '5%'
-                        },
-                        BIRTH_CERTIFICATE_NO: {
-                            title: 'BIRTH_CERTIFICATE_NO',
-                            width: '5%'
-                        },
-                        TIN: {
-                            title: 'TIN',
-                            width: '5%'
-                        },
-                        Other_ID_Type: {
-                            title: 'Other_ID_Type',
-                            width: '5%'
-                        },
-                        OTHER_ID_NO: {
-                            title: 'OTHER_ID_NO',
-                            width: '5%'
-                        },
-                        EXPIRY_DATE: {
-                            title: 'EXPIRY_DATE',
-                            width: '5%'
-                        },
-                        ISSUE_COUNTRY: {
-                            title: 'ISSUE_COUNTRY',
-                            width: '5%'
-                        },
-                        ContactNo: {
-                            title: 'ContactNo',
-                            width: '5%'
-                        },
-                        P_ADDRESS: {
-                            title: 'P_ADDRESS',
-                            width: '5%'
-                        },
-                        P_THANA: {
-                            title: 'P_THANA',
-                            width: '5%'
-                        },
-                        P_DISTRICT: {
-                            title: 'P_DISTRICT',
-                            width: '5%'
-                        },
-                        P_COUNTRY: {
-                            title: 'P_COUNTRY',
-                            width: '5%'
-                        },
-                        PR_ADDRESS: {
-                            title: 'PR_ADDRESS',
-                            width: '5%'
-                        },
-                        PR_THANA: {
-                            title: 'PR_THANA',
-                            width: '5%'
-                        },
-                        PR_DISTRICT: {
-                            title: 'PR_DISTRICT',
-                            width: '5%'
-                        },
-                        PR_COUNTRY: {
-                            title: 'PR_COUNTRY',
-                            width: '5%'
-                        },
-                        ACADEMIC_QUALIFICATION: {
-                            title: 'ACADEMIC_QUALIFICATION',
-                            width: '5%'
-                        },
-                        OfficeId: {
-                            title: 'OfficeId',
-                            width: '5%'
-                        },
-                        ReportDate: {
-                            title: 'ReportDate',
-                            width: '5%'
-                        },
-                        Data_Status: {
-                            title: 'Data_Status',
-                            width: '5%'
-                        }
-                    },
-
-                    recordsLoaded: function () {
-                        isGridInitialized = true;
-                    }
-                });
-                $('#grid').jtable('load');
-
-            });
-            /////End of btnView////
-
-            $("#btnViewConDetails").click(function (e) {
-                e.preventDefault();
-
-                var office_id;
-                var DateTo = $("#txtToDt").val();
-
-                if ($("#ddlHO").val() > 0) {
-                    office_id = $("#ddlHO").val();
-
-                    if ($("#rdDivision").prop('checked')) {
-                        if ($("#ddlProgram").val()) {
-                            Qtype = 7;
-                            office_id = $("#ddlProgram").val();
-                        }
-                        else if ($("#ddlDivision").val()) {
-                            Qtype = 6;
-                            office_id = $("#ddlDivision").val();
-                        }
-                    }
-                    else {
-                        if ($("#ddlZone").val() > 0) {
-                            if ($("#ddlArea").val() > 0) {
-                                var officeVal = $("#ddlOffice").val();
-                                if (officeVal && officeVal.length > 0) {
-                                    office_id = officeVal;
-                                }
-                                else {
-                                    office_id = $("#ddlArea").val();
-                                }
-                            }
-                            else {
-                                office_id = $("#ddlZone").val();
-                            }
-                        }
-                        else {
-                            office_id = $("#ddlHO").val();
-                        }
-                    }
-                }
-
-                // 💥 Destroy the existing jTable grid
-                if (isGridInitialized) {
-                    $('#grid').jtable('destroy');
-                }
-
-                // 🔁 Initialize with new action
-                $('#grid').jtable({
-                    paging: true,
-                    pageSize: 50,
-                    sorting: true,
-                    defaultSorting: 'OfficeId',
-                    actions: {
-                        listAction: function (postData, jtParams) {
-                            return $.Deferred(function ($dfd) {
-                                $.ajax({
-                                    url: '/GroupWiseReport/GenerateMRAContractDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&officeId=' + office_id + '&dateTo=' + DateTo,
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: postData,
-                                    success: function (data) {
-                                        $dfd.resolve(data);
-                                    },
-                                    error: function () {
-                                        $dfd.reject();
-                                    }
-                                });
-                            });
-                        }
-                    },
-                    fields: {
-                        ACCOUNTINGDATE: {
-                            title: 'ACCOUNTINGDATE',
-                            width: '5%'
-                        },
-                        PRODUCTIONDATE: {
-                            title: 'PRODUCTIONDATE',
-                            width: '5%'
-                        },
-                        MFICODE: {
-                            title: 'MFICODE',
-                            width: '5%'
-                        },
-                        BRANCH_CODE: {
-                            title: 'BRANCH_CODE',
-                            width: '15%'
-                        },
-                        MEMBERID: {
-                            title: 'MEMBERID',
-                            width: '5%'
-                        },
-                        LOAN_CODE: {
-                            title: 'LOAN_CODE',
-                            width: '5%'
-                        },
-                        LOAN_TYPE: {
-                            title: 'LOAN_TYPE',
-                            width: '5%'
-                        },
-                        LOAN_DISBURSEMENT_DATE: {
-                            title: 'LOAN_DISBURSEMENT_DATE',
-                            width: '5%'
-                        },
-                        END_DATE_CONTRACT: {
-                            title: 'END_DATE_CONTRACT',
-                            width: '5%'
-                        },
-                        LAST_INSTALLMENT_PAID_DATE: {
-                            title: 'LAST_INSTALLMENT_PAID_DATE',
-                            width: '5%'
-                        },
-                        DISBURSED_AMOUNT: {
-                            title: 'DISBURSED_AMOUNT',
-                            width: '5%'
-                        },
-                        TOTAL_OUTSTANDING_AMT: {
-                            title: 'TOTAL_OUTSTANDING_AMT',
-                            width: '5%'
-                        },
-                        PERIODICITY_PAYMENT: {
-                            title: 'PERIODICITY_PAYMENT',
-                            width: '5%'
-                        },
-                        TOTAL_NUM_INSTALLMENT: {
-                            title: 'TOTAL_NUM_INSTALLMENT',
-                            width: '5%'
-                        },
-                        INSTALLMENT_AMT: {
-                            title: 'INSTALLMENT_AMT',
-                            width: '5%'
-                        },
-                        NUM_REMAINING_INSTALLMENT: {
-                            title: 'NUM_REMAINING_INSTALLMENT',
-                            width: '5%'
-                        },
-                        NUM_OVERDUE_INSTALLMENT: {
-                            title: 'NUM_OVERDUE_INSTALLMENT',
-                            width: '5%'
-                        },
-                        OVERDUE_AMT: {
-                            title: 'OVERDUE_AMT',
-                            width: '5%'
-                        },
-                        LOAN_STATUS: {
-                            title: 'LOAN_STATUS',
-                            width: '5%'
-                        },
-                        RESCHEDULE_NO: {
-                            title: 'RESCHEDULE_NO',
-                            width: '5%'
-                        },
-                        LAST_RESCHEDULE_DATE: {
-                            title: 'LAST_RESCHEDULE_DATE',
-                            width: '5%'
-                        },
-                        WRITE_OFF_AMT: {
-                            title: 'WRITE_OFF_AMT',
-                            width: '5%'
-                        },
-                        WRITE_OFF_DATE: {
-                            title: 'WRITE_OFF_DATE',
-                            width: '5%'
-                        },
-                        CONTRACT_PHASE: {
-                            title: 'CONTRACT_PHASE',
-                            width: '5%'
-                        },
-                        LOAN_DURATION: {
-                            title: 'LOAN_DURATION',
-                            width: '5%'
-                        },
-                        ACTUAL_END_DATE_CONTRACT: {
-                            title: 'ACTUAL_END_DATE_CONTRACT',
-                            width: '5%'
-                        },
-                        ECONOMIC_PURPOSE_CODE: {
-                            title: 'ECONOMIC_PURPOSE_CODE',
-                            width: '5%'
-                        },
-                        COMPULSORY_SAVING_AMT: {
-                            title: 'COMPULSORY_SAVING_AMT',
-                            width: '5%'
-                        },
-                        VOLUNTARY_SAVING_AMT: {
-                            title: 'VOLUNTARY_SAVING_AMT',
-                            width: '5%'
-                        },
-                        TERM_SAVING_AMT: {
-                            title: 'TERM_SAVING_AMT',
-                            width: '5%'
-                        },
-                        SUBSIDIZED_CREDIT_FLAG: {
-                            title: 'SUBSIDIZED_CREDIT_FLAG',
-                            width: '5%'
-                        },
-                        SERVICE_CHARGE_RATE: {
-                            title: 'SERVICE_CHARGE_RATE',
-                            width: '5%'
-                        },
-                        PAYMENT_MODE: {
-                            title: 'PAYMENT_MODE',
-                            width: '5%'
-                        },
-                        ADVANCE_PAYMENT_AMT: {
-                            title: 'ADVANCE_PAYMENT_AMT',
-                            width: '5%'
-                        },
-                        LAW_SUIT: {
-                            title: 'LAW_SUIT',
-                            width: '5%'
-                        },
-                        ME: {
-                            title: 'ME',
-                            width: '5%'
-                        },
-                        MEMBER_WELFARE_FUND: {
-                            title: 'MEMBER_WELFARE_FUND',
-                            width: '5%'
-                        },
-                        INSURENCE_COVERAGE: {
-                            title: 'INSURENCE_COVERAGE',
-                            width: '5%'
-                        },
-
-                        OfficeId: {
-                            title: 'OfficeId',
-                            width: '5%'
-                        },
-                        ReportDate: {
-                            title: 'ReportDate',
-                            width: '5%'
-                        },
-                        Data_Status: {
-                            title: 'Data_Status',
-                            width: '5%'
-                        }
-                    },
-
-                    recordsLoaded: function () {
-                        isGridInitialized = true;
-                    }
-                });
-                $('#grid').jtable('load');
-
-            });
-            /////End of btnViewConDetails////
         });
+
+
+        $("#DateFromValue").datepicker({
+            dateFormat: "ddmmyy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true
+        });
+
+        $("#DateToValue").datepicker({
+            dateFormat: "ddmmyy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true
+        });
+
+        $('.ddl-select-picker').selectpicker();
+
+        //let isGridInitialized = false;
+        $("#btnViewSubDetails").click(function () {
+            var office_id;
+            var DateTo = $("#txtToDt").val();
+
+            $("#DateFromValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
+            $("#DateToValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
+
+            if ($("#ddlHO").val() > 0) {
+                office_id = $("#ddlHO").val();
+
+                if ($("#rdDivision").prop('checked')) {
+                    if ($("#ddlProgram").val()) {
+                        Qtype = 7;
+                        office_id = $("#ddlProgram").val();
+                    }
+                    else if ($("#ddlDivision").val()) {
+                        Qtype = 6;
+                        office_id = $("#ddlDivision").val();
+                    }
+                }
+                else {
+                    if ($("#ddlZone").val() > 0) {
+                        if ($("#ddlArea").val() > 0) {
+                            var officeVal = $("#ddlOffice").val();
+                            if (officeVal && officeVal.length > 0) {
+                                office_id = officeVal;
+                            }
+                            else {
+                                office_id = $("#ddlArea").val();
+                            }
+                        }
+                        else {
+                            office_id = $("#ddlZone").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlHO").val();
+                    }
+                }
+            }
+
+            $('#divFilter').show();
+
+            if (isGridInitialized) {
+                $('#grid').jtable('destroy');
+            }
+
+
+            loadGrid_SubjectDetails('generate_MRASubjectDetails', office_id, DateTo);
+
+        });
+
+        $("#btnViewConDetails").click(function (e) {
+            var office_id;
+            var DateTo = $("#txtToDt").val();
+
+            $("#DateFromValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
+            $("#DateToValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
+
+            if ($("#ddlHO").val() > 0) {
+                office_id = $("#ddlHO").val();
+
+                if ($("#rdDivision").prop('checked')) {
+                    if ($("#ddlProgram").val()) {
+                        Qtype = 7;
+                        office_id = $("#ddlProgram").val();
+                    }
+                    else if ($("#ddlDivision").val()) {
+                        Qtype = 6;
+                        office_id = $("#ddlDivision").val();
+                    }
+                }
+                else {
+                    if ($("#ddlZone").val() > 0) {
+                        if ($("#ddlArea").val() > 0) {
+                            var officeVal = $("#ddlOffice").val();
+                            if (officeVal && officeVal.length > 0) {
+                                office_id = officeVal;
+                            }
+                            else {
+                                office_id = $("#ddlArea").val();
+                            }
+                        }
+                        else {
+                            office_id = $("#ddlZone").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlHO").val();
+                    }
+                }
+            }
+
+            $('#divFilter').show();
+
+            // 💥 Destroy the existing jTable grid
+            if (isGridInitialized) {
+                $('#grid').jtable('destroy');
+            }
+
+            loadGrid_ContractDetails('generate_MRAContractDetails', office_id, DateTo);
+
+        });
+
     });
-</script>
 
-<h2 class="page-title">Generate MRA CIB Information</h2>
+    function loadGrid_SubjectDetails(callType, office_id, DateTo) {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 30,
+            sorting: true,
+            defaultSorting: 'OfficeId',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GroupWiseReport/GenerateMRASubjectDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting +
+                                '&callType=' + callType + '&officeId=' + office_id + '&dateTo=' + DateTo,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                Delete: {
+                    title: "",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="deleteMRASubjectDetails(\'' + data.record.MEMBERID + '\');"><i class="fa fa-trash-o text-danger"></i></a></div>';
+                    }
+                },
+                ACCOUNTINGDATE: {
+                    title: 'ACCOUNTINGDATE',
+                    width: '5%'
+                },
+                PRODUCTIONDATE: {
+                    title: 'PRODUCTIONDATE',
+                    width: '5%'
+                },
+                MFICODE: {
+                    title: 'MFICODE',
+                    width: '5%'
+                },
+                BRANCH_CODE: {
+                    title: 'BRANCH_CODE',
+                    width: '15%'
+                },
+                MEMBERID: {
+                    title: 'MEMBERID',
+                    width: '5%'
+                },
+                Name: {
+                    title: 'Name',
+                    width: '5%'
+                },
+                Occupation: {
+                    title: 'Occupation',
+                    width: '5%'
+                },
+                FATHERS_NAME: {
+                    title: 'FATHERS_NAME',
+                    width: '5%'
+                },
+                MOTHERS_NAME: {
+                    title: 'MOTHERS_NAME',
+                    width: '5%'
+                },
+                MARITAL_STATUS: {
+                    title: 'MARITAL_STATUS',
+                    width: '5%'
+                },
+                SPOUSE_NAME: {
+                    title: 'SPOUSE_NAME',
+                    width: '5%'
+                },
+                Gender: {
+                    title: 'Gender',
+                    width: '5%'
+                },
+                DOB: {
+                    title: 'DOB',
+                    width: '5%'
+                },
+                NID: {
+                    title: 'NID',
+                    width: '5%'
+                },
+                SMARTCARD_NO: {
+                    title: 'SMARTCARD_NO',
+                    width: '5%'
+                },
+                BIRTH_CERTIFICATE_NO: {
+                    title: 'BIRTH_CERTIFICATE_NO',
+                    width: '5%'
+                },
+                TIN: {
+                    title: 'TIN',
+                    width: '5%'
+                },
+                Other_ID_Type: {
+                    title: 'Other_ID_Type',
+                    width: '5%'
+                },
+                OTHER_ID_NO: {
+                    title: 'OTHER_ID_NO',
+                    width: '5%'
+                },
+                EXPIRY_DATE: {
+                    title: 'EXPIRY_DATE',
+                    width: '5%'
+                },
+                ISSUE_COUNTRY: {
+                    title: 'ISSUE_COUNTRY',
+                    width: '5%'
+                },
+                ContactNo: {
+                    title: 'ContactNo',
+                    width: '5%'
+                },
+                P_ADDRESS: {
+                    title: 'P_ADDRESS',
+                    width: '5%'
+                },
+                P_THANA: {
+                    title: 'P_THANA',
+                    width: '5%'
+                },
+                P_DISTRICT: {
+                    title: 'P_DISTRICT',
+                    width: '5%'
+                },
+                P_COUNTRY: {
+                    title: 'P_COUNTRY',
+                    width: '5%'
+                },
+                PR_ADDRESS: {
+                    title: 'PR_ADDRESS',
+                    width: '5%'
+                },
+                PR_THANA: {
+                    title: 'PR_THANA',
+                    width: '5%'
+                },
+                PR_DISTRICT: {
+                    title: 'PR_DISTRICT',
+                    width: '5%'
+                },
+                PR_COUNTRY: {
+                    title: 'PR_COUNTRY',
+                    width: '5%'
+                },
+                ACADEMIC_QUALIFICATION: {
+                    title: 'ACADEMIC_QUALIFICATION',
+                    width: '5%'
+                },
+                OfficeId: {
+                    title: 'OfficeId',
+                    width: '5%'
+                },
+                ReportDate: {
+                    title: 'ReportDate',
+                    width: '5%'
+                },
+                Data_Status: {
+                    title: 'Data_Status',
+                    width: '5%'
+                }
+            },
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    <div class="">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    @Html.Label("Head Office", new { @class = "control-label" })
-                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control", @readonly = "true" })
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group" style="margin-top:27px">
-                    <input type="radio" id="rdZone" name="under" checked="checked">
-                    <label for="under">Zone Wise</label>
-                    <br>
-                </div>
-            </div>
-        </div>
-        <!--<div id="dv">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="control-label">Program/Project</label>
-                        <select class="form-control" id="ddlDivision"></select>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="control-label">Division/Region</label>
-                        <select class="form-control" id="ddlProgram"></select>
-                    </div>
-                </div>
-            </div>
-        </div>-->
-        <div id="dvZone">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        @Html.Label("Zone Office", new { @class = "control-label" })
-                        @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        @Html.Label("Area Office", new { @class = "control-label" })
-                        @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        @Html.Label("Office", new { @class = "control-label" })
-                        @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @multiple = "multiple", @class = "ddl-select-picker form-control" })
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    @Html.Label("Date To", new { @class = "control-label" })
-                    @Html.TextBox(" ", ViewData["TrxDate"], new { @ID = "txtToDt", @class = "form-control" })
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12" align="left">
-                <div class="form-group form-action" style="margin-top:10px">
-                    <input type="button" value="CIB_Subject_Details" class="btn btn-primary" id="btnView" />
-                    &nbsp;
-                    <input type="button" value="CIB_Contract_Details" class="btn btn-primary" id="btnViewConDetails" />
-                </div>
-            </div>
-        </div>
-    </div>
-}
+            recordsLoaded: function () {
+                isGridInitialized = true;
+            }
+        });
 
+        reloadGrid();
+        isContractDetailsClicked = false;
+    }
 
-<div class="">
-    <div id="grid"></div>
-</div>
+    function loadGrid_ContractDetails(callType, office_id, DateTo) {
+        $('#grid').jtable({
+            paging: true,
+            pageSize: 30,
+            sorting: true,
+            defaultSorting: 'OfficeId',
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return $.Deferred(function ($dfd) {
+                        $.ajax({
+                            url: '/GroupWiseReport/GenerateMRAContractDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting +
+                                '&callType=' + callType + '&officeId=' + office_id + '&dateTo=' + DateTo,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: postData,
+                            success: function (data) {
+                                $dfd.resolve(data);
+                            },
+                            error: function () {
+                                $dfd.reject();
+                            }
+                        });
+                    });
+                }
+            },
+            fields: {
+                Delete: {
+                    title: "",
+                    display: function (data) {
+                        return '<div class="text-center"><a href="#" OnClick="deleteMRAContractDetails(\'' + data.record.MEMBERID + '\');"><i class="fa fa-trash-o text-danger"></i></a></div>';
+                    }
+                },
+                ACCOUNTINGDATE: {
+                    title: 'ACCOUNTINGDATE',
+                    width: '5%'
+                },
+                PRODUCTIONDATE: {
+                    title: 'PRODUCTIONDATE',
+                    width: '5%'
+                },
+                MFICODE: {
+                    title: 'MFICODE',
+                    width: '5%'
+                },
+                BRANCH_CODE: {
+                    title: 'BRANCH_CODE',
+                    width: '15%'
+                },
+                MEMBERID: {
+                    title: 'MEMBERID',
+                    width: '5%'
+                },
+                LOAN_CODE: {
+                    title: 'LOAN_CODE',
+                    width: '5%'
+                },
+                LOAN_TYPE: {
+                    title: 'LOAN_TYPE',
+                    width: '5%'
+                },
+                LOAN_DISBURSEMENT_DATE: {
+                    title: 'LOAN_DISBURSEMENT_DATE',
+                    width: '5%'
+                },
+                END_DATE_CONTRACT: {
+                    title: 'END_DATE_CONTRACT',
+                    width: '5%'
+                },
+                LAST_INSTALLMENT_PAID_DATE: {
+                    title: 'LAST_INSTALLMENT_PAID_DATE',
+                    width: '5%'
+                },
+                DISBURSED_AMOUNT: {
+                    title: 'DISBURSED_AMOUNT',
+                    width: '5%'
+                },
+                TOTAL_OUTSTANDING_AMT: {
+                    title: 'TOTAL_OUTSTANDING_AMT',
+                    width: '5%'
+                },
+                PERIODICITY_PAYMENT: {
+                    title: 'PERIODICITY_PAYMENT',
+                    width: '5%'
+                },
+                TOTAL_NUM_INSTALLMENT: {
+                    title: 'TOTAL_NUM_INSTALLMENT',
+                    width: '5%'
+                },
+                INSTALLMENT_AMT: {
+                    title: 'INSTALLMENT_AMT',
+                    width: '5%'
+                },
+                NUM_REMAINING_INSTALLMENT: {
+                    title: 'NUM_REMAINING_INSTALLMENT',
+                    width: '5%'
+                },
+                NUM_OVERDUE_INSTALLMENT: {
+                    title: 'NUM_OVERDUE_INSTALLMENT',
+                    width: '5%'
+                },
+                OVERDUE_AMT: {
+                    title: 'OVERDUE_AMT',
+                    width: '5%'
+                },
+                LOAN_STATUS: {
+                    title: 'LOAN_STATUS',
+                    width: '5%'
+                },
+                RESCHEDULE_NO: {
+                    title: 'RESCHEDULE_NO',
+                    width: '5%'
+                },
+                LAST_RESCHEDULE_DATE: {
+                    title: 'LAST_RESCHEDULE_DATE',
+                    width: '5%'
+                },
+                WRITE_OFF_AMT: {
+                    title: 'WRITE_OFF_AMT',
+                    width: '5%'
+                },
+                WRITE_OFF_DATE: {
+                    title: 'WRITE_OFF_DATE',
+                    width: '5%'
+                },
+                CONTRACT_PHASE: {
+                    title: 'CONTRACT_PHASE',
+                    width: '5%'
+                },
+                LOAN_DURATION: {
+                    title: 'LOAN_DURATION',
+                    width: '5%'
+                },
+                ACTUAL_END_DATE_CONTRACT: {
+                    title: 'ACTUAL_END_DATE_CONTRACT',
+                    width: '5%'
+                },
+                ECONOMIC_PURPOSE_CODE: {
+                    title: 'ECONOMIC_PURPOSE_CODE',
+                    width: '5%'
+                },
+                COMPULSORY_SAVING_AMT: {
+                    title: 'COMPULSORY_SAVING_AMT',
+                    width: '5%'
+                },
+                VOLUNTARY_SAVING_AMT: {
+                    title: 'VOLUNTARY_SAVING_AMT',
+                    width: '5%'
+                },
+                TERM_SAVING_AMT: {
+                    title: 'TERM_SAVING_AMT',
+                    width: '5%'
+                },
+                SUBSIDIZED_CREDIT_FLAG: {
+                    title: 'SUBSIDIZED_CREDIT_FLAG',
+                    width: '5%'
+                },
+                SERVICE_CHARGE_RATE: {
+                    title: 'SERVICE_CHARGE_RATE',
+                    width: '5%'
+                },
+                PAYMENT_MODE: {
+                    title: 'PAYMENT_MODE',
+                    width: '5%'
+                },
+                ADVANCE_PAYMENT_AMT: {
+                    title: 'ADVANCE_PAYMENT_AMT',
+                    width: '5%'
+                },
+                LAW_SUIT: {
+                    title: 'LAW_SUIT',
+                    width: '5%'
+                },
+                ME: {
+                    title: 'ME',
+                    width: '5%'
+                },
+                MEMBER_WELFARE_FUND: {
+                    title: 'MEMBER_WELFARE_FUND',
+                    width: '5%'
+                },
+                INSURENCE_COVERAGE: {
+                    title: 'INSURENCE_COVERAGE',
+                    width: '5%'
+                },
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-    @Scripts.Render("~/bundles/jqueryui")
-    @Scripts.Render("~/bundles/jtable")
+                OfficeId: {
+                    title: 'OfficeId',
+                    width: '5%'
+                },
+                ReportDate: {
+                    title: 'ReportDate',
+                    width: '5%'
+                },
+                Data_Status: {
+                    title: 'Data_Status',
+                    width: '5%'
+                }
+            },
 
-    <link href="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.css" rel="stylesheet" />
-    <script src="~/Assets/js/plugins/boostrap-selelect/bootstrap-select.min.js"></script>
+            recordsLoaded: function () {
+                isGridInitialized = true;
+            }
+        });
+
+        reloadGrid();
+        isContractDetailsClicked = true;
+    }
+
+    function deleteMRASubjectDetails(memberid) {
+        if (confirm("Are you sure you want to delete this item?")) {
+            $.ajax({
+                url: "/GroupwiseReport/DeleteMRASubjectDetails",
+                method: "POST",
+                data: { memberid: memberid },
+                dataType: "json",
+                success: function (result) {
+                    //console.log(result);
+                    if (result.success) {
+                        $("#dvMessage").attr('class', "success");
+                        $("#dvMessage").html(result.message);
+                        $("#dvMessage").show();
+                        if (response.Message == null)
+                            $("#dvMessage").toggle('fade', 1500);
+
+                        $('#grid').jtable('destroy');
+                        loadGrid_SubjectDetails('get_MRASubjectDetails', office_id, DateTo);
+                    }
+                    else {
+                        alert(result.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                }
+            });
+        }
+    }
+
+    function deleteMRAContractDetails(memberid) {
+        if (confirm("Are you sure you want to delete this item?")) {
+            $.ajax({
+                url: "/GroupwiseReport/DeleteMRAContractDetails",
+                method: "POST",
+                data: { memberid: memberid },
+                dataType: "json",
+                success: function (result) {
+                    //console.log(result);
+                    if (result.success) {
+                        $("#dvMessage").attr('class', "success");
+                        $("#dvMessage").html(result.message);
+                        $("#dvMessage").show();
+                        if (response.Message == null)
+                            $("#dvMessage").toggle('fade', 1500);
+
+                        $('#grid').jtable('destroy');
+                        loadGrid_ContractDetails('get_MRAContractDetails', office_id, DateTo);
+                    }
+                    else {
+                        alert(result.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                }
+            });
+        }
+    }
+
+    function reloadGridSubmit() {
+        var office_id;
+        var DateTo = $("#txtToDt").val();
+
+        if ($("#ddlHO").val() > 0) {
+            office_id = $("#ddlHO").val();
+
+            if ($("#rdDivision").prop('checked')) {
+                if ($("#ddlProgram").val()) {
+                    Qtype = 7;
+                    office_id = $("#ddlProgram").val();
+                }
+                else if ($("#ddlDivision").val()) {
+                    Qtype = 6;
+                    office_id = $("#ddlDivision").val();
+                }
+            }
+            else {
+                if ($("#ddlZone").val() > 0) {
+                    if ($("#ddlArea").val() > 0) {
+                        var officeVal = $("#ddlOffice").val();
+                        if (officeVal && officeVal.length > 0) {
+                            office_id = officeVal;
+                        }
+                        else {
+                            office_id = $("#ddlArea").val();
+                        }
+                    }
+                    else {
+                        office_id = $("#ddlZone").val();
+                    }
+                }
+                else {
+                    office_id = $("#ddlHO").val();
+                }
+            }
+        }
+
+        if ($("#DateFromValue").val() == "") {
+            alert("Please Give FromDate Date.");
+            return false;
+        }
+        if ($("#DateToValue").val() == "") {
+            alert("Please Give ToDate Date.");
+            return false;
+        }
+
+        if ($('#filterColumn :selected').val() == 0 || $('#filterColumn :selected').val() == '0') {
+            alert("Please Select Filter.");
+            return false;
+        }
+
+        if (!isContractDetailsClicked) {
+            if (!isGridInitialized) {
+                $("#btnViewSubDetails").trigger("click");
+            } else {
+                $('#grid').jtable('destroy');
+                loadGrid_SubjectDetails('get_MRASubjectDetails', office_id, DateTo);
+            }
+        }
+        else {
+            if (!isGridInitialized) {
+                $("#btnViewConDetails").trigger("click");
+            } else {
+                $('#grid').jtable('destroy');
+                loadGrid_ContractDetails('get_MRAContractDetails', office_id, DateTo);
+            }
+        }
+
+    }
+
+    function reloadGrid() {
+        $('#grid').jtable('load', { filterColumn: $('#filterColumn').val(), filterValue: $('#filterValue').val() });
+    }
+
+    </script>
+
 }

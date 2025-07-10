@@ -277,6 +277,9 @@ namespace gBanker.Service.ReportServies
         DataSet RunVoiceDataProcess<TParamOType>(TParamOType target, string storeProcedureName) where TParamOType : class;
 
         DataSet SaveEditMemberImage<TParamOType>(TParamOType target) where TParamOType : class;
+
+        int DeleteMRASubjectDetails<TParamOType>(TParamOType target) where TParamOType : class;
+        int DeleteMRAContractDetails<TParamOType>(TParamOType target) where TParamOType : class;
     }
     public class UltimateReportService : IUltimateReportService
     {
@@ -2200,6 +2203,39 @@ namespace gBanker.Service.ReportServies
                 return gbData.GetDataOnDateset(storeProcedureName, target);
             }
         }
+
+        public int DeleteMRASubjectDetails<TParamOType>(TParamOType target) where TParamOType : class
+        {
+            try
+            {
+                var storeProcedureName = "usp_Generate_MRASubjectDetails";
+                using (var gbData = new gBankerDataAccess())
+                {
+                    return gbData.ExecuteNonQuery(storeProcedureName, target);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public int DeleteMRAContractDetails<TParamOType>(TParamOType target) where TParamOType : class
+        {
+            try
+            {
+                var storeProcedureName = "usp_Generate_MRAContractDetails";
+                using (var gbData = new gBankerDataAccess())
+                {
+                    return gbData.ExecuteNonQuery(storeProcedureName, target);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }
 
