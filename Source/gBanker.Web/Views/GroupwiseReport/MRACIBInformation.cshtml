@@ -92,6 +92,8 @@
                     <input type="button" value="CIB_Subject_Details" class="btn btn-primary" id="btnViewSubDetails" />
                     &nbsp;
                     <input type="button" value="CIB_Contract_Details" class="btn btn-primary" id="btnViewConDetails" />
+
+                    <input type="checkbox" id="chkFilter" class="btn btn-primary">
                 </div>
             </div>
         </div>
@@ -101,19 +103,19 @@
 <!--Add filtering section-->
 <div id="divFilter" class="row" style="display: none;">
     <div class="col-md-3">
-        <label class="control-label" style="padding-top:0px;">Date From</label>
-        <input type="text" id="DateFromValue" placeholder="Type Search Text" autocomplete="off" class="form-control" />
+        <label class="control-label" style="padding-top:0px;">Date</label>
+        <input type="text" id="Date2" placeholder="Type Search Text" autocomplete="off" class="form-control" />
     </div>
     <div class="col-md-3">
-        <label class="control-label" style="padding-top:0px;">Date To</label>
-        <input type="text" id="DateToValue" placeholder="Type Search Text" autocomplete="off" class="form-control" />
+        <label class="control-label" style="padding-top:0px;">Branch</label>
+        <input type="text" id="txtBranch" placeholder="Branch" autocomplete="off" class="form-control" />
     </div>
     <div class="col-md-2">
         <label class="control-label">Filter By:</label>
         <select id="filterColumn" class="form-control">
             <option value="">All</option>
-            <option value="branch">Branch Code</option>
             <option value="member">Member Code</option>
+            <option value="datastatus">Data Status</option>
         </select>
     </div>
     <div class="col-md-4">
@@ -150,7 +152,7 @@
 
     <script type="text/javascript">
 
-    var isGridInitialized = false;
+    var isGridInitialized = false; // ✅ Declare globally
     var isContractDetailsClicked = false;
 
     function GetZoneOffice() {
@@ -229,7 +231,6 @@
         })
 
         function getDivisionAndRegion(url, ddl) {
-            //debugger
             ddl.html('');
             ddl.append($('<option></option>').val("").html("Please Select"));
 
@@ -328,30 +329,23 @@
             changeYear: true
         });
 
-
-        $("#DateFromValue").datepicker({
+        $("#Date2").datepicker({
             dateFormat: "ddmmyy",
             showAnim: "scale",
             changeMonth: true,
             changeYear: true
         });
 
-        $("#DateToValue").datepicker({
-            dateFormat: "ddmmyy",
-            showAnim: "scale",
-            changeMonth: true,
-            changeYear: true
-        });
 
         $('.ddl-select-picker').selectpicker();
+
 
         //let isGridInitialized = false;
         $("#btnViewSubDetails").click(function () {
             var office_id;
             var DateTo = $("#txtToDt").val();
 
-            $("#DateFromValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
-            $("#DateToValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
+            $("#Date2").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
 
             if ($("#ddlHO").val() > 0) {
                 office_id = $("#ddlHO").val();
@@ -398,12 +392,13 @@
 
         });
 
+
+
         $("#btnViewConDetails").click(function (e) {
             var office_id;
             var DateTo = $("#txtToDt").val();
 
-            $("#DateFromValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
-            $("#DateToValue").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
+            $("#Date2").datepicker('setDate', $.datepicker.parseDate('dd-M-yy', DateTo));
 
             if ($("#ddlHO").val() > 0) {
                 office_id = $("#ddlHO").val();
@@ -450,9 +445,13 @@
 
         });
 
+        $('#chkFilter').change(function () {
+            $('#divFilter').toggle(this.checked);
+        });
+
     });
 
-    function loadGrid_SubjectDetails(callType, office_id, DateTo) {
+    function loadGrid_SubjectDetails(callType, office_id, DateTo, branch) {
         $('#grid').jtable({
             paging: true,
             pageSize: 30,
@@ -462,8 +461,9 @@
                 listAction: function (postData, jtParams) {
                     return $.Deferred(function ($dfd) {
                         $.ajax({
+                            //url: '/GroupWiseReport/GenerateMRASubjectDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting + '&officeId=' + office_id + '&dateTo=' + DateTo,
                             url: '/GroupWiseReport/GenerateMRASubjectDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting +
-                                '&callType=' + callType + '&officeId=' + office_id + '&dateTo=' + DateTo,
+                                '&callType=' + callType + '&officeId=' + office_id + '&dateTo=' + DateTo + '&branch=' + branch,
                             type: 'POST',
                             dataType: 'json',
                             data: postData,
@@ -631,10 +631,10 @@
         isContractDetailsClicked = false;
     }
 
-    function loadGrid_ContractDetails(callType, office_id, DateTo) {
+    function loadGrid_ContractDetails(callType, office_id, DateTo, branch) {
         $('#grid').jtable({
             paging: true,
-            pageSize: 30,
+            pageSize: 50,
             sorting: true,
             defaultSorting: 'OfficeId',
             actions: {
@@ -642,7 +642,7 @@
                     return $.Deferred(function ($dfd) {
                         $.ajax({
                             url: '/GroupWiseReport/GenerateMRAContractDetails?jtStartIndex=' + jtParams.jtStartIndex + '&jtPageSize=' + jtParams.jtPageSize + '&jtSorting=' + jtParams.jtSorting +
-                                '&callType=' + callType + '&officeId=' + office_id + '&dateTo=' + DateTo,
+                                '&callType=' + callType + '&officeId=' + office_id + '&dateTo=' + DateTo + '&branch=' + branch,
                             type: 'POST',
                             dataType: 'json',
                             data: postData,
@@ -901,7 +901,8 @@
 
     function reloadGridSubmit() {
         var office_id;
-        var DateTo = $("#txtToDt").val();
+        var DateTo = $("#Date2").val();
+        var branch = $("#txtBranch").val();
 
         if ($("#ddlHO").val() > 0) {
             office_id = $("#ddlHO").val();
@@ -937,26 +938,18 @@
             }
         }
 
-        if ($("#DateFromValue").val() == "") {
-            alert("Please Give FromDate Date.");
-            return false;
-        }
-        if ($("#DateToValue").val() == "") {
+        if ($("#Date2").val() == "") {
             alert("Please Give ToDate Date.");
             return false;
         }
 
-        if ($('#filterColumn :selected').val() == 0 || $('#filterColumn :selected').val() == '0') {
-            alert("Please Select Filter.");
-            return false;
-        }
 
         if (!isContractDetailsClicked) {
             if (!isGridInitialized) {
                 $("#btnViewSubDetails").trigger("click");
             } else {
                 $('#grid').jtable('destroy');
-                loadGrid_SubjectDetails('get_MRASubjectDetails', office_id, DateTo);
+                loadGrid_SubjectDetails('get_MRASubjectDetails', office_id, DateTo, branch);
             }
         }
         else {
@@ -964,7 +957,7 @@
                 $("#btnViewConDetails").trigger("click");
             } else {
                 $('#grid').jtable('destroy');
-                loadGrid_ContractDetails('get_MRAContractDetails', office_id, DateTo);
+                loadGrid_ContractDetails('get_MRAContractDetails', office_id, DateTo, branch);
             }
         }
 

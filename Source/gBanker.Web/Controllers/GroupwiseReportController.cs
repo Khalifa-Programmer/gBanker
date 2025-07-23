@@ -10947,7 +10947,7 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
             return View();
         }
 
-        public JsonResult GenerateMRASubjectDetails(int jtStartIndex, int jtPageSize, string jtSorting, string officeId, string dateTo, string callType, string filterColumn, string filterValue)
+        public JsonResult GenerateMRASubjectDetails(int jtStartIndex, int jtPageSize, string jtSorting, string callType, string officeId, string dateTo, string branch, string filterColumn, string filterValue)
         {
             try
             {
@@ -10959,7 +10959,7 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
                 }
                 if (callType == "get_MRASubjectDetails")
                 {
-                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo, param1 = filterColumn, param2 = filterValue };
+                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo, param1 = branch, param2 = filterColumn, param3 = filterValue };
                 }
 
                 var queryResponse = ultimateReportService.GetDataWithParameter(param, "usp_Generate_MRASubjectDetails");
@@ -11012,7 +11012,7 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
             }
         }
 
-        public JsonResult GenerateMRAContractDetails(int jtStartIndex, int jtPageSize, string jtSorting, string officeId, string dateTo, string callType, string filterColumn, string filterValue)
+        public JsonResult GenerateMRAContractDetails(int jtStartIndex, int jtPageSize, string jtSorting, string callType, string officeId, string dateTo, string branch, string filterColumn, string filterValue)
         {
             try
             {
@@ -11024,7 +11024,7 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
                 }
                 if (callType == "get_MRAContractDetails")
                 {
-                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo, param1 = filterColumn, param2 = filterValue };
+                    param = new { param0 = callType, OfficeID = officeId, DateTo = dateTo, param1 = branch, param2 = filterColumn, param3 = filterValue };
                 }
 
                 var queryResponse = ultimateReportService.GetDataWithParameter(param, "usp_Generate_MRAContractDetails");
