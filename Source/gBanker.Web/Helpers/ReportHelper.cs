@@ -70,8 +70,7 @@ namespace gBanker.Web.Helpers
                 // Handle exceptions (log, display, etc.)
             }
         }
-
-
+        
         public static void ExportExcelDataOnly(string reportName, DataTable dataSource, Dictionary<string, object> parameters)
         {
             try
@@ -121,7 +120,81 @@ namespace gBanker.Web.Helpers
             {
                 // Handle exceptions (log, display, etc.)
             }
+        } 
+
+        public static void ExportExcelDataOnly(string reportName, DataTable dataSource, Dictionary<string, object> parameters, Dictionary<string, DataTable> subReportDatasources, ReportClass reportClass)
+        {
+            try
+            {
+
+
+                ReportDocument crDocument = new ReportDocument();
+
+                ExportOptions crExportOptions = new ExportOptions();
+                DiskFileDestinationOptions crDiskFileDestination = new DiskFileDestinationOptions();
+                ExcelFormatOptions excelFormatOpts = new ExcelFormatOptions();
+                string strFName;
+                //All CR file assumed that it resides in the reports folder....
+                string strReportPathAbsolute = HttpContext.Current.Server.MapPath("~/Reports/" + reportName);
+                //reportClass.Load(strReportPathAbsolute);
+                //reportClass.SetDataSource(dataSource);
+                crDocument.Load(strReportPathAbsolute);
+                crDocument.SetDataSource(dataSource);
+
+                foreach (KeyValuePair<string, object> kvp in parameters)
+                {
+                    crDocument.SetParameterValue(kvp.Key, kvp.Value);
+
+                }
+                if (subReportDatasources != null)
+                {
+                    foreach (KeyValuePair<string, DataTable> kvp in subReportDatasources)
+                    {
+                        crDocument.OpenSubreport(kvp.Key).SetDataSource(kvp.Value);
+                    }
+                }
+
+                //strFName = HttpContext.Current.Server.MapPath("~/") + string.Format("{0}.pdf", Guid.NewGuid());
+                //crDiskFileDestination.DiskFileName = strFName;
+                //crExportOptions = reportClass.ExportOptions;
+                strFName = HttpContext.Current.Server.MapPath("~/") + string.Format("{0}.xlsx", Guid.NewGuid());
+                crDiskFileDestination.DiskFileName = strFName;
+                crExportOptions = crDocument.ExportOptions;
+
+                /* new */
+                excelFormatOpts.ExcelUseConstantColumnWidth = true;
+                excelFormatOpts.ShowGridLines = true;
+                excelFormatOpts.ExcelTabHasColumnHeadings = true;
+                excelFormatOpts.ExcelAreaGroupNumber = 1;
+                excelFormatOpts.UsePageRange = true;
+                /*end new */
+
+
+                crExportOptions.DestinationOptions = crDiskFileDestination;
+                crExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
+                crExportOptions.ExportFormatType = ExportFormatType.ExcelWorkbook;
+
+                //reportClass.ExportToHttpResponse(ExportFormatType.Excel, HttpContext.Current.Response, true, strFName);
+                //reportClass.Dispose();
+                //reportClass.Close();
+                //HttpContext.Current.Response.End();
+                //System.IO.File.Delete(strFName);
+                crDocument.Export();
+                crDocument.ExportToHttpResponse(ExportFormatType.ExcelWorkbook, HttpContext.Current.Response, true, reportName.Replace(".", "").Replace("RPT", "").Replace("rpt", "") + DateTime.Now.ToString("dd_MMM_yyyy_hhmmsszzz"));
+                crDocument.Dispose();
+                crDocument.Close();
+                HttpContext.Current.Response.End();
+                System.IO.File.Delete(strFName);
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
+
         public static void ExportExcelWithSubReport(string reportName, DataTable dataSource, Dictionary<string, object> parameters, Dictionary<string, DataTable> subReportDatasources, ReportClass reportClass)
         {
             try

@@ -2876,6 +2876,12 @@
       <DependentUpon>RPT_MFI_MonthlyInformation.rpt</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Reports\RPT_MFKPIReport.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RPT_MFKPIReport.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Reports\RPT_MIS_LoanStatement.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -6838,6 +6844,8 @@
     <Content Include="Views\LoanApproval\CreateMembersLoanBalance.cshtml" />
     <Content Include="Views\GroupwiseReport\MRACIBInformation.cshtml" />
     <Content Include="Views\GroupwiseReport\MRACIBMultiselect.cshtml" />
+    <Content Include="Views\GroupwiseReport\FOWiseChangesReportNew.cshtml" />
+    <Content Include="Views\GroupwiseReport\MicrofinanceKPI.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -8438,6 +8446,10 @@
     <EmbeddedResource Include="Reports\RPT_MFI_MonthlyInformation.rpt">
       <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
       <LastGenOutput>RPT_MFI_MonthlyInformation.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Reports\RPT_MFKPIReport.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>RPT_MFKPIReport.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Reports\RPT_MIS_LoanStatement.rpt">
       <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>

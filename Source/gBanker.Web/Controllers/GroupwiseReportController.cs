@@ -11124,5 +11124,131 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
 
         #endregion
 
+        #region GenerateMicrofinanceKPI
+
+        public ActionResult FOWiseChangesReportNew()
+        {
+            IEnumerable<SelectListItem> items = new SelectList(" ");
+            ViewData["HOList"] = items;
+            ViewData["ZoneList"] = items;
+            ViewData["AreaList"] = items;
+            ViewData["OfficeList"] = items;
+            return View();
+        }
+        public ActionResult GenerateFOWiseChangesReportNew(string DateFrom, string DateTo, string ddlReportType)
+        {
+            try
+            {
+                var param = new { Office = SessionHelper.LoginUserOfficeID, DateFrom = DateFrom, DateTo = DateTo };
+                var alldata = groupwiseReportService.GetFOWiseChangesReport(param, "SP_Get_MicrofinanceKPIReport");
+                var subReportDB = new Dictionary<string, DataTable>();
+                subReportDB.Add("RPT_ChangesReport1", alldata.Tables[0]);
+                if (ddlReportType == "pdf")
+                {
+                    ReportHelper.PrintWithSubReport("RPT_MFKPIReport.rpt", alldata.Tables[0], new Dictionary<string, object>(), subReportDB, new RPT_ChangesReportCOwise());
+                }
+                else if (ddlReportType == "xls")
+                {
+                    ReportHelper.ExportExcelDataOnly("RPT_MFKPIReport.rpt", alldata.Tables[0], new Dictionary<string, object>(), subReportDB, new RPT_ChangesReportCOwise());
+                
+                }
+                return Content(string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Result = "ERROR", Message = ex.Message });
+            }
+        }
+
+        public ActionResult MicrofinanceKPI()
+        {
+            IEnumerable<SelectListItem> items = new SelectList(" ");
+            ViewData["HOList"] = items;
+            ViewData["ZoneList"] = items;
+            ViewData["AreaList"] = items;
+            ViewData["OfficeList"] = items;
+            var offcdetail = officeService.GetById(Convert.ToInt32(SessionHelper.LoginUserOfficeID));
+            var HeadOfficeCode = offcdetail.FirstLevel;
+            var Headoffcdetail = officeService.GetByOfficeCode(HeadOfficeCode);
+            var Secondoffcdetail = officeService.GetByOfficeCode(offcdetail.SecondLevel);
+            var Thirdoffcdetail = officeService.GetByOfficeCode(offcdetail.ThirdLevel);
+            var Fourthoffcdetail = officeService.GetByOfficeCode(offcdetail.FourthLevel);
+
+            ViewData["OfficeLevel"] = offcdetail.OfficeLevel;
+
+
+            if (offcdetail.OfficeLevel == 1)
+            {
+                ViewData["FirstLevel"] = Headoffcdetail.OfficeID;
+                ViewData["SecondLevel"] = "";
+                ViewData["ThirdLevel"] = "";
+                ViewData["FourthLevel"] = "";
+            }
+            else if (offcdetail.OfficeLevel == 2)
+            {
+                ViewData["FirstLevel"] = Headoffcdetail.OfficeID;
+                ViewData["SecondLevel"] = Secondoffcdetail.OfficeID;
+                ViewData["ThirdLevel"] = "";
+                ViewData["FourthLevel"] = "";
+            }
+            else if (offcdetail.OfficeLevel == 3)
+            {
+                ViewData["FirstLevel"] = Headoffcdetail.OfficeID;
+                ViewData["SecondLevel"] = Secondoffcdetail.OfficeID;
+                ViewData["ThirdLevel"] = Thirdoffcdetail.OfficeID;
+                ViewData["FourthLevel"] = "";
+            }
+            else
+            {
+                ViewData["FirstLevel"] = Headoffcdetail.OfficeID;
+                ViewData["SecondLevel"] = Secondoffcdetail.OfficeID;
+                ViewData["ThirdLevel"] = Thirdoffcdetail.OfficeID;
+                ViewData["FourthLevel"] = Fourthoffcdetail.OfficeID;
+
+            }
+            var param = new { @OfficeID = SessionHelper.LoggedInEmployee.OfficeID };
+            var allProducts = accReportService.GetLastInitialDate(param);
+            var detail = allProducts.ToString();
+
+            if (!IsDayInitiated)
+            {
+                ViewData["TrxDate"] = Convert.ToString("dd-MMM-yyyy");
+            }
+            else
+            {
+                ViewData["TrxDate"] = TransactionDate.ToString("dd-MMM-yyyy");
+            }
+            return View();
+
+        }
+        public ActionResult GenerateMicrofinanceKPI(string OfficeId,string DateFrom, string DateTo)
+        {
+            try
+            {
+                //var param = new { Office = SessionHelper.LoginUserOfficeID, DateFrom = DateFrom, DateTo = DateTo };
+                //var alldata = groupwiseReportService.GetDataUltimateReleaseReportWithReportServer(param, "SP_Get_MicrofinanceKPIReport");
+                //var subReportDB = new Dictionary<string, DataTable>();
+                //subReportDB.Add("RPT_MFKPISubReport1", alldata.Tables[0]);           
+                //ReportHelper.PrintWithSubReport("RPT_MFKPIReport.rpt", alldata.Tables[0], new Dictionary<string, object>(), subReportDB, new RPT_ChangesReportCOwise());
+
+                var param = new { Office = OfficeId, DateFrom = DateFrom, DateTo = DateTo};
+                var alldata = groupwiseReportService.GetOfficeWiseChangesReport(param, "SP_Get_MicrofinanceKPIReport");
+                var reportParam = new Dictionary<string, object>();
+                reportParam.Add("param_orgName", ApplicationSettings.OrganiztionName);
+                ReportHelper.PrintReport("RPT_MFKPIReport.rpt", alldata.Tables[0], reportParam);
+                return Content(string.Empty);
+                //var alldata = groupwiseReportService.GetOfficeWiseChangesReport(param, "SP_Get_MicrofinanceKPIReport");
+                //var reportParam = new Dictionary<string, object>();
+                //reportParam.Add("param_orgName", ApplicationSettings.OrganiztionName);
+                //ReportHelper.PrintReport("RPT_MFKPIReport.rpt", alldata.Tables[0], reportParam);
+                //return Content(string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Result = "ERROR", Message = ex.Message });
+            }
+        }
+        #endregion 
+
     }
 }
