@@ -5,28 +5,44 @@
 }
 <script type="text/javascript">
     function GetHO(ddlVal) {
-        var ddlHO = $("#ddlHO");
-        $.ajax({
-            type: 'GET',
-            contentType: "application/json; charset=utf-8",
-            url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
-            data: {},
-            dataType: 'json',
-            async: true,
-            success: function (data) {
-                ddlHO.html('');
-                $.each(data, function (id, option) {
-                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
-                });
-                if (ddlVal != null) {
-                    $('#ddlHO').val(ddlVal);
-                }
-            },
-            error: function (request, status, error) {
-                alert(request.statusText + "/" + request.statusText + "/" + error);
+    var ddlHO = $("#ddlHO");
+    var btnHO = $("#btnHOReport");
+    var hoLoading = $("#hoLoading");
+
+    btnHO.prop("disabled", true);
+    hoLoading.show();
+
+    $.ajax({
+        type: 'GET',
+        contentType: "application/json; charset=utf-8",
+        url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
+        data: {},
+        dataType: 'json',
+        async: true,
+        success: function (data) {
+            ddlHO.html('');
+            $.each(data, function (id, option) {
+                ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+            });
+            if (ddlVal != null) {
+                $('#ddlHO').val(ddlVal);
             }
-        });
-    }
+
+            // Enable HO button only if Qtype = 1
+            if ($("#ddlHO").val() > 0 && $("#ddlZone").val() === "" && $("#ddlArea").val() === "" && $("#ddlOffice").val() === "") {
+                btnHO.prop("disabled", false);
+            }
+        },
+        error: function (request, status, error) {
+            alert(request.statusText + "/" + request.statusText + "/" + error);
+        },
+        complete: function () {
+            hoLoading.hide();
+        }
+    });
+}
+
+
     function GetZone(HO_val, ddlVal) {
         var ddlZone = $("#ddlZone");
         $.ajax({
@@ -99,6 +115,33 @@
             }
         });
     }
+    function updateButtonStates() {
+        var hoSelected = $("#ddlHO").val() > 0;
+        var zoneSelected = $("#ddlZone").val() > 0;
+        var areaSelected = $("#ddlArea").val() > 0;
+        var officeSelected = $("#ddlOffice").val() > 0;
+        var fromDate = $("#txtFromDt").val();
+        var toDate = $("#txtToDt").val();
+
+        // Enable both buttons if dates are selected
+        var datesSelected = fromDate && toDate;
+
+        $("#btnProcess").prop("disabled", !datesSelected);
+        $("#btnView").prop("disabled", !datesSelected);
+
+        // Special case: If HO is selected but not processed yet, disable View button
+        if (hoSelected && !zoneSelected && !areaSelected && !officeSelected) {
+            if (!$("#btnProcess").data("processed")) {
+                $("#btnView").prop("disabled", true);
+            }
+        }
+    }
+
+    // Attach listener
+    $("#ddlHO, #ddlZone, #ddlArea, #ddlOffice, #txtFromDt, #txtToDt").on("change keyup", updateButtonStates);
+
+
+
     function CheckOffcLevel() {
         var offcLevel = $('#lblOffcLevel').html();
         var firstLevel = $('#lblFirstLevel').html();
@@ -144,7 +187,11 @@
 
     $(document).ready(function () {
         CheckOffcLevel();
+        // Call on page load
+        updateButtonStates();
 
+        // Bind change events
+        $("#ddlHO, #ddlZone, #ddlArea, #ddlOffice").change(updateButtonStates);
         $("#loading").hide();
         $("#txtFromDt").val('');
         $("#txtToDt").val('');
@@ -271,41 +318,72 @@
                 $("#ddlOffice").empty();
             }
         });
-        $("#btnView").click(function (e) {
-            e.preventDefault();
-            var qType;
-            //$("#divLoading").show();
-            if ($("#ddlHO").val() > 0) {
-                office_id = $("#ddlHO").val();
-                Qtype = 1;
-                if ($("#ddlZone").val() > 0) {
-                    Qtype = 2;
-                    if ($("#ddlArea").val() > 0) {
-                        Qtype = 3;
-                        if ($("#ddlOffice").val() > 0) {
-                            Qtype = 4;
-                            office_id = $("#ddlOffice").val();
-                        }
-                        else {
-                            office_id = $("#ddlArea").val();
-                        }
-                    }
-                    else {
-                        office_id = $("#ddlZone").val();
-                    }
-                }
-                else {
-                    office_id = $("#ddlHO").val();
-                }
 
 
-                var from_date = $("#txtFromDt").val();
-                var to_date = $("#txtToDt").val();
+     $("#btnProcess").click(function () {
+    var btn = $(this);
+    var office_id = $("#ddlHO").val();
+    var from_date = $("#txtFromDt").val();
+    var to_date = $("#txtToDt").val();
 
-                var url = '/GroupwiseReport/GenerateMicrofinanceKPI?OfficeId=' + office_id + '&DateFrom=' + from_date + '&DateTo=' + to_date;
-                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+    if (!from_date || !to_date) {
+        alert("Please select From and To dates.");
+        return false;
+    }
+
+    btn.prop("disabled", true);
+    $("#processLoading").show();
+
+    $.ajax({
+        type: "GET",
+        url: '@Url.Action("ProcessHOData", "GroupwiseReport")',
+        data: { OfficeId: office_id, DateFrom: from_date, DateTo: to_date },
+        success: function (res) {
+            if (res.Result === "SUCCESS") {
+                alert("Head Office data processed successfully.");
+                $("#btnProcess").data("processed", true);
+                updateButtonStates(); // This will now enable the View button
+            } else {
+                alert("Error: " + res.Message);
+                btn.prop("disabled", false);
             }
+        },
+        error: function (xhr) {
+            alert("Failed: " + xhr.statusText);
+            btn.prop("disabled", false);
+        },
+        complete: function () {
+            $("#processLoading").hide();
+        }
+    });
+});
+
+
+        $("#btnView").click(function () {
+            var ho_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            var office_val = $("#ddlOffice").val();
+            var from_date = $("#txtFromDt").val();
+            var to_date = $("#txtToDt").val();
+
+            if (!from_date || !to_date) {
+                alert("Please select From and To dates.");
+                return false;
+            }
+
+            var Qtype = 1, office_id = ho_val;
+            if (zone_val > 0) { Qtype = 2; office_id = zone_val; }
+            if (area_val > 0) { Qtype = 3; office_id = area_val; }
+            if (office_val > 0) { Qtype = 4; office_id = office_val; }
+
+            var url = '/GroupwiseReport/GenerateMicrofinanceKPI?Qtype=' + Qtype + '&OfficeId=' + office_id + '&DateFrom=' + from_date + '&DateTo=' + to_date;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
         });
+
+
+
+
     });
 </script>
 <h2 class="page-title">MicrofinanceKPI</h2>
@@ -314,73 +392,82 @@
 {
     @Html.AntiForgeryToken()
 
-    <div class="">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    @Html.Label("Head Office", new { @class = "control-label" })
-                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control" })
-                    @Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
-                    @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
-                    @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
-                    @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
-                    @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })
-                </div>
+<div class="">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Head Office", new { @class = "control-label" })
+                @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control" })
+                @Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
+                @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
+                @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
+                @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
+                @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    @Html.Label("Zone Office", new { @class = "control-label" })
-                    @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
-                </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Zone Office", new { @class = "control-label" })
+                @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    @Html.Label("Area Office", new { @class = "control-label" })
-                    @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
-                </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Area Office", new { @class = "control-label" })
+                @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    @Html.Label("Office", new { @class = "control-label" })
-                    @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
-                </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Office", new { @class = "control-label" })
+                @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    @Html.Label("Date From", new { @class = "control-label" })
-                    @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
-                </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Date From", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    @Html.Label("Date To", new { @class = "control-label" })
-                    @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
-                </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.Label("Date To", new { @class = "control-label" })
+                @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
             </div>
         </div>
+    </div>
 
-        <div class="row">
+    @*<div class="row">
             <div class="col-lg-12">
                 <div class="form-group form-action">
                     <input type="submit" value="View" class="btn btn-primary" id="btnView" />
                 </div>
             </div>
-        </div>
-
-
-
-
+        </div>*@
+    <div class="form-group form-action">
+        <button type="button" id="btnProcess" class="btn btn-success">
+            Process Ho Data
+        </button>
+        <button type="button" id="btnView" class="btn btn-primary">
+            View Report
+        </button>
+        <span id="processLoading" style="display:none;">Processing...</span>
     </div>
+
+
+
+
+</div>
 }
 
 @section Scripts {

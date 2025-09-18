@@ -11221,33 +11221,39 @@ public JsonResult GenerateMRAMonthlyInformation(string DateFrom, string DateTo, 
             return View();
 
         }
-        public ActionResult GenerateMicrofinanceKPI(string OfficeId,string DateFrom, string DateTo)
+        public ActionResult GenerateMicrofinanceKPI(string Qtype, string OfficeId, string DateFrom, string DateTo)
         {
             try
-            {
-                //var param = new { Office = SessionHelper.LoginUserOfficeID, DateFrom = DateFrom, DateTo = DateTo };
-                //var alldata = groupwiseReportService.GetDataUltimateReleaseReportWithReportServer(param, "SP_Get_MicrofinanceKPIReport");
-                //var subReportDB = new Dictionary<string, DataTable>();
-                //subReportDB.Add("RPT_MFKPISubReport1", alldata.Tables[0]);           
-                //ReportHelper.PrintWithSubReport("RPT_MFKPIReport.rpt", alldata.Tables[0], new Dictionary<string, object>(), subReportDB, new RPT_ChangesReportCOwise());
-
-                var param = new { Office = OfficeId, DateFrom = DateFrom, DateTo = DateTo};
-                var alldata = groupwiseReportService.GetOfficeWiseChangesReport(param, "SP_Get_MicrofinanceKPIReport");
+            {             
+                var param = new { Office = OfficeId, DateFrom = DateFrom, DateTo = DateTo, Qtype = Qtype };
+                var alldata = groupwiseReportService.GetOfficeWiseChangesReport(param, "Proc_Get_MicrofinanceKPIHO");
                 var reportParam = new Dictionary<string, object>();
                 reportParam.Add("param_orgName", ApplicationSettings.OrganiztionName);
                 ReportHelper.PrintReport("RPT_MFKPIReport.rpt", alldata.Tables[0], reportParam);
-                return Content(string.Empty);
-                //var alldata = groupwiseReportService.GetOfficeWiseChangesReport(param, "SP_Get_MicrofinanceKPIReport");
-                //var reportParam = new Dictionary<string, object>();
-                //reportParam.Add("param_orgName", ApplicationSettings.OrganiztionName);
-                //ReportHelper.PrintReport("RPT_MFKPIReport.rpt", alldata.Tables[0], reportParam);
-                //return Content(string.Empty);
+                return Content(string.Empty);            
             }
             catch (Exception ex)
             {
                 return Json(new { Result = "ERROR", Message = ex.Message });
             }
         }
+
+        public ActionResult ProcessHOData(string OfficeId, string DateFrom, string DateTo)
+        {
+            try
+            {
+                var param = new { Office = OfficeId, DateFrom = DateFrom, DateTo = DateTo };
+                var alldata = groupwiseReportService.GetOfficeWiseChangesReport(param, "SP_Get_MicrofinanceKPIReport");
+
+                return Json(new { Result = "SUCCESS" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Result = "ERROR", Message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
         #endregion 
 
     }
