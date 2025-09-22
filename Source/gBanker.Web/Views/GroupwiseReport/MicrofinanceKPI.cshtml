@@ -155,6 +155,8 @@
             $("#ddlArea").html("<option value=''>Please Select</option>");
             $("#ddlOffice").html("<option value=''>Please Select</option>");
             $("#ddlHO").prop("disabled", true);
+
+            $("#btnView").prop("disabled", true);
         }
         if (offcLevel == 2) {
             GetHO(firstLevel);
@@ -182,13 +184,15 @@
             $("#ddlZone").prop("disabled", true);
             $("#ddlArea").prop("disabled", true);
             $("#ddlOffice").prop("disabled", true);
+
+            $("#btnProcess").prop("disabled", true); 
         }
     }
 
     $(document).ready(function () {
         CheckOffcLevel();
         // Call on page load
-        updateButtonStates();
+        //updateButtonStates();
 
         // Bind change events
         $("#ddlHO, #ddlZone, #ddlArea, #ddlOffice").change(updateButtonStates);
@@ -327,7 +331,7 @@
     var to_date = $("#txtToDt").val();
 
     if (!from_date || !to_date) {
-        alert("Please select From and To dates.");
+        alert("Please select FromDate and ToDate");
         return false;
     }
 
@@ -342,7 +346,9 @@
             if (res.Result === "SUCCESS") {
                 alert("Head Office data processed successfully.");
                 $("#btnProcess").data("processed", true);
-                updateButtonStates(); // This will now enable the View button
+                //updateButtonStates(); // This will now enable the View button
+                $("#btnView").prop("disabled", false);
+
             } else {
                 alert("Error: " + res.Message);
                 btn.prop("disabled", false);
