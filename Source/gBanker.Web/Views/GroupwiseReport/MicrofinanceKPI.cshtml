@@ -9,7 +9,7 @@
     var btnHO = $("#btnHOReport");
     var hoLoading = $("#hoLoading");
 
-    btnHO.prop("disabled", true);
+    btnHO.prop("disabled", false);
     hoLoading.show();
 
     $.ajax({
@@ -116,32 +116,21 @@
         });
     }
     function updateButtonStates() {
-        var hoSelected = $("#ddlHO").val() > 0;
-        var zoneSelected = $("#ddlZone").val() > 0;
-        var areaSelected = $("#ddlArea").val() > 0;
-        var officeSelected = $("#ddlOffice").val() > 0;
         var fromDate = $("#txtFromDt").val();
         var toDate = $("#txtToDt").val();
 
-        // Enable both buttons if dates are selected
+        // Enable view button if both dates are selected
         var datesSelected = fromDate && toDate;
-
-        $("#btnProcess").prop("disabled", !datesSelected);
-        $("#btnView").prop("disabled", !datesSelected);
-
-        // Special case: If HO is selected but not processed yet, disable View button
-        if (hoSelected && !zoneSelected && !areaSelected && !officeSelected) {
-            if (!$("#btnProcess").data("processed")) {
-                $("#btnView").prop("disabled", true);
-            }
+        if (datesSelected) {
+            $('#btnView').prop('disabled', false);
+        } else {
+            $('#btnView').prop('disabled', true);
         }
     }
 
     // Attach listener
     $("#ddlHO, #ddlZone, #ddlArea, #ddlOffice, #txtFromDt, #txtToDt").on("change keyup", updateButtonStates);
-
-
-
+    
     function CheckOffcLevel() {
         var offcLevel = $('#lblOffcLevel').html();
         var firstLevel = $('#lblFirstLevel').html();
@@ -190,9 +179,10 @@
     }
 
     $(document).ready(function () {
+        
         CheckOffcLevel();
+        $("#txtFromDt, #txtToDt").on("change", updateButtonStates);
         // Call on page load
-        //updateButtonStates();
 
         // Bind change events
         $("#ddlHO, #ddlZone, #ddlArea, #ddlOffice").change(updateButtonStates);
@@ -452,16 +442,9 @@
             </div>
         </div>
     </div>
-
-    @*<div class="row">
-            <div class="col-lg-12">
-                <div class="form-group form-action">
-                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
-                </div>
-            </div>
-        </div>*@
+    
     <div class="form-group form-action">
-        <button type="button" id="btnProcess" class="btn btn-success">
+        <button type="button" id="btnProcess" class="btn btn-success hidden">
             Process Ho Data
         </button>
         <button type="button" id="btnView" class="btn btn-primary">
