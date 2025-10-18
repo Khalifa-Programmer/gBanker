@@ -1,11 +1,1 @@
-# .NET-specific
-*.dll
-*.exe
-*.pdb
-*.cache
-*.config
-*.vspscc
-*.vssscc
-.vs/
-obj/
-bin/
+
